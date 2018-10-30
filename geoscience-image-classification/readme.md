@@ -12,7 +12,16 @@ To use it, the library must be added to the local Maven repository by executing 
 
 `mvn install:install-file -Dfile=lib/jwt/jwt-auth-3.3.11.jar -DpomFile=lib/jwt/jwt-auth-3.3.11.pom`
 
-#### TODO: Backend requirements
+#### Backend requirements
+
+1. **Basic requirements:** git, maven and java 1.8
+2. **Clone repository that deals with the ontology projection:** [https://gitlab.com/ernesto.jimenez.ruiz/ontology-services-toolkit](https://gitlab.com/ernesto.jimenez.ruiz/ontology-services-toolkit)
+> git clone https://gitlab.com/ernesto.jimenez.ruiz/ontology-services-toolkit.git
+3. **Manage RDFox dependency:** The library "ontology-services-toolkit" makes use of RDFox which is platform dependent. 
+	1. In the lib folder, the different pre-compiled libraries for RDFox are provided.
+	2. Follow the instructions in lib/mvn_install_jrdfox.txt to install the RDFox library in the local maven repository.
+4. **Run mvn install** under the ontology-services-toolkit project:
+> mvn clean install
 
 
 
