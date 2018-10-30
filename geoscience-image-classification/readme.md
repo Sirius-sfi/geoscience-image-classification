@@ -20,6 +20,8 @@ To use it, the library must be added to the local Maven repository by executing 
 3. **Manage RDFox dependency:** The library "ontology-services-toolkit" makes use of RDFox which is platform dependent. 
 	1. In the lib folder, the different pre-compiled libraries for RDFox are provided.
 	2. Follow the instructions in lib/mvn_install_jrdfox.txt to install the RDFox library in the local maven repository.
+	For example, after selecting the JRDFox jar file according to yoru distribution:
+	`mvn install:install-file -Dfile=/home/ernesto/git/ontology-services-toolkit/lib/JRDFox-mac.jar -DgroupId=uk.ox.jrdfox -DartifactId=jrdfox -Dversion=1.2776.2017 -Dpackaging=jar`
 4. **Run mvn install** under the ontology-services-toolkit project:
 > mvn clean install
 
