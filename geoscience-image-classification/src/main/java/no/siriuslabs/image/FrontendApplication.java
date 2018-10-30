@@ -11,15 +11,34 @@ import eu.webtoolkit.jwt.WLineEdit;
 import eu.webtoolkit.jwt.WMessageBox;
 import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WText;
+import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
+import uio.ifi.ontology.toolkit.projection.view.ImageAnnotationAPI;
 
 import java.util.EnumSet;
 
+import javax.servlet.ServletContext;
+
+
 public class FrontendApplication extends WApplication {
 
+	
 	public FrontendApplication(WEnvironment env) {
 		super(env);
 
 		setTitle("Geoscience Image Classification");
+		
+		
+		//BACKEND INIT
+		RDFoxSessionManager sessions = new RDFoxSessionManager();
+		ImageAnnotationAPI icg = new ImageAnnotationAPI(sessions);
+		
+		//Context as in OptiqueVQS
+		//@Context
+		//ServletContext context;
+		//Get context
+		//RDFoxSessionManager session = (RDFoxSessionManager) context
+		//		.getAttribute(RDFoxSessionContextListener.RDFOX_SESSION);
+		
 
 
 		WContainerWidget readContainer = new WContainerWidget();
@@ -29,9 +48,10 @@ public class FrontendApplication extends WApplication {
 		readButton.clicked().addListener(this, new Signal.Listener() {
 			@Override
 			public void trigger() {
+				
+				
 				// TODO read from server
-
-				WMessageBox box = new WMessageBox("Message", "Read something from server", Icon.NoIcon, EnumSet.of(StandardButton.Ok));
+				WMessageBox box = new WMessageBox("Message", "Read something from server. Loaded ontos: "+ icg.getNumberLoadedOntologies() + ", random number: " + icg.getRandomNumber(), Icon.NoIcon, EnumSet.of(StandardButton.Ok));
 				box.buttonClicked().addListener(box, new Signal.Listener() {
 					@Override
 					public void trigger() {
@@ -64,7 +84,12 @@ public class FrontendApplication extends WApplication {
 				String text3 = tripletText3.getText().trim();
 
 				// TODO send to server
+				String iri = "https://gitlab.com/ernesto.jimenez.ruiz/ontology-services-toolkit/raw/master/src/test/resources/ontologies/testVQS02_top-bottom-propagation.owl";
 
+				//Create session (not working yet... the method seems to be called mroe than once)
+				//icg.createNewSession(iri);
+				icg.printIRI(iri);
+				
 				String fieldContents = text1 + ", " + text2 + ", " + text3;
 				WMessageBox box = new WMessageBox("Message", "Send something to server: " + fieldContents, Icon.NoIcon, EnumSet.of(StandardButton.Ok));
 				box.buttonClicked().addListener(box, new Signal.Listener() {
