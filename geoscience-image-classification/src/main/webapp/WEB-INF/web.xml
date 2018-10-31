@@ -18,6 +18,10 @@
   </filter-mapping>
    <!--End for Tomcat -->
 
+  <listener>
+    <listener-class>no.siriuslabs.image.context.RDFoxSessionContextListener</listener-class>
+  </listener>
+
   <servlet>
     <servlet-name>geoscience-image-classification</servlet-name>
     <display-name>Geoscience Image Classification</display-name>
