@@ -30,7 +30,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>geoscience-image-classification</servlet-name>
-    <url-pattern>/*</url-pattern>
+    <url-pattern>/gic/*</url-pattern>
   </servlet-mapping>
 </web-app>
 
