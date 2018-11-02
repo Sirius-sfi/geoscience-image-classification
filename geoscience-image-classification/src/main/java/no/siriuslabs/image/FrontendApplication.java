@@ -11,6 +11,7 @@ import eu.webtoolkit.jwt.WLineEdit;
 import eu.webtoolkit.jwt.WMessageBox;
 import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WText;
+import no.siriuslabs.image.context.RDFoxSessionContextListener;
 import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
 import uio.ifi.ontology.toolkit.projection.view.ImageAnnotationAPI;
 
@@ -29,16 +30,15 @@ public class FrontendApplication extends WApplication {
 		
 		
 		//BACKEND INIT
-		RDFoxSessionManager sessions = new RDFoxSessionManager();
-		ImageAnnotationAPI icg = new ImageAnnotationAPI(sessions);
+		//RDFoxSessionManager sessions = new RDFoxSessionManager();
 		
-		//Context as in OptiqueVQS
-		//@Context
-		//ServletContext context;
+		ServletContext context = getEnvironment().getServer().getServletContext();
+	
 		//Get context
-		//RDFoxSessionManager session = (RDFoxSessionManager) context
-		//		.getAttribute(RDFoxSessionContextListener.RDFOX_SESSION);
+		RDFoxSessionManager session = (RDFoxSessionManager) context
+				.getAttribute(RDFoxSessionContextListener.RDFOX_SESSION);
 		
+		ImageAnnotationAPI icg = new ImageAnnotationAPI(session);
 
 
 		WContainerWidget readContainer = new WContainerWidget();
