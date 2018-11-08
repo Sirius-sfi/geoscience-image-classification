@@ -6,11 +6,13 @@
  *******************************************************************************/
 package no.siriuslabs.image.context;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-
-import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
 
 /**
  *
@@ -20,6 +22,7 @@ import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionMa
  */
 public class RDFoxSessionContextListener  implements ServletContextListener {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(RDFoxSessionContextListener.class);
 	
 	public final static String RDFOX_SESSION = "session";
 	
@@ -29,13 +32,13 @@ public class RDFoxSessionContextListener  implements ServletContextListener {
 		
 		ServletContext sc = sce.getServletContext();
 		
-		System.out.print("SETTING UP CONTEXT FOR SESSIONS...");
+		LOGGER.info("SETTING UP CONTEXT FOR SESSIONS...");
 		
 		RDFoxSessionManager sessionManager = new RDFoxSessionManager();
 		
 		sc.setAttribute(RDFOX_SESSION, sessionManager);
-		
-		System.out.println("DONE");
+
+		LOGGER.info("CONTEXT FOR SESSIONS DONE");
 		
 	}
 
@@ -46,14 +49,14 @@ public class RDFoxSessionContextListener  implements ServletContextListener {
 		
 		RDFoxSessionManager session = (RDFoxSessionManager) sc
 				.getAttribute(RDFOX_SESSION);
-		
-		System.out.print("DESTROYING CONTEXT FOR SESSIONS...");
+
+		LOGGER.info("DESTROYING CONTEXT FOR SESSIONS...");
 		
 		int n_sessions = session.getLoadedOntologies().size();
 		
-		session.clearAllOntologySessions();	
-				
-		System.out.println("DONE. Removed " + n_sessions + " sessions.");
+		session.clearAllOntologySessions();
+
+		LOGGER.info("DONE. Removed " + n_sessions + " sessions.");
 		
 	}
 	

@@ -1,15 +1,76 @@
 package no.siriuslabs.image;
 
+import eu.webtoolkit.jwt.Configuration;
 import eu.webtoolkit.jwt.WApplication;
+import eu.webtoolkit.jwt.WBootstrapTheme;
 import eu.webtoolkit.jwt.WEnvironment;
+import eu.webtoolkit.jwt.WLink;
 import eu.webtoolkit.jwt.WtServlet;
+import no.siriuslabs.image.context.RDFoxSessionContextListener;
+import no.siriuslabs.image.services.FileService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
+import uio.ifi.ontology.toolkit.projection.view.ImageAnnotationAPI;
 
+/**
+ * Servlet hosting the application.
+ */
 public class FrontendServlet extends WtServlet {
 
 	private static final long serialVersionUID = 1578912809839556880L;
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(FrontendServlet.class);
+
+	public static final String FILE_SERVICE_KEY = "fileService";
+	public static final String IMAGE_ANNOTATION_API_KEY = "imageAnnotationAPI";
+
 	@Override
 	public WApplication createApplication(WEnvironment wEnvironment) {
-		return new FrontendApplication(wEnvironment);
+		LOGGER.info("creating application...");
+		alterConfiguration();
+
+		createServices();
+
+		final FrontendApplication application = new FrontendApplication(wEnvironment);
+		initializeApplicationWithStylesheets(application);
+
+		LOGGER.info("application ready");
+		return application;
+	}
+
+	private void alterConfiguration() {
+		LOGGER.info("setting configuration...");
+		setConfiguration(new Configuration() {
+			{
+				// alter max. request size to enable file uploads up to...
+				setMaximumRequestSize(1024*1024 * 20);
+			}
+		});
+	}
+
+	private void createServices() {
+		LOGGER.info("creating services...");
+
+		RDFoxSessionManager session = (RDFoxSessionManager) getServletContext().getAttribute(RDFoxSessionContextListener.RDFOX_SESSION);
+		ImageAnnotationAPI icg = new ImageAnnotationAPI(session);
+		getServletContext().setAttribute(IMAGE_ANNOTATION_API_KEY, icg);
+
+		FileService fileService = new FileService();
+		getServletContext().setAttribute(FILE_SERVICE_KEY, fileService);
+
+		LOGGER.info("services ready");
+	}
+
+	private void initializeApplicationWithStylesheets(FrontendApplication application) {
+		LOGGER.info("setting stylesheets...");
+		WBootstrapTheme theme = new WBootstrapTheme();
+		theme.setVersion(WBootstrapTheme.Version.Version3);
+		// load the default bootstrap3 (sub-)theme
+		application.useStyleSheet(new WLink(WApplication.getRelativeResourcesUrl() + "themes/bootstrap/3/bootstrap-theme.min.css"));
+		application.setTheme(theme);
+
+		application.useStyleSheet(new WLink("style/everywidget.css"));
+		application.useStyleSheet(new WLink("style/pygments.css"));
 	}
 }
