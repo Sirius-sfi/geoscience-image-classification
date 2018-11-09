@@ -13,6 +13,7 @@ import eu.webtoolkit.jwt.WLineEdit;
 import eu.webtoolkit.jwt.WProgressBar;
 import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WText;
+import eu.webtoolkit.jwt.WTextArea;
 import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.services.FileService;
 import org.slf4j.Logger;
@@ -35,6 +36,8 @@ public class UploadContainer extends WContainerWidget {
 	private WLineEdit nameEdit;
 	private WLabel typeLabel;
 	private WComboBox typeComboBox;
+	private WLabel descriptionLabel;
+	private WTextArea descriptionTextArea;
 	private WContainerWidget buttonContainer;
 	private WPushButton cancelButton;
 	private WPushButton saveButton;
@@ -49,6 +52,7 @@ public class UploadContainer extends WContainerWidget {
 		WContainerWidget uploadContainer = initializeUploadContainer();
 		initializeNameField();
 		initializeTypeField();
+		initializeDescriptionField();
 		initializeMessageField();
 		initializeButtonContainer();
 
@@ -117,6 +121,13 @@ public class UploadContainer extends WContainerWidget {
 		typeComboBox.setValidator(validator);
 	}
 
+	private void initializeDescriptionField() {
+		descriptionLabel = new WLabel("Description:");
+		descriptionLabel.setMargin(new WLength(10), EnumSet.of(Side.Right));
+		descriptionTextArea = new WTextArea();
+		descriptionLabel.setBuddy(descriptionTextArea);
+	}
+
 	private void initializeMessageField() {
 		messageText = new WText();
 		messageText.setMargin(new WLength(20), EnumSet.of(Side.Top));
@@ -151,8 +162,11 @@ public class UploadContainer extends WContainerWidget {
 		layout.addWidget(typeLabel, 2, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
 		layout.addWidget(typeComboBox, 2, 1, 1, 2, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
 
-		layout.addWidget(messageText, 3, 1, 1, 1, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
-		layout.addWidget(buttonContainer, 3, 2, 1, 1, EnumSet.of(AlignmentFlag.AlignRight, AlignmentFlag.AlignBottom));
+		layout.addWidget(descriptionLabel, 3, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignTextTop));
+		layout.addWidget(descriptionTextArea, 3, 1, 1, 2, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignTextTop));
+
+		layout.addWidget(messageText, 4, 1, 1, 1, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
+		layout.addWidget(buttonContainer, 4, 2, 1, 1, EnumSet.of(AlignmentFlag.AlignRight, AlignmentFlag.AlignBottom));
 
 		setLayout(layout);
 	}
