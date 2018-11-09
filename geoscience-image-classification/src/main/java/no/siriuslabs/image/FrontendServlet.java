@@ -6,12 +6,12 @@ import eu.webtoolkit.jwt.WBootstrapTheme;
 import eu.webtoolkit.jwt.WEnvironment;
 import eu.webtoolkit.jwt.WLink;
 import eu.webtoolkit.jwt.WtServlet;
+import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.context.RDFoxSessionContextListener;
 import no.siriuslabs.image.services.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
-import uio.ifi.ontology.toolkit.projection.view.ImageAnnotationAPI;
 
 /**
  * Servlet hosting the application.
@@ -58,11 +58,16 @@ public class FrontendServlet extends WtServlet {
 		//Load default ontology
 		String absoluteWebPath = getServletContext().getRealPath("/");
 		String ontology_path = getServletContext().getInitParameter("ontology-path");
-		String protocol = "file:";
+		String annotations_path = getServletContext().getInitParameter("annotations-path");
 		
+		String protocol = "file:";
 		if (!absoluteWebPath.startsWith("/"))
 			protocol+="/";
-		icg.createNewSession(protocol + absoluteWebPath + ontology_path);
+		
+		//New session with ontology and data (available annotations)
+		icg.createNewSession(
+				protocol + absoluteWebPath + ontology_path,
+				absoluteWebPath + annotations_path);
 		//end load default ontology
 		
 		getServletContext().setAttribute(IMAGE_ANNOTATION_API_KEY, icg);
