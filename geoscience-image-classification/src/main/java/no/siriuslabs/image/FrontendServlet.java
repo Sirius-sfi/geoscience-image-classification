@@ -54,6 +54,17 @@ public class FrontendServlet extends WtServlet {
 
 		RDFoxSessionManager session = (RDFoxSessionManager) getServletContext().getAttribute(RDFoxSessionContextListener.RDFOX_SESSION);
 		ImageAnnotationAPI icg = new ImageAnnotationAPI(session);
+		
+		//Load default ontology
+		String absoluteWebPath = getServletContext().getRealPath("/");
+		String ontology_path = getServletContext().getInitParameter("ontology-path");
+		String protocol = "file:";
+		
+		if (!absoluteWebPath.startsWith("/"))
+			protocol+="/";
+		icg.createNewSession(protocol + absoluteWebPath + ontology_path);
+		//end load default ontology
+		
 		getServletContext().setAttribute(IMAGE_ANNOTATION_API_KEY, icg);
 
 		FileService fileService = new FileService();

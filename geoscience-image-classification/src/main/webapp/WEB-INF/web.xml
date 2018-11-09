@@ -27,10 +27,29 @@
     <display-name>Geoscience Image Classification</display-name>
     <description>Geoscience Image Classification</description>
     <servlet-class>no.siriuslabs.image.FrontendServlet</servlet-class>
+    <!--init-param>
+            <param-name>ontology-path</param-name>
+            <param-value>ontology/GeologicalImagesOntology.owl</param-value>
+    </init-param>
+    <init-param>
+            <param-name>annotations-path</param-name>
+            <param-value>annotations/annotations.ttl</param-value>
+    </init-param-->
   </servlet>
   <servlet-mapping>
     <servlet-name>geoscience-image-classification</servlet-name>
     <url-pattern>/gic/*</url-pattern>
   </servlet-mapping>
+  
+  
+   <context-param>
+            <param-name>ontology-path</param-name>
+            <param-value>ontology/GIC_Ontology.owl</param-value>
+   </context-param>
+   <context-param>
+            <param-name>annotations-path</param-name>
+            <param-value>annotations/annotations.ttl</param-value>
+   </context-param>
+  
 </web-app>
 
