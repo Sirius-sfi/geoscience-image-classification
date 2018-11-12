@@ -15,11 +15,15 @@ import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WText;
 import eu.webtoolkit.jwt.WTextArea;
 import eu.webtoolkit.jwt.WValidator;
+import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.services.FileService;
+import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.EnumSet;
+import java.util.List;
 
 /**
  * Container class representing the upload page accessed from the main menu.
@@ -171,11 +175,17 @@ public class UploadContainer extends WContainerWidget {
 		setLayout(layout);
 	}
 
-	private void readTypeData() {
-		// TODO get data from backend
-		typeComboBox.addItem("Type 1");
-		typeComboBox.addItem("Type 2");
-		typeComboBox.addItem("Type 3");
+	private void readTypeData() {		
+		
+		// TODO get data from backend		
+		String sessionID = (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
+		List<Concept> image_types = ((ImageAnnotationAPI)application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).getImageTypes(sessionID);
+		
+		for (Concept type : image_types) {		
+			typeComboBox.addItem(type.getLabel());
+			//typeComboBox.addItem("Type 2");
+			//typeComboBox.addItem("Type 3");
+		}
 	}
 
 	private void performFileUploadChangedAction() {
