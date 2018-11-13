@@ -15,7 +15,7 @@ public class FileService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileService.class);
 
-	private static final String IMAGE_DIRECTORY_NAME = "images";
+	public static final String IMAGE_DIRECTORY_NAME = "images";
 
 	/**
 	 * Stores an image file permanently from a temporary location.
@@ -29,9 +29,11 @@ public class FileService {
 			File imageDir = new File(imagePath);
 			if(!imageDir.exists()) {
 				LOGGER.info("image directory {} does not exist - creating", imagePath);
-				boolean result = imageDir.mkdir();
-				LOGGER.info("image directory creation at {} {}", imagePath, result ? "successful" : "failed");
-				throw new UncheckedIOException(new IOException("Creation of image directory failed."));
+				boolean success = imageDir.mkdir();
+				if(!success) {
+					LOGGER.info("image directory creation at {} {}", imagePath, success ? "successful" : "failed");
+					throw new UncheckedIOException(new IOException("Creation of image directory failed."));
+				}
 			}
 
 			File destFile = new File(basePath + "images/" + originalFilename);
