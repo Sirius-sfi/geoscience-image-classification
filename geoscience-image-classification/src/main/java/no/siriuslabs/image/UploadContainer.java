@@ -47,6 +47,8 @@ public class UploadContainer extends WContainerWidget {
 	private WPushButton saveButton;
 	private WText messageText;
 
+	private List<Concept> image_types;
+
 	public UploadContainer(FrontendApplication application, WContainerWidget parent) {
 		super(parent);
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
@@ -63,6 +65,7 @@ public class UploadContainer extends WContainerWidget {
 		initializeLayout(uploadContainer);
 
 		readTypeData();
+		initializeWithDefaultValues();
 
 		LOGGER.info("{} constructor - end", getClass().getSimpleName());
 	}
@@ -175,16 +178,18 @@ public class UploadContainer extends WContainerWidget {
 		setLayout(layout);
 	}
 
-	private void readTypeData() {		
-		
-		// TODO get data from backend		
+	private void readTypeData() {
 		String sessionID = (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
-		List<Concept> image_types = ((ImageAnnotationAPI)application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).getImageTypes(sessionID);
-		
-		for (Concept type : image_types) {		
+		image_types = ((ImageAnnotationAPI)application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).getImageTypes(sessionID);
+
+		for (Concept type : image_types) {
 			typeComboBox.addItem(type.getLabel());
-			//typeComboBox.addItem("Type 2");
-			//typeComboBox.addItem("Type 3");
+		}
+	}
+
+	private void initializeWithDefaultValues() {
+		if(typeComboBox.getCount() > 0) {
+			typeComboBox.setCurrentIndex(0);
 		}
 	}
 
@@ -269,6 +274,7 @@ public class UploadContainer extends WContainerWidget {
 		resetInputFields();
 		resetMessageField();
 		saveButton.disable();
+		initializeWithDefaultValues();
 	}
 
 	private void resetInputFields() {
