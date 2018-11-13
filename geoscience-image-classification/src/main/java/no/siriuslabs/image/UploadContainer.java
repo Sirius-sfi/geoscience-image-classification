@@ -70,7 +70,7 @@ public class UploadContainer extends WContainerWidget {
 
 		fileUpload = new WFileUpload();
 		fileUpload.setFileTextSize(50);
-//		fileUpload.setFilters("image/*"); // TODO enable later
+		fileUpload.setFilters("image/*");
 		fileUpload.setProgressBar(new WProgressBar());
 		fileUpload.setMargin(new WLength(20), EnumSet.of(Side.Right));
 
@@ -97,7 +97,7 @@ public class UploadContainer extends WContainerWidget {
 
 	private void initializeNameField() {
 		nameLabel = new WLabel("Name:");
-		nameLabel.setMargin(new WLength(10), EnumSet.of(Side.Right));
+		nameLabel.setMargin(new WLength(20), EnumSet.of(Side.Right));
 		nameEdit = new WLineEdit();
 		nameLabel.setBuddy(nameEdit);
 
@@ -109,7 +109,7 @@ public class UploadContainer extends WContainerWidget {
 
 	private void initializeTypeField() {
 		typeLabel = new WLabel("Image Type:");
-		typeLabel.setMargin(new WLength(10), EnumSet.of(Side.Right));
+		typeLabel.setMargin(new WLength(20), EnumSet.of(Side.Right));
 		typeComboBox = new WComboBox();
 		typeComboBox.setNoSelectionEnabled(true);
 		typeComboBox.setCurrentIndex(-1);
@@ -123,7 +123,7 @@ public class UploadContainer extends WContainerWidget {
 
 	private void initializeDescriptionField() {
 		descriptionLabel = new WLabel("Description:");
-		descriptionLabel.setMargin(new WLength(10), EnumSet.of(Side.Right));
+		descriptionLabel.setMargin(new WLength(20), EnumSet.of(Side.Right));
 		descriptionTextArea = new WTextArea();
 		descriptionLabel.setBuddy(descriptionTextArea);
 	}
