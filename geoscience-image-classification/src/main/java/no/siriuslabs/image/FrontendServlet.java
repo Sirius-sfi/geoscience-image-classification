@@ -24,6 +24,9 @@ public class FrontendServlet extends WtServlet {
 
 	public static final String FILE_SERVICE_KEY = "fileService";
 	public static final String IMAGE_ANNOTATION_API_KEY = "imageAnnotationAPI";
+	public static final String SESSION_ID_KEY = "sessionID";
+	
+	
 
 	@Override
 	public WApplication createApplication(WEnvironment wEnvironment) {
@@ -64,13 +67,16 @@ public class FrontendServlet extends WtServlet {
 		if (!absoluteWebPath.startsWith("/"))
 			protocol+="/";
 		
+		String sessionID = protocol + absoluteWebPath + ontology_path;
+		
 		//New session with ontology and data (available annotations)
 		icg.createNewSession(
-				protocol + absoluteWebPath + ontology_path,
+				sessionID,
 				absoluteWebPath + annotations_path);
 		//end load default ontology
 		
 		getServletContext().setAttribute(IMAGE_ANNOTATION_API_KEY, icg);
+		getServletContext().setAttribute(SESSION_ID_KEY, sessionID);
 
 		FileService fileService = new FileService();
 		getServletContext().setAttribute(FILE_SERVICE_KEY, fileService);

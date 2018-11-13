@@ -5,9 +5,10 @@
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xml="http://www.w3.org/XML/1998/namespace"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:annotations="http://no.sirius.ontology/annotations#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:untitled-ontology-38="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#">
-    <owl:Ontology rdf:about="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38"/>
+    <owl:Ontology rdf:about="http://sirius-labs.no/ontologies/GIC"/>
     
 
 
@@ -22,9 +23,9 @@
     
 
 
-    <!-- http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#isMainArtefactClass -->
+    <!-- http://no.sirius.ontology/annotations#isMainArtefactClass -->
 
-    <owl:AnnotationProperty rdf:about="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#isMainArtefactClass">
+    <owl:AnnotationProperty rdf:about="http://no.sirius.ontology/annotations#isMainArtefactClass">
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
     </owl:AnnotationProperty>
     
@@ -41,15 +42,15 @@
     
 
 
-    <!-- http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#has_physical_location -->
+    <!-- http://sirius-labs.no/ontologies/GIC#has_physical_location -->
 
-    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#has_physical_location"/>
+    <owl:DatatypeProperty rdf:about="http://sirius-labs.no/ontologies/GIC#has_physical_location"/>
     
 
 
-    <!-- http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#has_provenance -->
+    <!-- http://sirius-labs.no/ontologies/GIC#has_provenance -->
 
-    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#has_provenance"/>
+    <owl:DatatypeProperty rdf:about="http://sirius-labs.no/ontologies/GIC#has_provenance"/>
     
 
 
@@ -64,70 +65,77 @@
     
 
 
-    <!-- http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#BlockDiagram -->
+    <!-- http://sirius-labs.no/ontologies/GIC#BlockDiagram -->
 
-    <owl:Class rdf:about="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#BlockDiagram">
-        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#GeologicalImage"/>
+    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#BlockDiagram">
+        <rdfs:subClassOf rdf:resource="http://sirius-labs.no/ontologies/GIC#GeologicalImage"/>
+        <rdfs:label>Block diagram</rdfs:label>
     </owl:Class>
     
 
 
-    <!-- http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#EventChart -->
+    <!-- http://sirius-labs.no/ontologies/GIC#EventChart -->
 
-    <owl:Class rdf:about="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#EventChart">
-        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#GeologicalImage"/>
+    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#EventChart">
+        <rdfs:subClassOf rdf:resource="http://sirius-labs.no/ontologies/GIC#GeologicalImage"/>
+        <rdfs:label>Event chart</rdfs:label>
     </owl:Class>
     
 
 
-    <!-- http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#GeologicCrossSections -->
+    <!-- http://sirius-labs.no/ontologies/GIC#GeologicalCrossSection -->
 
-    <owl:Class rdf:about="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#GeologicCrossSections">
-        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#GeologicalImage"/>
+    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#GeologicalCrossSection">
+        <rdfs:subClassOf rdf:resource="http://sirius-labs.no/ontologies/GIC#GeologicalImage"/>
+        <rdfs:label>Geological cross section</rdfs:label>
     </owl:Class>
     
 
 
-    <!-- http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#GeologicalImage -->
+    <!-- http://sirius-labs.no/ontologies/GIC#GeologicalImage -->
 
-    <owl:Class rdf:about="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#GeologicalImage">
+    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#GeologicalImage">
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#has_physical_location"/>
+                <owl:onProperty rdf:resource="http://sirius-labs.no/ontologies/GIC#has_physical_location"/>
                 <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#has_provenance"/>
+                <owl:onProperty rdf:resource="http://sirius-labs.no/ontologies/GIC#has_provenance"/>
                 <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <isMainArtefactClass rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</isMainArtefactClass>
+        <annotations:isMainArtefactClass rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:isMainArtefactClass>
+        <rdfs:label>Geological image</rdfs:label>
     </owl:Class>
     
 
 
-    <!-- http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#GeologicalMap -->
+    <!-- http://sirius-labs.no/ontologies/GIC#GeologicalMap -->
 
-    <owl:Class rdf:about="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#GeologicalMap">
-        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#GeologicalImage"/>
+    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#GeologicalMap">
+        <rdfs:subClassOf rdf:resource="http://sirius-labs.no/ontologies/GIC#GeologicalImage"/>
+        <rdfs:label>Geological map</rdfs:label>
     </owl:Class>
     
 
 
-    <!-- http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#LithostratigraphicChart -->
+    <!-- http://sirius-labs.no/ontologies/GIC#LithostratigraphicChart -->
 
-    <owl:Class rdf:about="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#LithostratigraphicChart">
-        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#GeologicalImage"/>
+    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#LithostratigraphicChart">
+        <rdfs:subClassOf rdf:resource="http://sirius-labs.no/ontologies/GIC#GeologicalImage"/>
+        <rdfs:label>Lithostratigraphic chart</rdfs:label>
     </owl:Class>
     
 
 
-    <!-- http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#PaleogeographicMap -->
+    <!-- http://sirius-labs.no/ontologies/GIC#PaleogeographicMap -->
 
-    <owl:Class rdf:about="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#PaleogeographicMap">
-        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#GeologicalImage"/>
+    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#PaleogeographicMap">
+        <rdfs:subClassOf rdf:resource="http://sirius-labs.no/ontologies/GIC#GeologicalMap"/>
+        <rdfs:label>Paleogeographic map</rdfs:label>
     </owl:Class>
 </rdf:RDF>
 
