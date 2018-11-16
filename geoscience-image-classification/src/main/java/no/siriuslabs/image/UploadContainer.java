@@ -280,6 +280,7 @@ public class UploadContainer extends WContainerWidget {
 	private void resetInputFields() {
 		nameEdit.setText("");
 		typeComboBox.setCurrentIndex(-1);
+		descriptionTextArea.setText("");
 	}
 
 	private void resetMessageField() {
