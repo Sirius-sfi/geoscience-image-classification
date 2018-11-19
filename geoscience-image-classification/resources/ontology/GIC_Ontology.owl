@@ -8,7 +8,7 @@
      xmlns:annotations="http://no.sirius.ontology/annotations#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:untitled-ontology-38="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#">
-    <owl:Ontology rdf:about="http://sirius-labs.no/ontologies/GIC"/>
+    <owl:Ontology rdf:about="http://no.sirius.ontology/gico"/>
     
 
 
@@ -34,6 +34,34 @@
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://no.sirius.ontology/gico#hasVisualRepresentation -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/gico#hasVisualRepresentation">
+        <owl:inverseOf rdf:resource="http://no.sirius.ontology/gico#isVisuallyRepresentedIn"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#isVisuallyRepresentedIn -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/gico#isVisuallyRepresentedIn">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
     // Data properties
     //
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -42,15 +70,17 @@
     
 
 
-    <!-- http://sirius-labs.no/ontologies/GIC#has_physical_location -->
+    <!-- http://no.sirius.ontology/gico#hasPhysicalLocation -->
 
-    <owl:DatatypeProperty rdf:about="http://sirius-labs.no/ontologies/GIC#has_physical_location"/>
+    <owl:DatatypeProperty rdf:about="http://no.sirius.ontology/gico#hasPhysicalLocation"/>
     
 
 
-    <!-- http://sirius-labs.no/ontologies/GIC#has_provenance -->
+    <!-- http://no.sirius.ontology/gico#hasProvenance -->
 
-    <owl:DatatypeProperty rdf:about="http://sirius-labs.no/ontologies/GIC#has_provenance"/>
+    <owl:DatatypeProperty rdf:about="http://no.sirius.ontology/gico#hasProvenance">
+        <rdfs:label>Provenance information</rdfs:label>
+    </owl:DatatypeProperty>
     
 
 
@@ -65,45 +95,46 @@
     
 
 
-    <!-- http://sirius-labs.no/ontologies/GIC#BlockDiagram -->
+    <!-- http://no.sirius.ontology/gico#BlockDiagram -->
 
-    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#BlockDiagram">
-        <rdfs:subClassOf rdf:resource="http://sirius-labs.no/ontologies/GIC#GeologicalImage"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#BlockDiagram">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#GeologicalImage"/>
         <rdfs:label>Block diagram</rdfs:label>
     </owl:Class>
     
 
 
-    <!-- http://sirius-labs.no/ontologies/GIC#EventChart -->
+    <!-- http://no.sirius.ontology/gico#EventChart -->
 
-    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#EventChart">
-        <rdfs:subClassOf rdf:resource="http://sirius-labs.no/ontologies/GIC#GeologicalImage"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#EventChart">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#GeologicalImage"/>
         <rdfs:label>Event chart</rdfs:label>
     </owl:Class>
     
 
 
-    <!-- http://sirius-labs.no/ontologies/GIC#GeologicalCrossSection -->
+    <!-- http://no.sirius.ontology/gico#GeologicalCrossSection -->
 
-    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#GeologicalCrossSection">
-        <rdfs:subClassOf rdf:resource="http://sirius-labs.no/ontologies/GIC#GeologicalImage"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#GeologicalCrossSection">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#GeologicalImage"/>
         <rdfs:label>Geological cross section</rdfs:label>
     </owl:Class>
     
 
 
-    <!-- http://sirius-labs.no/ontologies/GIC#GeologicalImage -->
+    <!-- http://no.sirius.ontology/gico#GeologicalImage -->
 
-    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#GeologicalImage">
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#GeologicalImage">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#Image"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://sirius-labs.no/ontologies/GIC#has_physical_location"/>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasPhysicalLocation"/>
                 <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://sirius-labs.no/ontologies/GIC#has_provenance"/>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasProvenance"/>
                 <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
@@ -113,28 +144,54 @@
     
 
 
-    <!-- http://sirius-labs.no/ontologies/GIC#GeologicalMap -->
+    <!-- http://no.sirius.ontology/gico#GeologicalMap -->
 
-    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#GeologicalMap">
-        <rdfs:subClassOf rdf:resource="http://sirius-labs.no/ontologies/GIC#GeologicalImage"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#GeologicalMap">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#GeologicalImage"/>
         <rdfs:label>Geological map</rdfs:label>
     </owl:Class>
     
 
 
-    <!-- http://sirius-labs.no/ontologies/GIC#LithostratigraphicChart -->
+    <!-- http://no.sirius.ontology/gico#Image -->
 
-    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#LithostratigraphicChart">
-        <rdfs:subClassOf rdf:resource="http://sirius-labs.no/ontologies/GIC#GeologicalImage"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Image"/>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#ImageSegment -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#ImageSegment">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#isVisuallyRepresentedIn"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/gico#Image"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#isVisuallyRepresentedIn"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/gico#ImageSegment"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:comment>Image segment wil include differnet shapes</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#LithostratigraphicChart -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#LithostratigraphicChart">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#GeologicalImage"/>
         <rdfs:label>Lithostratigraphic chart</rdfs:label>
     </owl:Class>
     
 
 
-    <!-- http://sirius-labs.no/ontologies/GIC#PaleogeographicMap -->
+    <!-- http://no.sirius.ontology/gico#PaleogeographicMap -->
 
-    <owl:Class rdf:about="http://sirius-labs.no/ontologies/GIC#PaleogeographicMap">
-        <rdfs:subClassOf rdf:resource="http://sirius-labs.no/ontologies/GIC#GeologicalMap"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#PaleogeographicMap">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#GeologicalMap"/>
         <rdfs:label>Paleogeographic map</rdfs:label>
     </owl:Class>
 </rdf:RDF>

@@ -5,12 +5,15 @@ import eu.webtoolkit.jwt.WContainerWidget;
 import eu.webtoolkit.jwt.WGroupBox;
 import eu.webtoolkit.jwt.WLength;
 import eu.webtoolkit.jwt.WVBoxLayout;
+import no.siriuslabs.image.api.ImageAnnotationAPI;
+import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.services.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.EnumSet;
+import java.util.TreeSet;
 
 public class ImageSelectionContainer extends WContainerWidget {
 
@@ -31,6 +34,15 @@ public class ImageSelectionContainer extends WContainerWidget {
 
 		File imageDir = new File(imagePath);
 
+		
+		//TODO Ernesto: Just calling the method. GeologicalImage contains metedata an physical name of the image file
+		String sessionID = (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
+		String type = "Geological image";
+		TreeSet<GeologicalImage> images = ((ImageAnnotationAPI)application.getServletContext().
+				getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).getImagesOfGivenType(sessionID, type);
+		//
+		
+		
 		// TODO replace GroupBox gimmick with grouping by image type after Ontology data is available
 		int i = 1;
 		WGroupBox groupBox = new WGroupBox("Group " + i);

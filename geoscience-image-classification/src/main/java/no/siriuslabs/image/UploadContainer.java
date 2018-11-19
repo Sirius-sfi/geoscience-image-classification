@@ -16,6 +16,7 @@ import eu.webtoolkit.jwt.WText;
 import eu.webtoolkit.jwt.WTextArea;
 import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
+import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.services.FileService;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 
@@ -248,10 +249,24 @@ public class UploadContainer extends WContainerWidget {
 		String originalFilename = fileUpload.getClientFileName();
 
 		FileService fileService = (FileService) application.getServletContext().getAttribute(FrontendServlet.FILE_SERVICE_KEY);
+		
 		fileService.storeImageFile(tempServerPath, realPath, originalFilename);
 
 		LOGGER.info("saving data");
+		
 		// TODO save to backend
+		String sessionID = (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
+		GeologicalImage gimg = new GeologicalImage();
+		gimg.setDescription(descriptionTextArea.getValueText());
+		gimg.setLocation(originalFilename);
+		gimg.setLabel(nameEdit.getValueText());
+		gimg.setType(typeComboBox.getValueText());		
+		((ImageAnnotationAPI)application.getServletContext().
+				getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).saveGeologicalImage(sessionID, gimg);
+		
+		
+
+		
 
 		LOGGER.info("save successful --> resetting UI");
 		resetUI();
@@ -280,6 +295,7 @@ public class UploadContainer extends WContainerWidget {
 	private void resetInputFields() {
 		nameEdit.setText("");
 		typeComboBox.setCurrentIndex(-1);
+		descriptionTextArea.setText("");
 	}
 
 	private void resetMessageField() {
