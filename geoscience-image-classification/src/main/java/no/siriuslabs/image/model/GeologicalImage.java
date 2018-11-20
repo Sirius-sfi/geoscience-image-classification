@@ -9,8 +9,7 @@ import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
  */
 public class GeologicalImage extends Image{
 
-	private String relativeImagePath = null;
-	private String absoluteImagePath = null;
+	
 
 	/**
 	 * This constructor creates a new URI for the image
@@ -43,19 +42,5 @@ public class GeologicalImage extends Image{
 		return "geological-image";
 	}
 
-	public String getRelativeImagePath() {
-		return relativeImagePath;
-	}
-
-	public void setRelativeImagePath(String relativeImagePath) {
-		this.relativeImagePath = relativeImagePath;
-	}
-
-	public String getAbsoluteImagePath() {
-		return absoluteImagePath;
-	}
-
-	public void setAbsoluteImagePath(String absoluteImagePath) {
-		this.absoluteImagePath = absoluteImagePath;
-	}
+	
 }

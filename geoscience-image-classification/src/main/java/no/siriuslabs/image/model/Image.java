@@ -9,6 +9,8 @@ import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 
 public abstract class Image extends Instance{
 
+	private String relativeImagePath = null;
+	private String absoluteImagePath = null;
 	
 	private String location; //file name
 	private String type_label; //label of the type of the image
@@ -84,6 +86,24 @@ public abstract class Image extends Instance{
 		obj.put("type_label", getTypeLabel());
 
 		return obj;
+	}
+	
+	
+
+	public String getRelativeImagePath() {
+		return relativeImagePath;
+	}
+
+	public void setRelativeImagePath(String relativeImagePath) {
+		this.relativeImagePath = relativeImagePath;
+	}
+
+	public String getAbsoluteImagePath() {
+		return absoluteImagePath;
+	}
+
+	public void setAbsoluteImagePath(String absoluteImagePath) {
+		this.absoluteImagePath = absoluteImagePath;
 	}
 	
 	
