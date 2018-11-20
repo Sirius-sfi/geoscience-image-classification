@@ -19,8 +19,12 @@ public class URIUtils {
 	
 	
 
-	public static String getOntologyURI(String entity) {
-		return BASE_URI_GEOLOGICAL_ONTOLOGY + "#" + entity;
+	public static String getURIForOntologyEntity(String name_entity) {
+		return BASE_URI_GEOLOGICAL_ONTOLOGY + "#" + name_entity;
+	}
+	
+	public static String getURIForResource(String name_resource) {
+		return BASE_URI_GEOLOGICAL_RESOURCES + "#" + name_resource;
 	}
 
 }

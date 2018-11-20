@@ -85,13 +85,14 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			//Get location: get ?o given "s" and "p" : generic getObjets SPARQL query: unary results
 			
 			//There should be only one location
-			Set<String> locations = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance.getIri(), URIUtils.HAS_PHYISICAL_LOCATION_PROPERTY_NAME);
+			Set<String> locations = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance.getIri(), URIUtils.getURIForOntologyEntity(URIUtils.HAS_PHYISICAL_LOCATION_PROPERTY_NAME));
 			for(String location: locations) {
 				geoImage.setLocation(location);
 			}
 			images.add(geoImage);
 			
 			//Utility.println(geoImage.toJSON().toString(2));
+			//Utility.println("Location: "+geoImage.getLocation());
 			
 		}
 		
@@ -120,7 +121,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//location
 		data_model.addLiteralTriple(
 				gimg.getIri(), 
-				URIUtils.getOntologyURI(URIUtils.HAS_PHYISICAL_LOCATION_PROPERTY_NAME), 
+				URIUtils.getURIForOntologyEntity(URIUtils.HAS_PHYISICAL_LOCATION_PROPERTY_NAME), 
 				gimg.getLocation());
 		
 		try {
