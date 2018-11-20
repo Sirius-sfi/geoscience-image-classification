@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -17,15 +18,23 @@ public class FileService {
 
 	public static final String IMAGE_DIRECTORY_NAME = "images";
 
+	private final ServletContext servletContext;
+
+	/**
+	 * Constructor taking the servlet context for access to the environment.
+	 */
+	public FileService(ServletContext servletContext) {
+		this.servletContext = servletContext;
+	}
+
 	/**
 	 * Stores an image file permanently from a temporary location.
 	 * @param tempServerPath  Path to the temporary uploaded file
-	 * @param basePath  Basic path from which the application operates. The file will be stored in a directory under this path defined by IMAGE_DIRECTORY_NAME
 	 * @param originalFilename  Original filename of the file uploaded by the client
 	 */
-	public void storeImageFile(String tempServerPath, String basePath, String originalFilename) {
+	public void storeImageFile(String tempServerPath, String originalFilename) {
 		try {
-			final String imagePath = basePath + IMAGE_DIRECTORY_NAME;
+			final String imagePath = getImagePathInEnvironment();
 			File imageDir = new File(imagePath);
 			if(!imageDir.exists()) {
 				LOGGER.info("image directory {} does not exist - creating", imagePath);
@@ -36,7 +45,7 @@ public class FileService {
 				}
 			}
 
-			File destFile = new File(basePath + "images/" + originalFilename);
+			File destFile = new File(getAbsolutePathForFile(originalFilename));
 
 			if(destFile.exists()) {
 				LOGGER.warn("image named {} exists - overwriting", destFile);
@@ -50,6 +59,41 @@ public class FileService {
 			LOGGER.error(e.getMessage(), e);
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	/**
+	 * Returns the application's "real" path.
+	 */
+	public String getBasePath() {
+		return servletContext.getRealPath("./");
+	}
+
+	/**
+	 * Returns the application's image path (real + image path).
+	 */
+	public String getImagePathInEnvironment() {
+		return getBasePath() + IMAGE_DIRECTORY_NAME;
+	}
+
+	/**
+	 * Returns the name of the image directory.
+	 */
+	public String getImageDirectoryName() {
+		return IMAGE_DIRECTORY_NAME;
+	}
+
+	/**
+	 * Returns the absolute path for the given filename.
+	 */
+	public String getAbsolutePathForFile(String filename) {
+		return getImagePathInEnvironment() + "/" + filename;
+	}
+
+	/**
+	 * Returns the relative image path for the given filename (image directory + filename).
+	 */
+	public String getRelativeImagePathForFile(String filename) {
+		return getImageDirectoryName() + "/" + filename;
 	}
 
 }

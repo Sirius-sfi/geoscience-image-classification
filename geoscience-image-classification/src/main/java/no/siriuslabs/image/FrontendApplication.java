@@ -7,6 +7,7 @@ import eu.webtoolkit.jwt.WEnvironment;
 import eu.webtoolkit.jwt.WLength;
 import eu.webtoolkit.jwt.WMenu;
 import eu.webtoolkit.jwt.WWidget;
+import no.siriuslabs.image.model.GeologicalImage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,16 +126,16 @@ public class FrontendApplication extends WApplication {
 		return new ImageSelectionContainer(this, centerContainer);
 	}
 
-	private AnnotationContainer createAannotationContainer(String imagePath, String imageAbsoluteFilePath) {
-		LOGGER.info("Creating new AnnotationContainer for image {}", imagePath);
-		return new AnnotationContainer(this, centerContainer, imagePath, imageAbsoluteFilePath);
+	private AnnotationContainer createAannotationContainer(GeologicalImage image) {
+		LOGGER.info("Creating new AnnotationContainer for image {}", image.getLabel());
+		return new AnnotationContainer(this, centerContainer, image);
 	}
 
 	protected ServletContext getServletContext() {
 		return context;
 	}
 
-	protected void showAnnotationContainer(String imagePath, String imageAbsoluteFilePath) {
-		displayContainer(createAannotationContainer(imagePath, imageAbsoluteFilePath));
+	protected void showAnnotationContainer(GeologicalImage image) {
+		displayContainer(createAannotationContainer(image));
 	}
 }
