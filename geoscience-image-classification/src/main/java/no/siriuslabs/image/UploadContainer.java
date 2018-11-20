@@ -18,10 +18,9 @@ import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.services.FileService;
-import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -245,16 +244,14 @@ public class UploadContainer extends WContainerWidget {
 		LOGGER.info("validation successful --> storing image");
 
 		String tempServerPath = fileUpload.getSpoolFileName();
-		String realPath = application.getServletContext().getRealPath("./");
 		String originalFilename = fileUpload.getClientFileName();
 
 		FileService fileService = (FileService) application.getServletContext().getAttribute(FrontendServlet.FILE_SERVICE_KEY);
 		
-		fileService.storeImageFile(tempServerPath, realPath, originalFilename);
+		fileService.storeImageFile(tempServerPath, originalFilename);
 
 		LOGGER.info("saving data");
 		
-		// TODO save to backend
 		String sessionID = (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
 		GeologicalImage gimg = new GeologicalImage();
 		gimg.setDescription(descriptionTextArea.getValueText());
@@ -264,10 +261,6 @@ public class UploadContainer extends WContainerWidget {
 		((ImageAnnotationAPI)application.getServletContext().
 				getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).saveGeologicalImage(sessionID, gimg);
 		
-		
-
-		
-
 		LOGGER.info("save successful --> resetting UI");
 		resetUI();
 		showInfoMessage("Save successful.");

@@ -11,9 +11,8 @@ import no.siriuslabs.image.services.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.EnumSet;
-import java.util.TreeSet;
+import java.util.List;
 
 public class ImageSelectionContainer extends WContainerWidget {
 
@@ -29,41 +28,37 @@ public class ImageSelectionContainer extends WContainerWidget {
 
 		WVBoxLayout layout = new WVBoxLayout();
 
-		final String basePath = application.getServletContext().getRealPath("./");
-		final String imagePath = basePath + FileService.IMAGE_DIRECTORY_NAME;
+		FileService fileService = (FileService) application.getServletContext().getAttribute(FrontendServlet.FILE_SERVICE_KEY);
 
-		File imageDir = new File(imagePath);
-
-		
-		//TODO Ernesto: Just calling the method. GeologicalImage contains metedata an physical name of the image file
 		String sessionID = (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
 		String type = "Geological image";
-		TreeSet<GeologicalImage> images = ((ImageAnnotationAPI)application.getServletContext().
+
+		List<GeologicalImage> images = ((ImageAnnotationAPI)application.getServletContext().
 				getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).getImagesOfGivenType(sessionID, type);
-		//
-		
-		
-		// TODO replace GroupBox gimmick with grouping by image type after Ontology data is available
-		int i = 1;
-		WGroupBox groupBox = new WGroupBox("Group " + i);
+
+		WGroupBox groupBox = new WGroupBox();
 		layout.addWidget(groupBox);
 
-		// TODO replace iteration over image files with collection of images from Ontology and access images directly
-		for (final File fileEntry : imageDir.listFiles()) {
-			LOGGER.info(fileEntry.getName());
+		for(GeologicalImage image : images) {
+			LOGGER.info("setting up image: {}", image.getName());
 
-			String path = fileEntry.getPath().substring(fileEntry.getPath().indexOf(basePath) + basePath.length());
-			String absolutePath = fileEntry.getAbsolutePath();
-			PreviewSelectionWidget previewWidget = new PreviewSelectionWidget(this, path, absolutePath);
+			// TODO initialize in IA-API?
+			String path = fileService.getRelativeImagePathForFile(image.getLocation());
+			image.setRelativeImagePath(path);
+			String absolutePath = fileService.getAbsolutePathForFile(image.getLocation());
+			image.setAbsoluteImagePath(absolutePath);
+
+			PreviewSelectionWidget previewWidget = new PreviewSelectionWidget(this, image);
 			previewWidget.setMargin(new WLength(50), EnumSet.of(Side.Bottom));
-			if(i % 2 == 0) {
-				groupBox = new WGroupBox("Group " + i);
+
+			if(!groupBox.getTitle().getValue().equals(image.getType())) {
+				groupBox = new WGroupBox();
 				groupBox.setMargin(new WLength(50), EnumSet.of(Side.Bottom));
 				layout.addWidget(groupBox);
 			}
-			groupBox.addWidget(previewWidget);
 
-			i++;
+			groupBox.setTitle(image.getType());
+			groupBox.addWidget(previewWidget);
 		}
 
 		setLayout(layout);

@@ -78,7 +78,7 @@ public class FrontendServlet extends WtServlet {
 		getServletContext().setAttribute(IMAGE_ANNOTATION_API_KEY, icg);
 		getServletContext().setAttribute(SESSION_ID_KEY, sessionID);
 
-		FileService fileService = new FileService();
+		FileService fileService = new FileService(getServletContext());
 		getServletContext().setAttribute(FILE_SERVICE_KEY, fileService);
 
 		LOGGER.info("services ready");
