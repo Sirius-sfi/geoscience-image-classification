@@ -1,7 +1,8 @@
 package no.siriuslabs.image.api;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -66,7 +67,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	}
 	
 	
-	public TreeSet<GeologicalImage> getImagesOfGivenType(String session_id, String type){
+	public List<GeologicalImage> getImagesOfGivenType(String session_id, String type){
 		
 		//Convert string type to URI
 		Concept type_concept = sessionManager.getSession(session_id).getConceptForLabel(type);
@@ -75,7 +76,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//Queries 1: Images of type X and then get location
 		TreeSet<Instance> instances = sessionManager.getSession(session_id).getInstancesForType(type_concept.getIri());
 		
-		TreeSet<GeologicalImage> images = new TreeSet<GeologicalImage>();
+		List<GeologicalImage> images = new ArrayList<>(instances.size());
 		
 		
 		//Create GeologicalImage objects and location
@@ -95,7 +96,21 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			//Utility.println("Location: "+geoImage.getLocation());
 			
 		}
-		
+
+		Collections.sort(images, new Comparator<GeologicalImage>() {
+			@Override
+			public int compare(GeologicalImage o1, GeologicalImage o2) {
+				if(o1.getType() == null) {
+					return -1;
+				}
+				if(o2.getType() == null) {
+					return 1;
+				}
+
+				return o1.getType().compareTo(o2.getType());
+			}
+		});
+
 		return images;
 		
 	}

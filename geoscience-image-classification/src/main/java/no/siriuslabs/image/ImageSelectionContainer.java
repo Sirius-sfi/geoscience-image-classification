@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.EnumSet;
-import java.util.TreeSet;
+import java.util.List;
 
 public class ImageSelectionContainer extends WContainerWidget {
 
@@ -32,14 +32,13 @@ public class ImageSelectionContainer extends WContainerWidget {
 
 		String sessionID = (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
 		String type = "Geological image";
-		// TODO order by type
-		TreeSet<GeologicalImage> images = ((ImageAnnotationAPI)application.getServletContext().
+
+		List<GeologicalImage> images = ((ImageAnnotationAPI)application.getServletContext().
 				getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).getImagesOfGivenType(sessionID, type);
 
-		WGroupBox groupBox = new WGroupBox("Group");
+		WGroupBox groupBox = new WGroupBox();
 		layout.addWidget(groupBox);
 
-		// TODO make groups by type
 		for(GeologicalImage image : images) {
 			LOGGER.info("setting up image: {}", image.getName());
 
@@ -52,12 +51,13 @@ public class ImageSelectionContainer extends WContainerWidget {
 			PreviewSelectionWidget previewWidget = new PreviewSelectionWidget(this, image);
 			previewWidget.setMargin(new WLength(50), EnumSet.of(Side.Bottom));
 
-//			if(i % 2 == 0) {
-//				groupBox = new WGroupBox("Group " + i);
-//				groupBox.setMargin(new WLength(50), EnumSet.of(Side.Bottom));
-//				layout.addWidget(groupBox);
-//			}
+			if(!groupBox.getTitle().getValue().equals(image.getType())) {
+				groupBox = new WGroupBox();
+				groupBox.setMargin(new WLength(50), EnumSet.of(Side.Bottom));
+				layout.addWidget(groupBox);
+			}
 
+			groupBox.setTitle(image.getType());
 			groupBox.addWidget(previewWidget);
 		}
 
