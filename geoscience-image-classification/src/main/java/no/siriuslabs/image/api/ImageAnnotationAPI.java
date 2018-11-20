@@ -10,7 +10,6 @@ import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import no.siriuslabs.image.model.AnnotationGraphModel;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.model.URIUtils;
@@ -100,7 +99,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 						
 			images.add(geoImage);
 			
-			Utility.println(geoImage.toJSON().toString(2));
+			//Utility.println(geoImage.toJSON().toString(2));
 			//Utility.println("Location: "+geoImage.getLocation());
 			
 		}

@@ -81,6 +81,7 @@ public abstract class Image extends Instance{
 		JSONObject obj = super.toJSON();
 		
 		obj.put("location", getLocation());
+		obj.put("type_label", getTypeLabel());
 
 		return obj;
 	}
