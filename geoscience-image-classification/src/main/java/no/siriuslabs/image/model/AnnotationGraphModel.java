@@ -65,6 +65,7 @@ public class AnnotationGraphModel {
 			model = Rio.parse(input_stream, "", RDFFormat.TURTLE);
 			input_stream.close();
 			
+			
 	    } catch (RDFParseException | UnsupportedRDFormatException | IOException e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Error reading model from '"+ file +"'. Error: " + e.getMessage());

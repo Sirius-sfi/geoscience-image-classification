@@ -89,9 +89,17 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			for(String location: locations) {
 				geoImage.setLocation(location);
 			}
+			
+			//Add label for type
+			//We keep only one
+			Set<String> labels = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(geoImage.getType(), URIUtils.RDFS_LABEL);
+			for(String type_label: labels) {
+				geoImage.setTypeLabel(type_label);
+			}
+						
 			images.add(geoImage);
 			
-			//Utility.println(geoImage.toJSON().toString(2));
+			Utility.println(geoImage.toJSON().toString(2));
 			//Utility.println("Location: "+geoImage.getLocation());
 			
 		}

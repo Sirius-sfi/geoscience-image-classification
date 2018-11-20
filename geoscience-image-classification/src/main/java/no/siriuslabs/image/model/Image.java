@@ -11,6 +11,7 @@ public abstract class Image extends Instance{
 
 	
 	private String location; //file name
+	private String type_label; //label of the type of the image
 	
 	
 	public Image() {
@@ -45,6 +46,15 @@ public abstract class Image extends Instance{
 
 	public void setLocation(String location) {
 		this.location = location;
+	}
+	
+	
+	public String getTypeLabel() {
+		return type_label;
+	}
+
+	public void setTypeLabel(String label) {
+		type_label = label;
 	}
 
 

@@ -15,6 +15,7 @@ public class URIUtils {
 	
 	
 	//TODO URIS relevant to other domains
+	public static String RDFS_LABEL = "http://www.w3.org/2000/01/rdf-schema#label";
 	
 	
 	
