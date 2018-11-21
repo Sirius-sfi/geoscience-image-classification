@@ -51,13 +51,13 @@ public class ImageSelectionContainer extends WContainerWidget {
 			PreviewSelectionWidget previewWidget = new PreviewSelectionWidget(this, image);
 			previewWidget.setMargin(new WLength(50), EnumSet.of(Side.Bottom));
 
-			if(!groupBox.getTitle().getValue().equals(image.getType())) {
+			if(!groupBox.getTitle().getValue().equals(image.getTypeLabel())) {
 				groupBox = new WGroupBox();
 				groupBox.setMargin(new WLength(50), EnumSet.of(Side.Bottom));
 				layout.addWidget(groupBox);
 			}
 
-			groupBox.setTitle(image.getType());
+			groupBox.setTitle(image.getTypeLabel());
 			groupBox.addWidget(previewWidget);
 		}
 
