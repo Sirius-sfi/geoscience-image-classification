@@ -257,7 +257,7 @@ public class UploadContainer extends WContainerWidget {
 		gimg.setDescription(descriptionTextArea.getValueText());
 		gimg.setLocation(originalFilename);
 		gimg.setLabel(nameEdit.getValueText());
-		gimg.setType(typeComboBox.getValueText());		
+		gimg.setClassType(typeComboBox.getValueText());		
 		((ImageAnnotationAPI)application.getServletContext().
 				getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).saveGeologicalImage(sessionID, gimg);
 		

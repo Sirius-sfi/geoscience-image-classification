@@ -2,6 +2,11 @@ package no.siriuslabs.image.model.shape;
 
 import eu.webtoolkit.jwt.WPainterPath;
 import eu.webtoolkit.jwt.WPointF;
+import no.siriuslabs.image.model.URIUtils;
+import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -12,7 +17,7 @@ import java.util.List;
  * Abstract superclass of all shapes.
  * It holds a ShapeType and a list of points defining the shape.
  */
-public abstract class AbstractShape {
+public abstract class AbstractShape extends Instance{
 
 	private final ShapeType shapeType;
 	private final List<WPointF> points;
@@ -114,4 +119,39 @@ public abstract class AbstractShape {
 			logger.info("point {}:{}", point.getX(), point.getY());
 		}
 	}
+	
+	
+	
+	@Override
+	public JSONObject toJSON() {
+		
+		JSONObject obj = super.toJSON();
+		
+		obj.put("shape-type", getShapeType());
+
+		
+		List<WPointF> points = getPoints();
+		JSONArray points_json = new JSONArray();
+		
+		//We assume allowed_values has been (alphabetically) ordered
+		for (WPointF point : points){
+			JSONObject point_json = new JSONObject();
+			point_json.put("x", point.getX());
+			point_json.put("y", point.getY());
+			
+			points_json.put(point_json);
+		}
+		
+		obj.put("points", points_json);
+		
+		
+		return obj;
+	}
+	
+	
+	
+	
+	
+	
+	
 }

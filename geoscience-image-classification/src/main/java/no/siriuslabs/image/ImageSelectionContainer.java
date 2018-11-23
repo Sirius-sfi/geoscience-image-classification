@@ -4,13 +4,16 @@ import eu.webtoolkit.jwt.Side;
 import eu.webtoolkit.jwt.WContainerWidget;
 import eu.webtoolkit.jwt.WGroupBox;
 import eu.webtoolkit.jwt.WLength;
+import eu.webtoolkit.jwt.WPointF;
 import eu.webtoolkit.jwt.WVBoxLayout;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
+import no.siriuslabs.image.model.shape.Circle;
 import no.siriuslabs.image.services.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -35,6 +38,27 @@ public class ImageSelectionContainer extends WContainerWidget {
 
 		List<GeologicalImage> images = ((ImageAnnotationAPI)application.getServletContext().
 				getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).getImagesOfGivenType(sessionID, type);
+		
+		
+		//TODO Test Ernesto
+		for (GeologicalImage gimg : images) {
+			
+			List<WPointF> points = new ArrayList<WPointF>();
+			
+			points.add(new WPointF(0.1, 0.5));
+			
+			points.add(new WPointF(1.1, 1.5));
+			
+			Circle circle = new Circle(points);
+			
+			((ImageAnnotationAPI)application.getServletContext().
+					getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).saveNewShape(sessionID, gimg.getIri(), circle);
+			
+		}	
+		//TODO Test Ernesto. To be removed
+		
+		
+		
 
 		WGroupBox groupBox = new WGroupBox();
 		layout.addWidget(groupBox);

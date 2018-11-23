@@ -31,7 +31,7 @@ public abstract class Image extends Instance{
 		setIri(inst.getIri());
 		setLabel(inst.getLabel());
 		setSynonyms(inst.getSynonyms());
-		setType(inst.getType());
+		setClassType(inst.getClassType());
 		setDescription(inst.getDescription());
 	}
 	
@@ -66,7 +66,7 @@ public abstract class Image extends Instance{
 	
 	
 	public String toString() {
-		return getIri() + " - "+ type + " - " + name + " - " + description  + " - " + location;
+		return getIri() + " - "+ cls_type + " - " + name + " - " + description  + " - " + location;
 	}
 	
 	

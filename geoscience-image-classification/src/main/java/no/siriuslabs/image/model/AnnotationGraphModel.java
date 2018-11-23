@@ -151,6 +151,11 @@ public class AnnotationGraphModel {
 		model_new.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object));
 	}
 	
+	public void addLiteralTriple(String subject, String predicate, String object, String datatype_object){
+		model.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object));
+		model_new.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object, vf.createIRI(datatype_object)));
+	}
+	
 	
 	public void addLiteralTriple(Resource subject, IRI predicate, Value object){
 		model.add(subject, predicate, object);

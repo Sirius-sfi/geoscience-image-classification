@@ -42,11 +42,20 @@
     
 
 
-    <!-- http://no.sirius.ontology/gico#hasVisualRepresentation -->
+    <!-- http://no.sirius.ontology/gico#hasObjectRepresentation -->
 
-    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/gico#hasVisualRepresentation">
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/gico#hasObjectRepresentation">
         <owl:inverseOf rdf:resource="http://no.sirius.ontology/gico#isVisuallyRepresentedIn"/>
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+        <rdfs:comment>This object property will point to a segment or to an element (e.g., a Well) appearing in the image.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#hasPoint -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/gico#hasPoint">
+        <rdfs:domain rdf:resource="http://no.sirius.ontology/gico#ImageSelection"/>
     </owl:ObjectProperty>
     
 
@@ -55,6 +64,7 @@
 
     <owl:ObjectProperty rdf:about="http://no.sirius.ontology/gico#isVisuallyRepresentedIn">
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+        <rdfs:comment>This object property will point to the whole image (by default) or to a segment/selection in the image</rdfs:comment>
     </owl:ObjectProperty>
     
 
@@ -84,6 +94,35 @@
     
 
 
+    <!-- http://no.sirius.ontology/gico#hasX -->
+
+    <owl:DatatypeProperty rdf:about="http://no.sirius.ontology/gico#hasX">
+        <rdfs:domain rdf:resource="http://no.sirius.ontology/gico#Point"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+        <rdfs:comment>Coordinates X</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#hasY -->
+
+    <owl:DatatypeProperty rdf:about="http://no.sirius.ontology/gico#hasY">
+        <rdfs:domain rdf:resource="http://no.sirius.ontology/gico#Point"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+        <rdfs:comment>Coordinates Y</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#isMainPoint -->
+
+    <owl:DatatypeProperty rdf:about="http://no.sirius.ontology/gico#isMainPoint">
+        <rdfs:domain rdf:resource="http://no.sirius.ontology/gico#Point"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:DatatypeProperty>
+    
+
+
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
@@ -100,6 +139,22 @@
     <owl:Class rdf:about="http://no.sirius.ontology/gico#BlockDiagram">
         <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#GeologicalImage"/>
         <rdfs:label>Block diagram</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#Circle -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Circle">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#ImageSelection"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasPoint"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">2</owl:maxQualifiedCardinality>
+                <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:comment>A points is internally defined with two points. The first point establishes the center while the second (optional) fixes the distance to the center (i.e., the radius). If only one point is given the second point is automatically defined.</rdfs:comment>
     </owl:Class>
     
 
@@ -126,18 +181,6 @@
 
     <owl:Class rdf:about="http://no.sirius.ontology/gico#GeologicalImage">
         <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#Image"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasPhysicalLocation"/>
-                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasProvenance"/>
-                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
         <annotations:isMainArtefactClass rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:isMainArtefactClass>
         <rdfs:label>Geological image</rdfs:label>
     </owl:Class>
@@ -155,13 +198,32 @@
 
     <!-- http://no.sirius.ontology/gico#Image -->
 
-    <owl:Class rdf:about="http://no.sirius.ontology/gico#Image"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Image">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasPhysicalLocation"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasProvenance"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
     
 
 
-    <!-- http://no.sirius.ontology/gico#ImageSegment -->
+    <!-- http://no.sirius.ontology/gico#ImageSelection -->
 
-    <owl:Class rdf:about="http://no.sirius.ontology/gico#ImageSegment">
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#ImageSelection">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasPoint"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/gico#Point"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#isVisuallyRepresentedIn"/>
@@ -171,10 +233,10 @@
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#isVisuallyRepresentedIn"/>
-                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/gico#ImageSegment"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/gico#ImageSelection"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:comment>Image segment wil include differnet shapes</rdfs:comment>
+        <rdfs:comment>Image segment will include different shapes</rdfs:comment>
     </owl:Class>
     
 
@@ -193,6 +255,76 @@
     <owl:Class rdf:about="http://no.sirius.ontology/gico#PaleogeographicMap">
         <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#GeologicalMap"/>
         <rdfs:label>Paleogeographic map</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#Point -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Point">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasX"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasY"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#isMainPoint"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#Polygon -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Polygon">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#ImageSelection"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasPoint"/>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">5</owl:minQualifiedCardinality>
+                <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#Rectangle -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Rectangle">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#ImageSelection"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasPoint"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">4</owl:qualifiedCardinality>
+                <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#Triangle -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Triangle">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#ImageSelection"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasPoint"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">3</owl:qualifiedCardinality>
+                <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
 </rdf:RDF>
 

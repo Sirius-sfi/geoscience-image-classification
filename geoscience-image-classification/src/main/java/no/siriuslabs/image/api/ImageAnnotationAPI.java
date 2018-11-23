@@ -1,18 +1,23 @@
 package no.siriuslabs.image.api;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eu.webtoolkit.jwt.WPointF;
 import no.siriuslabs.image.model.AnnotationGraphModel;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.model.URIUtils;
+import no.siriuslabs.image.model.shape.AbstractShape;
 import uio.ifi.ontology.toolkit.constraint.utils.Utility;
 import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
@@ -92,7 +97,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			
 			//Add label for type
 			//We keep only one
-			Set<String> labels = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(geoImage.getType(), URIUtils.RDFS_LABEL);
+			Set<String> labels = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(geoImage.getClassType(), URIUtils.RDFS_LABEL);
 			for(String type_label: labels) {
 				geoImage.setTypeLabel(type_label);
 			}
@@ -107,14 +112,14 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		Collections.sort(images, new Comparator<GeologicalImage>() {
 			@Override
 			public int compare(GeologicalImage o1, GeologicalImage o2) {
-				if(o1.getType() == null) {
+				if(o1.getClassType() == null) {
 					return -1;
 				}
-				if(o2.getType() == null) {
+				if(o2.getClassType() == null) {
 					return 1;
 				}
 
-				return o1.getType().compareTo(o2.getType());
+				return o1.getClassType().compareTo(o2.getClassType());
 			}
 		});
 
@@ -126,18 +131,18 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	public void saveGeologicalImage(String session_id, GeologicalImage gimg) {
 		//Type is the label in selection box, get real URI
 		//LOGGER.info(gimg.toString());
-		Concept type_concept = sessionManager.getSession(session_id).getConceptForLabel(gimg.getType());
-		gimg.setType(type_concept.getIri());
+		Concept type_concept = sessionManager.getSession(session_id).getConceptForLabel(gimg.getClassType());
+		gimg.setClassType(type_concept.getIri());
 		
 		
 		//Store img annotation model		
 		AnnotationGraphModel data_model = new AnnotationGraphModel();
 		
+		//Load model
 		String data_file_path = sessionManager.getSession(session_id).getDataFilePath();
-		
 		data_model.loadModelFromFile(data_file_path);
 		
-		data_model.addTypeTriple(gimg.getIri(), gimg.getType());
+		data_model.addTypeTriple(gimg.getIri(), gimg.getClassType());
 		data_model.addLabelTriple(gimg.getIri(), gimg.getLabel());
 		data_model.addCommentTriple(gimg.getIri(), gimg.getDescription());
 		//location
@@ -146,7 +151,83 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 				URIUtils.getURIForOntologyEntity(URIUtils.HAS_PHYISICAL_LOCATION_PROPERTY_NAME), 
 				gimg.getLocation());
 		
+		
+		
+		
+		//Save new triples
+		saveDataModel(data_model, session_id);
+		
+		
+		
+	}
+	
+	
+	
+	public void saveNewShape(String session_id, String image_uri, AbstractShape shape) {
+	
+		//Store img annotation model		
+		AnnotationGraphModel data_model = new AnnotationGraphModel();
+				
+		
+		//Load model
+		String data_file_path = sessionManager.getSession(session_id).getDataFilePath();
+		data_model.loadModelFromFile(data_file_path);
+		
+		
+		
+		//Create URI for shape
+		String uri_shape = getNewResourceURI("shape");
+		
+		//Assign URI type depending on the shapeType: Trianle, Circle...
+		String shape_type = URIUtils.getURIForOntologyEntity(
+				StringUtils.capitalize(shape.getShapeType().toString().toLowerCase()));
+		
+		data_model.addTypeTriple(uri_shape, shape_type);
+		
+		
+		//Link image with shape/selection
+		data_model.addObjectTriple(uri_shape, URIUtils.getURIForOntologyEntity(URIUtils.IS_VISUALLY_REPRESENTED_PROPERTY_NAME), image_uri);
+		
+		//Add points to shape
+		String point_uri;
+		int i = 1;
+		for (WPointF point : shape.getPoints()){
+			point_uri = getNewResourceURI("point");
+			
+			//Type Point
+			data_model.addTypeTriple(point_uri, URIUtils.getURIForOntologyEntity(URIUtils.POINT));
+			
+			//link between shape and points
+			data_model.addObjectTriple(uri_shape, URIUtils.getURIForOntologyEntity(URIUtils.HASPOINT), point_uri);
+			
+			//coordinates
+			data_model.addLiteralTriple(point_uri, URIUtils.getURIForOntologyEntity(URIUtils.HASX), String.valueOf(point.getX()), URIUtils.XSD_DOUBLE);
+			data_model.addLiteralTriple(point_uri, URIUtils.getURIForOntologyEntity(URIUtils.HASY), String.valueOf(point.getY()), URIUtils.XSD_DOUBLE);
+			
+			//TODO for circles the order of points matters
+			if (i==1) 
+				data_model.addLiteralTriple(point_uri, URIUtils.getURIForOntologyEntity(URIUtils.ISMAINPOINT), "true", URIUtils.XSD_BOOLEAN);
+			else
+				data_model.addLiteralTriple(point_uri, URIUtils.getURIForOntologyEntity(URIUtils.ISMAINPOINT), "false", URIUtils.XSD_BOOLEAN);
+			
+			i++;
+			
+		}
+		
+		
+		//Save new triples
+		saveDataModel(data_model, session_id);
+		
+		
+	}
+	
+	
+	
+	private void saveDataModel(AnnotationGraphModel data_model, String session_id) {
+		
 		try {
+			
+			String data_file_path = sessionManager.getSession(session_id).getDataFilePath();
 			data_model.saveModel(data_file_path);
 			
 			//Save tmp file with new annotations and perform incremental reasoning
@@ -162,6 +243,13 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 	}
 	
+	
+	
+	private String getNewResourceURI(String base_name) {
+		Random randomNum = new Random();
+		int random = 1 + randomNum.nextInt(1000);
+		return  URIUtils.getURIForResource(base_name + "-"+ random + Calendar.getInstance().getTimeInMillis());
+	}
 	
 	
 	
