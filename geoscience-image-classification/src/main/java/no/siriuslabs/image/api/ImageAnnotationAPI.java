@@ -31,6 +31,8 @@ import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 import uio.ifi.ontology.toolkit.projection.utils.URIUtils;
 import uio.ifi.ontology.toolkit.projection.view.OntologyProjectionAPI;
 
+import org.eclipse.rdf4j.model.Statement;
+
 
 
 public class ImageAnnotationAPI extends OntologyProjectionAPI {
@@ -97,7 +99,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			//Get location: get ?o given "s" and "p" : generic getObjets SPARQL query: unary results
 			
 			//There should be only one location
-			Set<String> locations = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance.getIri(), GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HAS_PHYISICAL_LOCATION_PROPERTY_NAME));
+			Set<String> locations = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance.getIri(), GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HAS_PHYISICAL_LOCATION));
 			for(String location: locations) {
 				geoImage.setLocation(location);
 			}
@@ -187,7 +189,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		
 		//1. Get shapes (subject) visually represented in image
-		Set<String> shape_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED_PROPERTY_NAME), image_uri);
+		Set<String> shape_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_SELECTION_OF), image_uri);
 		
 		//Utility.println(shape_uris.size() + " shapes for " +image_uri);
 		
@@ -241,6 +243,115 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	
+	/**
+	 * Retrieves ALL annotations associated to an image: annotated bjects and types, relationships among objects
+	 * and facets associated to objects
+	 * @return
+	 */
+	public Set<Statement> getAllImageAnnotations(){
+	
+		Set<Statement> triples = new HashSet<Statement>();
+		
+		
+		
+		return triples;
+		
+	}
+	
+	
+	
+	/**
+	 * Retrieves annotated objects and their types associated to an image. 
+	 * Triples like:  well_1 rdf:type Well
+	 * @param session_id
+	 * @param image_uri
+	 * @return
+	 */
+	public Set<Statement> getObjectsAndTypeAnnotationsForImage(String session_id, String image_uri){
+	
+		Set<Statement> triples = new HashSet<Statement>();
+		
+		
+		//Get elements visually represented in image: reasoning important as some object may be represented in a selection and the selection in the image
+		Set<String> object_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED), image_uri);
+		
+		
+		
+		return triples;
+		
+	}
+	
+	
+	/**
+	 * Retrieves annotated objects and in which selection it appearts (default: the whole image)
+	 * Triples like: well_1 isVisuallyRepresentedIn circle_2
+	 * 
+	 * @param session_id
+	 * @param image_uri
+	 * @return
+	 */
+	public Set<Statement> getObjectsAndVisualRepresentationAnnotationsForImage(String session_id, String image_uri){
+		Set<Statement> triples = new HashSet<Statement>();
+		
+		
+		Set<String> object_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(
+				GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED), image_uri);
+		
+		
+		for (String object_uri : object_uris) {
+			
+			Set<String> selection_uris = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(
+					object_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED), GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IMAGE_SELECTION));
+		
+			
+			//TODO			
+			//if empty then object was not attached to imaged
+			
+		
+		}
+			
+		//TODO
+		//Return filtered triples to interface as isVisuallyRepresentedIn is transitive (not in use yet) and all objects appear by default in the image. Keep only triples
+		
+		
+		
+		
+		return triples;
+	}
+		
+	
+	
+	
+	
+	/**
+	 * Saves annotations from interface. 
+	 */
+	public void saveAnnotations(String session_id, Set<Statement> triples){
+		
+		//Store img annotation model		
+		AnnotationGraphModel data_model = new AnnotationGraphModel();
+		
+		//Load model
+		String data_file_path = sessionManager.getSession(session_id).getDataFilePath();
+		data_model.loadModelFromFile(data_file_path);
+		
+		//Add triples to model
+		for (Statement triple : triples) {
+			
+			//is_visually_represented triple already added (internally) when associating object to selection shape or to image
+			data_model.addTripleStatement(triple);
+		
+		}
+		
+		//Save new triples
+		saveDataModel(data_model, session_id);
+		
+		
+	}
+	
+	
+	
+	
 	
 	
 	public void saveGeologicalImage(String session_id, GeologicalImage gimg) {
@@ -263,7 +374,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//location
 		data_model.addLiteralTriple(
 				gimg.getIri(), 
-				GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HAS_PHYISICAL_LOCATION_PROPERTY_NAME), 
+				GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HAS_PHYISICAL_LOCATION), 
 				gimg.getLocation());
 		
 		
@@ -299,7 +410,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		
 		//Link image with shape/selection
-		data_model.addObjectTriple(uri_shape, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED_PROPERTY_NAME), image_uri);
+		data_model.addObjectTriple(uri_shape, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_SELECTION_OF), image_uri);
 		
 		//Add points to shape
 		String point_uri;

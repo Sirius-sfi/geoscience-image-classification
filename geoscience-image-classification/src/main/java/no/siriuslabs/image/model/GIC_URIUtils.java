@@ -9,11 +9,14 @@ public class GIC_URIUtils {
 	public static final String BASE_URI_GEOLOGICAL_RESOURCES = "http://no.sirius.ontology/gicr";
 	
 	
-	public static final String HAS_PROVENANCE_PROPERTY_NAME= "hasProvenance";
-	public static final String HAS_PHYISICAL_LOCATION_PROPERTY_NAME= "hasPhysicalLocation";
+	public static final String HAS_PROVENANCE= "hasProvenance";
+	public static final String HAS_PHYISICAL_LOCATION= "hasPhysicalLocation";
 	
-	public static final String IS_VISUALLY_REPRESENTED_PROPERTY_NAME= "isVisuallyRepresentedIn";
-	public static final String HAS_VISUAL_REPRESENTATION_PROPERTY_NAME= "hasObjectRepresentation";
+	public static final String IS_SELECTION_OF= "isSelectionOf";
+	public static final String HAS_SELECTION= "hasSelection";
+	
+	public static final String IS_VISUALLY_REPRESENTED= "isVisuallyRepresentedIn";
+	public static final String HAS_VISUAL_REPRESENTATION= "hasObjectRepresentation";
 	
 	
 	public static final String CIRCLE= "Circle";
@@ -22,6 +25,7 @@ public class GIC_URIUtils {
 	public static final String POLYGON= "Polygon";
 	
 	
+	public static final String IMAGE_SELECTION= "ImageSelection";
 	public static final String POINT= "Point";
 	
 	

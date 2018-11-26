@@ -60,10 +60,33 @@
     
 
 
+    <!-- http://no.sirius.ontology/gico#hasSelection -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/gico#hasSelection">
+        <owl:inverseOf rdf:resource="http://no.sirius.ontology/gico#isSelectionOf"/>
+        <rdfs:domain rdf:resource="http://no.sirius.ontology/gico#Image"/>
+        <rdfs:range rdf:resource="http://no.sirius.ontology/gico#ImageSelection"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#isSelectionOf -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/gico#isSelectionOf">
+        <rdfs:domain rdf:resource="http://no.sirius.ontology/gico#ImageSelection"/>
+        <rdfs:range rdf:resource="http://no.sirius.ontology/gico#Image"/>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://no.sirius.ontology/gico#isVisuallyRepresentedIn -->
 
     <owl:ObjectProperty rdf:about="http://no.sirius.ontology/gico#isVisuallyRepresentedIn">
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+        <owl:propertyChainAxiom rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://no.sirius.ontology/gico#isVisuallyRepresentedIn"/>
+            <rdf:Description rdf:about="http://no.sirius.ontology/gico#isSelectionOf"/>
+        </owl:propertyChainAxiom>
         <rdfs:comment>This object property will point to the whole image (by default) or to a segment/selection in the image</rdfs:comment>
     </owl:ObjectProperty>
     
