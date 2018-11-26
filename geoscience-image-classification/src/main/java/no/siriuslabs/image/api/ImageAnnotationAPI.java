@@ -22,7 +22,6 @@ import no.siriuslabs.image.model.shape.AbstractShape;
 import no.siriuslabs.image.model.shape.Circle;
 import no.siriuslabs.image.model.shape.Polygon;
 import no.siriuslabs.image.model.shape.Rectangle;
-import no.siriuslabs.image.model.shape.ShapeType;
 import no.siriuslabs.image.model.shape.Triangle;
 import uio.ifi.ontology.toolkit.constraint.utils.Utility;
 import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
@@ -32,6 +31,9 @@ import uio.ifi.ontology.toolkit.projection.utils.URIUtils;
 import uio.ifi.ontology.toolkit.projection.view.OntologyProjectionAPI;
 
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 
 
@@ -39,9 +41,14 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(OntologyProjectionAPI.class);
 	
+	private ValueFactory vf;
+	
 	
 	public ImageAnnotationAPI(RDFoxSessionManager session){
 		sessionManager = session;
+		
+		vf = SimpleValueFactory.getInstance();
+		
 	}
 	
 	
@@ -63,9 +70,10 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	//First element top class
 	public List<Concept> getImageTypes(String session_id){
-		//TODO Query for special annotation in ontology	
+			
 		List<Concept> imageTypes = new ArrayList<Concept>();
 		
+		//Query for special annotation in ontology
 		Concept mainArtefact = sessionManager.getSession(session_id).getMainArtefactConcept();
 		imageTypes.add(mainArtefact);
 		
@@ -248,10 +256,17 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 * and facets associated to objects
 	 * @return
 	 */
-	public Set<Statement> getAllImageAnnotations(){
+	public Set<Statement> getAllImageAnnotations(String session_id, String image_uri){
 	
 		Set<Statement> triples = new HashSet<Statement>();
 		
+		
+		triples.addAll(getObjectsAndTypeAnnotationsForImage(session_id, image_uri));
+		
+		triples.addAll(getObjectsAndVisualRepresentationAnnotationsForImage(session_id, image_uri));
+		
+		
+		//TODO: Add triples for relationships and facets
 		
 		
 		return triples;
@@ -276,7 +291,20 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		Set<String> object_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED), image_uri);
 		
 		
-		
+		for (String object_uri : object_uris) {
+			
+			String sem_type = sessionManager.getSession(session_id).getMostConcreteTypeForInstance(object_uri);
+			
+			if (sem_type.equals(""))
+				triples.add(vf.createStatement(
+						vf.createIRI(object_uri), RDF.TYPE, vf.createIRI(URIUtils.OWLTHING)));
+			else
+				triples.add(vf.createStatement(
+						vf.createIRI(object_uri), RDF.TYPE, vf.createIRI(sem_type)));
+			
+		}
+				
+				
 		return triples;
 		
 	}
@@ -291,35 +319,60 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 * @return
 	 */
 	public Set<Statement> getObjectsAndVisualRepresentationAnnotationsForImage(String session_id, String image_uri){
+		
 		Set<Statement> triples = new HashSet<Statement>();
 		
 		
-		Set<String> object_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(
-				GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED), image_uri);
+		String predicate = GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED);
+		
+		//All object in the image. Applied property chain to get also object in the image selection shapes
+		Set<String> object_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(predicate, image_uri);
 		
 		
 		for (String object_uri : object_uris) {
 			
-			Set<String> selection_uris = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(
-					object_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED), GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IMAGE_SELECTION));
-		
+			//TODO Can an object be attached to more than one selection? (Transitivity and containment of selections not allowed yet)
+			Set<String> selection_uris = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(object_uri, predicate, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IMAGE_SELECTION));
 			
-			//TODO			
-			//if empty then object was not attached to imaged
+			//if empty then object was not attached to image selection
+			if (selection_uris.isEmpty()) 
+				triples.add(vf.createStatement(
+						vf.createIRI(object_uri), vf.createIRI(predicate), vf.createIRI(image_uri)));
+			else {
+				for (String selection_uri: selection_uris) { //only one expected
+					triples.add(vf.createStatement(
+							vf.createIRI(object_uri), vf.createIRI(predicate), vf.createIRI(selection_uri)));
 			
+				}
+			}							
 		
 		}
 			
-		//TODO
-		//Return filtered triples to interface as isVisuallyRepresentedIn is transitive (not in use yet) and all objects appear by default in the image. Keep only triples
-		
-		
-		
-		
 		return triples;
 	}
 		
+
+	public Set<Statement> getRelationshipsAmongObjectsForImage(String session_id, String image_uri){
+		
+		Set<Statement> triples = new HashSet<Statement>();
+		
+		//TODO Retrieve triples where object is of type Thing (is this inferred?) (and/or predicate of type object property)
+		
+		return triples;
+		
+	}
 	
+	
+	
+	public Set<Statement> getObjectFacetsForImage(String session_id, String image_uri){
+		
+		Set<Statement> triples = new HashSet<Statement>();
+		
+		//TODO Retrieve triples where object is a literal (and/or predicate of type data property)
+		
+		return triples;
+		
+	}
 	
 	
 	
