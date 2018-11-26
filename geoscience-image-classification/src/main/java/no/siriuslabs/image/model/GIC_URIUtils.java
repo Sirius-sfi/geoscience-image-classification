@@ -2,7 +2,7 @@ package no.siriuslabs.image.model;
 
 import no.siriuslabs.image.model.shape.ShapeType;
 
-public class URIUtils {
+public class GIC_URIUtils {
 	
 	//This could potentially be added to the configuration file web services too.
 	public static final String BASE_URI_GEOLOGICAL_ONTOLOGY  = "http://no.sirius.ontology/gico";
@@ -14,6 +14,13 @@ public class URIUtils {
 	
 	public static final String IS_VISUALLY_REPRESENTED_PROPERTY_NAME= "isVisuallyRepresentedIn";
 	public static final String HAS_VISUAL_REPRESENTATION_PROPERTY_NAME= "hasObjectRepresentation";
+	
+	
+	public static final String CIRCLE= "Circle";
+	public static final String RECTANGLE= "Rectangle";
+	public static final String TRIANGLE= "Triangle";
+	public static final String POLYGON= "Polygon";
+	
 	
 	public static final String POINT= "Point";
 	
@@ -27,11 +34,8 @@ public class URIUtils {
 	
 	
 	
-	
 	//TODO URIS relevant to other domains
-	public static String RDFS_LABEL = "http://www.w3.org/2000/01/rdf-schema#label";
-	public static String XSD_DOUBLE = "http://www.w3.org/2001/XMLSchema#double";
-	public static String XSD_BOOLEAN = "http://www.w3.org/2001/XMLSchema#boolean";
+	
 	
 	
 	

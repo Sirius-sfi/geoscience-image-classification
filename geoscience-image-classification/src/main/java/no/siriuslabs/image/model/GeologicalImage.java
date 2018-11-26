@@ -33,7 +33,7 @@ public class GeologicalImage extends Image{
 
 	@Override
 	public String getBaseURIResources() {
-		return URIUtils.BASE_URI_GEOLOGICAL_RESOURCES;
+		return GIC_URIUtils.BASE_URI_GEOLOGICAL_RESOURCES;
 	}
 
 

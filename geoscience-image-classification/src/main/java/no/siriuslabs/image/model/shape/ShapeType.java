@@ -25,4 +25,8 @@ public enum ShapeType {
 	public int getNumberOfPoints() {
 		return numberOfPoints;
 	}
+	
+	
+		
+	
 }

@@ -54,6 +54,10 @@ public class ImageSelectionContainer extends WContainerWidget {
 			((ImageAnnotationAPI)application.getServletContext().
 					getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).saveNewShape(sessionID, gimg.getIri(), circle);
 			
+			
+			((ImageAnnotationAPI)application.getServletContext().
+					getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).getSelectionShapesForImage(sessionID, gimg.getIri());
+			
 		}	
 		//TODO Test Ernesto. To be removed
 		

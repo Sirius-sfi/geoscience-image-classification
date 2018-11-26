@@ -2,7 +2,7 @@ package no.siriuslabs.image.model.shape;
 
 import eu.webtoolkit.jwt.WPainterPath;
 import eu.webtoolkit.jwt.WPointF;
-import no.siriuslabs.image.model.URIUtils;
+import no.siriuslabs.image.model.GIC_URIUtils;
 import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 
 import org.json.JSONArray;
@@ -34,6 +34,15 @@ public abstract class AbstractShape extends Instance{
 		pointsToDraw = new ArrayList<>(points.size());
 
 		initializePointsToDraw();
+	}
+	
+	
+	/**
+	 * Constructor taking the URI, the type of the shape and the list of points defining the shape.
+	 */
+	protected AbstractShape(String uriShape, ShapeType shapeType, List<WPointF> points) {
+		this(shapeType, points);
+		setIri(uriShape);
 	}
 
 	/**
