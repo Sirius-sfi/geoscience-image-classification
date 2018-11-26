@@ -276,7 +276,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	
-	public void saveNewSelectionShape(String session_id, String image_uri, AbstractShape shape) {
+	public String saveNewSelectionShape(String session_id, String image_uri, AbstractShape shape) {
 	
 		//Store img annotation model		
 		AnnotationGraphModel data_model = new AnnotationGraphModel();
@@ -331,6 +331,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//Save new triples
 		saveDataModel(data_model, session_id);
 		
+		return uri_shape;
 		
 		
 		
