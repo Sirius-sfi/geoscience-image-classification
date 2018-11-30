@@ -34,10 +34,8 @@ import uio.ifi.ontology.toolkit.projection.model.entities.ObjectProperty;
 import uio.ifi.ontology.toolkit.projection.utils.URIUtils;
 import uio.ifi.ontology.toolkit.projection.view.OntologyProjectionAPI;
 
-import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 
 
@@ -359,9 +357,9 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	}
 		
 
-	public Set<Statement> getRelationshipsAmongObjectsForImage(String session_id, String image_uri){
+	public Set<Triple> getRelationshipsAmongObjectsForImage(String session_id, String image_uri){
 		
-		Set<Statement> triples = new HashSet<Statement>();
+		Set<Triple> triples = new HashSet<Triple>();
 		
 		//TODO Retrieve triples where object is of type Thing (is this inferred? YES) (and/or predicate of type object property)
 		
@@ -371,9 +369,9 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	
-	public Set<Statement> getObjectFacetsForImage(String session_id, String image_uri){
+	public Set<Triple> getObjectFacetsForImage(String session_id, String image_uri){
 		
-		Set<Statement> triples = new HashSet<Statement>();
+		Set<Triple> triples = new HashSet<Triple>();
 		
 		//TODO Retrieve triples where object is a literal (and/or predicate of type data property)
 		
