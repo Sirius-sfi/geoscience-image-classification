@@ -3,7 +3,8 @@ package no.siriuslabs.image;
 import eu.webtoolkit.jwt.*;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
-import org.eclipse.rdf4j.model.Statement;
+import no.siriuslabs.image.model.triples.Triple;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -391,7 +392,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	private void loadAnnotations() {
 		String sessionID = getSessionID();
 		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
-		Set<Statement> result = imageAnnotationAPI.getAllImageAnnotations(sessionID, image.getIri());
+		Set<Triple> result = imageAnnotationAPI.getAllImageAnnotations(sessionID, image.getIri());
 
 		annotationTriplets = new ArrayList<>();
 		annotationTriplets.add(new TripletPlaceholder("Shape", "is a ", "Well"));

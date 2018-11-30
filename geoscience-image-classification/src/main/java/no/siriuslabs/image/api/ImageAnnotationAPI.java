@@ -23,10 +23,14 @@ import no.siriuslabs.image.model.shape.Circle;
 import no.siriuslabs.image.model.shape.Polygon;
 import no.siriuslabs.image.model.shape.Rectangle;
 import no.siriuslabs.image.model.shape.Triangle;
+import no.siriuslabs.image.model.triples.ObjectPropertyTriple;
+import no.siriuslabs.image.model.triples.Triple;
+import no.siriuslabs.image.model.triples.TypeDefinitionTriple;
 import uio.ifi.ontology.toolkit.constraint.utils.Utility;
 import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
+import uio.ifi.ontology.toolkit.projection.model.entities.ObjectProperty;
 import uio.ifi.ontology.toolkit.projection.utils.URIUtils;
 import uio.ifi.ontology.toolkit.projection.view.OntologyProjectionAPI;
 
@@ -256,9 +260,9 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 * and facets associated to objects
 	 * @return
 	 */
-	public Set<Statement> getAllImageAnnotations(String session_id, String image_uri){
+	public Set<Triple> getAllImageAnnotations(String session_id, String image_uri){
 	
-		Set<Statement> triples = new HashSet<Statement>();
+		Set<Triple> triples = new HashSet<Triple>();
 		
 		
 		triples.addAll(getObjectsAndTypeAnnotationsForImage(session_id, image_uri));
@@ -282,9 +286,9 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 * @param image_uri
 	 * @return
 	 */
-	public Set<Statement> getObjectsAndTypeAnnotationsForImage(String session_id, String image_uri){
+	public Set<Triple> getObjectsAndTypeAnnotationsForImage(String session_id, String image_uri){
 	
-		Set<Statement> triples = new HashSet<Statement>();
+		Set<Triple> triples = new HashSet<Triple>();
 		
 		
 		//Get elements visually represented in image: reasoning important as some object may be represented in a selection and the selection in the image
@@ -296,11 +300,13 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			String sem_type = sessionManager.getSession(session_id).getMostConcreteTypeForInstance(object_uri);
 			
 			if (sem_type.equals(""))
-				triples.add(vf.createStatement(
-						vf.createIRI(object_uri), RDF.TYPE, vf.createIRI(URIUtils.OWLTHING)));
+				//triples.add(vf.createStatement(
+				//		vf.createIRI(object_uri), RDF.TYPE, vf.createIRI(URIUtils.OWLTHING)));
+				triples.add(new TypeDefinitionTriple(new Instance(object_uri), new Concept(URIUtils.OWLTHING)));
 			else
-				triples.add(vf.createStatement(
-						vf.createIRI(object_uri), RDF.TYPE, vf.createIRI(sem_type)));
+				//triples.add(vf.createStatement(
+				//		vf.createIRI(object_uri), RDF.TYPE, vf.createIRI(sem_type)));
+				triples.add(new TypeDefinitionTriple(new Instance(object_uri), new Concept(sem_type)));
 			
 		}
 				
@@ -318,9 +324,9 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 * @param image_uri
 	 * @return
 	 */
-	public Set<Statement> getObjectsAndVisualRepresentationAnnotationsForImage(String session_id, String image_uri){
+	public Set<Triple> getObjectsAndVisualRepresentationAnnotationsForImage(String session_id, String image_uri){
 		
-		Set<Statement> triples = new HashSet<Statement>();
+		Set<Triple> triples = new HashSet<Triple>();
 		
 		
 		String predicate = GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED);
@@ -336,13 +342,14 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			
 			//if empty then object was not attached to image selection
 			if (selection_uris.isEmpty()) 
-				triples.add(vf.createStatement(
-						vf.createIRI(object_uri), vf.createIRI(predicate), vf.createIRI(image_uri)));
+				//triples.add(vf.createStatement(
+				//		vf.createIRI(object_uri), vf.createIRI(predicate), vf.createIRI(image_uri)));
+				triples.add(new ObjectPropertyTriple(new Instance(object_uri), new ObjectProperty(predicate), new Instance(image_uri)));
 			else {
-				for (String selection_uri: selection_uris) { //only one expected
-					triples.add(vf.createStatement(
-							vf.createIRI(object_uri), vf.createIRI(predicate), vf.createIRI(selection_uri)));
-			
+				for (String selection_uri : selection_uris) { //only one expected
+					//triples.add(vf.createStatement(
+					//		vf.createIRI(object_uri), vf.createIRI(predicate), vf.createIRI(selection_uri)));
+					triples.add(new ObjectPropertyTriple(new Instance(object_uri), new ObjectProperty(predicate), new Instance(selection_uri)));
 				}
 			}							
 		
@@ -356,7 +363,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		Set<Statement> triples = new HashSet<Statement>();
 		
-		//TODO Retrieve triples where object is of type Thing (is this inferred?) (and/or predicate of type object property)
+		//TODO Retrieve triples where object is of type Thing (is this inferred? YES) (and/or predicate of type object property)
 		
 		return triples;
 		
@@ -379,7 +386,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	/**
 	 * Saves annotations from interface. 
 	 */
-	public void saveAnnotations(String session_id, Set<Statement> triples){
+	public void saveAnnotations(String session_id, Set<Triple> triples){
 		
 		//Store img annotation model		
 		AnnotationGraphModel data_model = new AnnotationGraphModel();
@@ -389,10 +396,22 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		data_model.loadModelFromFile(data_file_path);
 		
 		//Add triples to model
-		for (Statement triple : triples) {
+		for (Triple triple : triples) {
 			
 			//is_visually_represented triple already added (internally) when associating object to selection shape or to image
-			data_model.addTripleStatement(triple);
+			
+			if (triple.isTypeDefinitionTriple())
+				data_model.addTypeTriple(triple.getSubject().getIri(), triple.asTypeDefinitionTriple().getObject().getIri());
+			else if(triple.isDataPropertyTriple())
+				data_model.addLiteralTriple(
+						triple.getSubject().getIri(), triple.asDataPropertyTriple().getPredicate().getIri(), 
+						triple.asDataPropertyTriple().getObject().getValue(), triple.asDataPropertyTriple().getObject().getDatatypeString());	
+			else if (triple.isObjectPropertyTriple())
+				data_model.addObjectTriple(
+						triple.getSubject().getIri(), triple.asObjectPropertyTriple().getPredicate().getIri(), triple.asObjectPropertyTriple().getObject().getIri());
+			
+			
+			
 		
 		}
 		
