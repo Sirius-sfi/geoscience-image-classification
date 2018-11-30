@@ -1,11 +1,18 @@
 package no.siriuslabs.image;
 
+import eu.webtoolkit.jwt.WBoxLayout;
 import eu.webtoolkit.jwt.WContainerWidget;
 import eu.webtoolkit.jwt.WHBoxLayout;
 import eu.webtoolkit.jwt.WLineEdit;
+import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WSuggestionPopup;
+import eu.webtoolkit.jwt.WVBoxLayout;
 import eu.webtoolkit.jwt.WValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +20,10 @@ import java.util.List;
  * Widget representing an annotation triplet of three fields (subject, predicate, object).
  */
 public class TripletWidget extends WContainerWidget {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(TripletWidget.class);
+
+	private final PropertyChangeSupport propertyChangeSupport;
 
 	private WLineEdit part1;
 	private WSuggestionPopup part1Popup;
@@ -23,14 +34,24 @@ public class TripletWidget extends WContainerWidget {
 	private WLineEdit part3;
 	private WSuggestionPopup part3Popup;
 
+	private TripletPlaceholder data;
+
+	/**
+	 * Default constructor.
+	 */
 	public TripletWidget() {
+		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 		initialize();
-		addSuggestions();
+
+		propertyChangeSupport = new PropertyChangeSupport(this);
+		LOGGER.info("{} constructor - end", getClass().getSimpleName());
 	}
 
 	private void initialize() {
-		WHBoxLayout layout = new WHBoxLayout();
+		WVBoxLayout layout = new WVBoxLayout();
 		setLayout(layout);
+
+		WHBoxLayout fieldsLayout = new WHBoxLayout();
 
 		WSuggestionPopup.Options options = new WSuggestionPopup.Options();
 		options.highlightBeginTag = "<span class=\"highlight\">";
@@ -41,31 +62,98 @@ public class TripletWidget extends WContainerWidget {
 		options.appendReplacedText = ", ";
 
 		part1 = new WLineEdit();
-//		part1.setEmptyText("Part 1");
+		part1.setEmptyText("Subject");
 		part1Popup = new WSuggestionPopup(options);
 		part1Popup.forEdit(part1);
 		part1.setValidator(new WValidator(true));
-		layout.addWidget(part1);
+		fieldsLayout.addWidget(part1);
 
 		part2 = new WLineEdit();
+		part2.setEmptyText("Predicate");
 		part2Popup = new WSuggestionPopup(options);
 		part2Popup.forEdit(part2);
 		part2.setValidator(new WValidator(true));
-		layout.addWidget(part2);
+		fieldsLayout.addWidget(part2);
 
 		part3 = new WLineEdit();
+		part3.setEmptyText("Object");
 		part3Popup = new WSuggestionPopup(options);
 		part3Popup.forEdit(part3);
 		part3.setValidator(new WValidator(true));
-		layout.addWidget(part3);
+		fieldsLayout.addWidget(part3);
+
+		layout.addLayout(fieldsLayout);
+
+
+		WHBoxLayout buttonsLayout = new WHBoxLayout();
+		buttonsLayout.setDirection(WBoxLayout.Direction.RightToLeft);
+
+		WPushButton cancelButton = new WPushButton("Cancel");
+		cancelButton.clicked().addListener(this, arg -> cancelButtonClickedAction());
+		buttonsLayout.addWidget(cancelButton);
+
+		WPushButton saveButton = new WPushButton("Save");
+		saveButton.clicked().addListener(this, arg -> saveButtonClickedAction());
+		buttonsLayout.addWidget(saveButton);
+
+		layout.addLayout(buttonsLayout);
 	}
 
-	private void addSuggestions() {
-//		part1Popup.addSuggestion("Part 1a");
-//		part1Popup.addSuggestion("Part 1b");
-//		part1Popup.addSuggestion("Part 1c");
+	private void saveButtonClickedAction() {
+		if(data == null) {
+			data = new TripletPlaceholder(part1.getValueText().trim(), part2.getValueText().trim(), part3.getValueText().trim());
+		}
+		else {
+			data.setSubject(part1.getValueText().trim());
+			data.setPredicate(part2.getValueText().trim());
+			data.setObject(part3.getValueText().trim());
+		}
+
+		LOGGER.info("triggering tripletWidget.saved with values (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
+		propertyChangeSupport.firePropertyChange("tripletWidget.saved", false, true);
 	}
 
+	private void cancelButtonClickedAction() {
+		resetData();
+		LOGGER.info("triggering tripletWidget.cancelled");
+		propertyChangeSupport.firePropertyChange("tripletWidget.cancelled", false, true);
+	}
+
+	/**
+	 * Returns the current data object.
+	 */
+	protected TripletPlaceholder getData() {
+		return data;
+	}
+
+	/**
+	 * Sets the current data object and updates the fields.
+	 */
+	protected void setData(TripletPlaceholder data) {
+		this.data = data;
+		part1.setText(data.getSubject());
+		part2.setText(data.getPredicate());
+		part3.setText(data.getObject());
+		LOGGER.info("triplet data set (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
+	}
+
+	/**
+	 * Resets the current data object and empties the fields and suggestions.
+	 */
+	protected void resetData() {
+		data = null;
+		part1.setText("");
+		part1Popup.clearSuggestions();
+		part2.setText("");
+		part2Popup.clearSuggestions();
+		part3.setText("");
+		part3Popup.clearSuggestions();
+		LOGGER.info("triplet data cleared");
+	}
+
+	/**
+	 * Validates the contents of all fields.
+	 */
 	public List<WValidator.State> validate() {
 		List<WValidator.State> results = new ArrayList<>(3);
 		results.add(part1.validate());
@@ -74,16 +162,12 @@ public class TripletWidget extends WContainerWidget {
 		return results;
 	}
 
-	public String getPart1Value() {
-		return part1.getValueText().trim();
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		propertyChangeSupport.addPropertyChangeListener(listener);
 	}
 
-	public String getPart2Value() {
-		return part2.getValueText().trim();
-	}
-
-	public String getPart3Value() {
-		return part3.getValueText().trim();
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		propertyChangeSupport.removePropertyChangeListener(listener);
 	}
 
 }

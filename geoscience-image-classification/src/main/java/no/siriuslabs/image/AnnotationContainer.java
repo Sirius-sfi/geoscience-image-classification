@@ -1,17 +1,9 @@
 package no.siriuslabs.image;
 
-import eu.webtoolkit.jwt.KeyboardModifier;
-import eu.webtoolkit.jwt.Side;
-import eu.webtoolkit.jwt.WBorderLayout;
-import eu.webtoolkit.jwt.WContainerWidget;
-import eu.webtoolkit.jwt.WHBoxLayout;
-import eu.webtoolkit.jwt.WLength;
-import eu.webtoolkit.jwt.WMouseEvent;
-import eu.webtoolkit.jwt.WPushButton;
-import eu.webtoolkit.jwt.WText;
-import eu.webtoolkit.jwt.WVBoxLayout;
-import eu.webtoolkit.jwt.WValidator;
+import eu.webtoolkit.jwt.*;
+import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
+import org.eclipse.rdf4j.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +12,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Container class representing the annotation page accessed from the main menu.
@@ -31,22 +24,26 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	private final FrontendApplication application;
 	private final GeologicalImage image;
 
+	private WContainerWidget shapeContainer;
 	private ShapeWidget shapeWidget;
 	private WPushButton newShapeButton;
 	private WPushButton cancelShapeButton;
-	private WPushButton confirmShapeButton;
 	private WPushButton saveAnnotationButton;
 
-	private TripletWidget newAnnotationWidget;
 	private WVBoxLayout annotationLayout;
+	private WTableView annotationsTable; // TODO replace with a tree-table to get a visual relation to the shape/feature?
+	private TripletWidget annotationEditorWidget;
 
 	private WContainerWidget topPanel;
 	private WContainerWidget annotationPanel;
 	private WContainerWidget buttonPanel;
+	private WPushButton addAnnotationButton;
+	private WPushButton editAnnotationButton;
+	private WPushButton deleteAnnotationButton;
 
 	private WText messageText;
 
-	private List<TripletWidget> triplets;
+	private List<TripletPlaceholder> annotationTriplets;
 
 	/**
 	 * Constructor taking the application, parent container and the GeologicalImage that is to be annotated.
@@ -58,11 +55,10 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		this.application = application;
 		this.image = image;
 
-		triplets = new ArrayList<>();
+		loadAnnotations();
 
 		initializeTopPanel();
 		initializeShapeWidget();
-		initializeButtonPanel();
 		initializeAnnotationPanel();
 
 		initializeLayout();
@@ -82,14 +78,21 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	}
 
 	private void initializeShapeWidget() {
+		initializeShapeButtonPanel();
+
 		shapeWidget = new ShapeWidget(application, image);
 		shapeWidget.setMinimumSize(new WLength(800, WLength.Unit.Pixel), new WLength(600, WLength.Unit.Pixel));
 		shapeWidget.addPropertyChangeListener(this);
-
 		shapeWidget.mouseWentDown().addListener(this, arg -> mouseClickedOnImageAction(arg));
+
+		shapeContainer = new WContainerWidget();
+		WVBoxLayout shapeLayout = new WVBoxLayout();
+		shapeLayout.addWidget(shapeWidget);
+		shapeLayout.addWidget(buttonPanel);
+		shapeContainer.setLayout(shapeLayout);
 	}
 
-	private void initializeButtonPanel() {
+	private void initializeShapeButtonPanel() {
 		buttonPanel = new WContainerWidget();
 		WHBoxLayout buttonLayout = new WHBoxLayout();
 
@@ -97,36 +100,56 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		newShapeButton.clicked().addListener(this, arg -> newButtonClickedAction());
 		buttonLayout.addWidget(newShapeButton);
 
-		cancelShapeButton = new WPushButton("Cancel");
-		cancelShapeButton.disable();
-		cancelShapeButton.clicked().addListener(this, arg -> cancelButtonClickedAction());
-		buttonLayout.addWidget(cancelShapeButton);
-
-		confirmShapeButton = new WPushButton("Confirm");
-		confirmShapeButton.disable();
-		confirmShapeButton.clicked().addListener(this, arg -> confirmButtonClickedAction());
-		buttonLayout.addWidget(confirmShapeButton);
-
-		saveAnnotationButton = new WPushButton("Save");
+		saveAnnotationButton = new WPushButton("Save Shape...");
 		saveAnnotationButton.disable();
 		saveAnnotationButton.clicked().addListener(this, arg -> saveButtonClickedAction());
 		buttonLayout.addWidget(saveAnnotationButton);
 
+		cancelShapeButton = new WPushButton("Cancel Shape");
+		cancelShapeButton.disable();
+		cancelShapeButton.clicked().addListener(this, arg -> cancelButtonClickedAction());
+		buttonLayout.addWidget(cancelShapeButton);
+
 		buttonPanel.setLayout(buttonLayout);
 	}
 
-	// TODO rework with table...
 	private void initializeAnnotationPanel() {
 		annotationPanel = new WContainerWidget();
 		annotationPanel.setMinimumSize(new WLength(300), WLength.Auto);
 		annotationLayout = new WVBoxLayout();
 
-		newAnnotationWidget = new TripletWidget();
-		newAnnotationWidget.disable();
-		newAnnotationWidget.setMinimumSize(WLength.Auto, new WLength(30));
-		annotationLayout.addWidget(newAnnotationWidget);
+		annotationsTable = new WTableView();
+		annotationsTable.setModel(new TripletTableModel(annotationTriplets));
+		annotationsTable.setSelectionMode(SelectionMode.SingleSelection);
+		annotationsTable.selectionChanged().addListener(this, () -> tableSelectionChangedAction());
+		annotationLayout.addWidget(annotationsTable, 1);
 
-		annotationLayout.addWidget(new WText(), 1);
+		WContainerWidget tableControlPanel = new WContainerWidget();
+		WHBoxLayout tableControlLayout = new WHBoxLayout();
+		tableControlPanel.setLayout(tableControlLayout);
+
+		addAnnotationButton = new WPushButton("Add");
+		addAnnotationButton.enable();
+		addAnnotationButton.clicked().addListener(this, arg -> addAnnotationButtonClickedAction());
+		tableControlLayout.addWidget(addAnnotationButton);
+
+		editAnnotationButton = new WPushButton("Edit");
+		editAnnotationButton.disable();
+		editAnnotationButton.clicked().addListener(this, arg -> editAnnotationButtonClickedAction());
+		tableControlLayout.addWidget(editAnnotationButton);
+
+		deleteAnnotationButton = new WPushButton("Delete");
+		deleteAnnotationButton.disable();
+		deleteAnnotationButton.clicked().addListener(this, arg -> deleteAnnotationButtonClickedAction());
+		tableControlLayout.addWidget(deleteAnnotationButton);
+
+		annotationLayout.addWidget(tableControlPanel);
+
+		annotationEditorWidget = new TripletWidget();
+		annotationEditorWidget.hide();
+		annotationEditorWidget.setMinimumSize(WLength.Auto, new WLength(30));
+		annotationEditorWidget.addPropertyChangeListener(this);
+		annotationLayout.addWidget(annotationEditorWidget);
 
 		annotationPanel.setLayout(annotationLayout);
 	}
@@ -134,11 +157,48 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	private void initializeLayout() {
 		WBorderLayout layout = new WBorderLayout();
 		layout.addWidget(topPanel, WBorderLayout.Position.North);
-		layout.addWidget(shapeWidget, WBorderLayout.Position.Center);
+		layout.addWidget(shapeContainer, WBorderLayout.Position.Center);
 		layout.addWidget(annotationPanel, WBorderLayout.Position.East);
-		layout.addWidget(buttonPanel, WBorderLayout.Position.South);
 
 		setLayout(layout);
+	}
+
+	private void tableSelectionChangedAction() {
+		if(annotationsTable.getSelectedIndexes().size() == 1) {
+			editAnnotationButton.enable();
+			deleteAnnotationButton.enable();
+		}
+	}
+
+	private void addAnnotationButtonClickedAction() {
+		annotationEditorWidget.resetData();
+		annotationEditorWidget.show();
+	}
+
+	private void editAnnotationButtonClickedAction() {
+		final WModelIndex selection = annotationsTable.getSelectedIndexes().first();
+		annotationEditorWidget.setData(annotationTriplets.get(selection.getRow()));
+		annotationEditorWidget.show();
+	}
+
+	private void deleteAnnotationButtonClickedAction() {
+		WMessageBox messageBox = new WMessageBox("Confirmation", "Do you want to delete this Annotation now?", Icon.Question, EnumSet.of(StandardButton.Yes, StandardButton.No));
+		messageBox.buttonClicked().addListener(this, () -> 	deleteConfirmationButtonAction(messageBox));
+		messageBox.show();
+	}
+
+	private void deleteConfirmationButtonAction(WMessageBox messageBox) {
+		if(messageBox.getButtonResult() == StandardButton.Yes) {
+			final WModelIndex selection = annotationsTable.getSelectedIndexes().first();
+			LOGGER.info("removing selected element: {}", selection.getRow());
+			annotationTriplets.remove(selection.getRow());
+			annotationsTable.setModel(new TripletTableModel(annotationTriplets));
+
+			editAnnotationButton.disable();
+			deleteAnnotationButton.disable();
+		}
+
+		messageBox.remove();
 	}
 
 	private void mouseClickedOnImageAction(WMouseEvent arg) {
@@ -148,14 +208,11 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		else if(isMiddleMouseButton(arg) && isShiftKeyPressed(arg)) {
 			cancelButtonClickedAction();
 		}
-		else if(isMiddleMouseButton(arg) && isControlKeyPressed(arg) && isWidgetModeUnsavedShape()) {
+		else if(isMiddleMouseButton(arg) && (isWidgetModeSetPoints() || isWidgetModeUnsavedShape())) {
 			saveButtonClickedAction();
 		}
-		else if(isMiddleMouseButton(arg) && isWidgetModeSetPoints()) {
-			confirmButtonClickedAction();
-		}
 	}
-
+	
 	private void newButtonClickedAction() {
 		shapeWidget.setWidgetMode(ShapeWidget.AnnotationWidgetMode.SET_POINTS);
 	}
@@ -164,21 +221,50 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		shapeWidget.resetShape();
 	}
 
-	private void confirmButtonClickedAction() {
-		shapeWidget.confirmShape();
+	private void saveButtonClickedAction() {
+		if(isWidgetModeSetPoints()) {
+			shapeWidget.confirmShape();
+		}
 
-		newAnnotationWidget.enable();
+		CreateShapeDialog dialog = new CreateShapeDialog();
+		dialog.finished().addListener(this, () -> {
+			if(dialog.getResult() == WDialog.DialogCode.Accepted) {
+				saveShapeAndInitialTriplets(dialog);
+			}
+
+			dialog.remove();
+		});
+
+		dialog.show();
 	}
 
-	private void saveButtonClickedAction() {
+	private void saveShapeAndInitialTriplets(CreateShapeDialog dialog) {
 		if(isWidgetModeUnsavedShape()) {
-			LOGGER.info("saving widget");
+			LOGGER.info("saving shape");
 			shapeWidget.saveShape();
 		}
 
-		LOGGER.info("saving annotation");
+		LOGGER.info("saving initial annotations");
 
-		List<WValidator.State> validationResults = newAnnotationWidget.validate();
+		// TODO replace with real data
+		TripletPlaceholder typePlaceholder = new TripletPlaceholder("Type", "is a", dialog.getTypeValue());
+		TripletPlaceholder namePlaceholder = new TripletPlaceholder("Name", "is", dialog.getNameValue());
+
+		// TODO save annotationTriplets to ontology
+		String sessionID = getSessionID();
+		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
+		//		imageAnnotationAPI.saveAnnotations(sessionID, );
+
+		annotationTriplets.add(typePlaceholder);
+		annotationTriplets.add(namePlaceholder);
+
+		LOGGER.info("initial save was successful");
+
+		annotationsTable.setModel(new TripletTableModel(annotationTriplets));
+	}
+
+	private boolean isTripletValid() {
+		List<WValidator.State> validationResults = annotationEditorWidget.validate();
 		boolean entriesValid = true;
 		for(WValidator.State state : validationResults) {
 			if(state != WValidator.State.Valid) {
@@ -197,46 +283,67 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 			LOGGER.info(message);
 			showErrorMessage(message);
-			return;
+			return false;
 		}
-
-		LOGGER.info("1: " + newAnnotationWidget.getPart1Value() + "   2: " + newAnnotationWidget.getPart2Value() + "  3: " + newAnnotationWidget.getPart3Value());
-		// TODO save annotation to ontology
-
-		triplets.add(newAnnotationWidget);
-		newAnnotationWidget.disable();
-
-		newAnnotationWidget = new TripletWidget();
-		newAnnotationWidget.setMinimumSize(WLength.Auto, new WLength(30));
-		annotationLayout.insertWidget(triplets.size(), newAnnotationWidget);
+		LOGGER.info("Validation successful");
+		return true;
 	}
 
 	/**
-	 * Reacts to changes of the widgetMode property in the ShapeWidget.
+	 * Reacts to changes in child widgets.
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if("widgetMode".equals(evt.getPropertyName())) {
+		if("shapeWidget.widgetMode".equals(evt.getPropertyName())) {
 			final ShapeWidget.AnnotationWidgetMode widgetMode = (ShapeWidget.AnnotationWidgetMode) evt.getNewValue();
-			LOGGER.info("widgetMode changed to " + widgetMode);
+			LOGGER.info("shapeWidget.widgetMode changed to {}", widgetMode);
 
 			if(widgetMode == ShapeWidget.AnnotationWidgetMode.SET_POINTS) {
 				newShapeButton.disable();
 				cancelShapeButton.enable();
-				confirmShapeButton.enable();
-				saveAnnotationButton.disable();
+				saveAnnotationButton.enable();
 			}
 			else if(widgetMode == ShapeWidget.AnnotationWidgetMode.UNSAVED_SHAPE) {
 				newShapeButton.disable();
 				cancelShapeButton.enable();
-				confirmShapeButton.disable();
 				saveAnnotationButton.enable();
 			}
 			else if(widgetMode == ShapeWidget.AnnotationWidgetMode.SAVED_SHAPE) {
 				newShapeButton.enable();
 				cancelShapeButton.disable();
-				confirmShapeButton.disable();
-				saveAnnotationButton.enable();
+				saveAnnotationButton.disable();
+			}
+		}
+		else if("tripletWidget.cancelled".equals(evt.getPropertyName())) {
+			annotationEditorWidget.hide();
+		}
+		else if("tripletWidget.saved".equals(evt.getPropertyName())) {
+			if(isTripletValid()) {
+				LOGGER.info("tripletWidget.saved was triggered and triplet is valid --> saving to ontology");
+				TripletPlaceholder placeholder = annotationEditorWidget.getData();
+
+				// TODO save to ontology
+				String sessionID = getSessionID();
+				final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
+				//		imageAnnotationAPI.saveAnnotations(sessionID, );
+
+				if(annotationTriplets.contains(placeholder)) {
+					// nothing?
+				}
+				else {
+					annotationTriplets.add(placeholder);
+				}
+
+				LOGGER.info("save was successful");
+
+				// TODO try this less noisy
+				annotationsTable.setModel(new TripletTableModel(annotationTriplets));
+
+				editAnnotationButton.disable();
+				deleteAnnotationButton.disable();
+
+				annotationEditorWidget.hide();
+				annotationEditorWidget.resetData();
 			}
 		}
 	}
@@ -279,5 +386,30 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	private void resetMessageField() {
 		messageText.setText("");
 		messageText.setStyleClass("");
+	}
+
+	private void loadAnnotations() {
+		String sessionID = getSessionID();
+		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
+		Set<Statement> result = imageAnnotationAPI.getAllImageAnnotations(sessionID, image.getIri());
+
+		annotationTriplets = new ArrayList<>();
+		annotationTriplets.add(new TripletPlaceholder("Shape", "is a ", "Well"));
+		annotationTriplets.add(new TripletPlaceholder("Shape", "is a ", "Something"));
+		annotationTriplets.add(new TripletPlaceholder("Name", "is", "Bob"));
+		annotationTriplets.add(new TripletPlaceholder("Name", "is", "Kevin"));
+		annotationTriplets.add(new TripletPlaceholder("Name", "is", "Stuart"));
+
+		// TODO clear and add to annotationTriplets
+//		triplets.clear();
+//		triplets.addAll();
+	}
+
+	private String getSessionID() {
+		return (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
+	}
+
+	private ImageAnnotationAPI getImageAnnotationAPI() {
+		return (ImageAnnotationAPI) application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY);
 	}
 }

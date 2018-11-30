@@ -12,7 +12,6 @@ import eu.webtoolkit.jwt.WPainter;
 import eu.webtoolkit.jwt.WPainterPath;
 import eu.webtoolkit.jwt.WPen;
 import eu.webtoolkit.jwt.WPointF;
-import eu.webtoolkit.jwt.WText;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.model.shape.AbstractShape;
@@ -26,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -255,7 +253,7 @@ public class ShapeWidget extends WPaintedWidget {
 	protected void setWidgetMode(AnnotationWidgetMode mode) {
 		AnnotationWidgetMode oldValue = widgetMode;
 		widgetMode = mode;
-		propertyChangeSupport.firePropertyChange("widgetMode", oldValue, widgetMode);
+		propertyChangeSupport.firePropertyChange("shapeWidget.widgetMode", oldValue, widgetMode);
 	}
 
 	public AnnotationWidgetMode getWidgetMode() {
