@@ -1,6 +1,7 @@
 package no.siriuslabs.image.api;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -151,10 +152,13 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	public List<WPointF> getPointsForShape(String session_id, String shape_uri){
 		
-		List<WPointF> points = new ArrayList<WPointF>();
 		
 		//1. Get Points (object) for a shape
 		Set<String> point_uris = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(shape_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASPOINT));
+		
+		//We initialize with the proper size
+		WPointF[] points_vector = new WPointF[point_uris.size()];
+		//List<WPointF> points = new ArrayList<WPointF>();
 		
 		for (String point_uri : point_uris) {
 			
@@ -172,20 +176,23 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 				point.setY(Double.valueOf(value));
 			}
 			
-			values = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.ISMAINPOINT));
-			//if values.size()>0 then main point
+			values = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASPOINTORDER));
 			
-			if (values.isEmpty())
-				points.add(point);
-			else
-				points.add(0, point);  //no empty then main point should be the first
+			//Typically only one
+			int order_point=0;
+			for (String value : values)
+				order_point = Integer.valueOf(value);
+			
+			//order
+			//System.out.println(order_point +  "  " + point.getX() + "  " + point.getY());
+			points_vector[order_point] = point;
+			
 			
 		}
 		
 		
 		
-		
-		return points;
+		return Arrays.asList(points_vector);
 		
 	}
 	
@@ -484,7 +491,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		//Add points to shape
 		String point_uri;
-		int i = 1;
+		int i = 0;
 		for (WPointF point : shape.getPoints()){
 			point_uri = getNewResourceURI("point");
 			
@@ -498,13 +505,13 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASX), String.valueOf(point.getX()), URIUtils.XSD_DOUBLE);
 			data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASY), String.valueOf(point.getY()), URIUtils.XSD_DOUBLE);
 			
-			//TODO for circles the order of points matters
-			if (i==1) 
-				data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.ISMAINPOINT), "true", URIUtils.XSD_BOOLEAN);
-			//else
-			//	data_model.addLiteralTriple(point_uri, URIUtils.getURIForOntologyEntity(URIUtils.ISMAINPOINT), "false", URIUtils.XSD_BOOLEAN); //no need to store for false cases
+			//For circles and polygons with 5 or more points the order of points matters
+			data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASPOINTORDER), String.valueOf(i), URIUtils.XSD_INTEGER);
 			
+			//System.out.println(i + " " + point.getX() + "  " + point.getY());
 			i++;
+		
+			
 			
 		}
 		

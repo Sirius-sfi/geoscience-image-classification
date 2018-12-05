@@ -16,7 +16,7 @@ public class GIC_URIUtils {
 	public static final String HAS_SELECTION= "hasSelection";
 	
 	public static final String IS_VISUALLY_REPRESENTED= "isVisuallyRepresentedIn";
-	public static final String HAS_VISUAL_REPRESENTATION= "hasObjectRepresentation";
+	public static final String HAS_OBJECT_REPRESENTATION= "hasObjectRepresentation";
 	
 	
 	public static final String CIRCLE= "Circle";
@@ -31,10 +31,10 @@ public class GIC_URIUtils {
 	
 	public static final String HASPOINT= "hasPoint";
 	
-	public static final String HASY= "hasX";
-	public static final String HASX= "hasY";
+	public static final String HASX= "hasX";
+	public static final String HASY= "hasY";
 	
-	public static final String ISMAINPOINT= "isMainPoint";
+	public static final String HASPOINTORDER = "hasOrder";
 	
 	
 	
