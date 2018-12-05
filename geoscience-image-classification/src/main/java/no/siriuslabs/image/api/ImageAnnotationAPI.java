@@ -30,8 +30,10 @@ import no.siriuslabs.image.model.triples.TypeDefinitionTriple;
 import uio.ifi.ontology.toolkit.constraint.utils.Utility;
 import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
+import uio.ifi.ontology.toolkit.projection.model.entities.DataProperty;
 import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 import uio.ifi.ontology.toolkit.projection.model.entities.ObjectProperty;
+import uio.ifi.ontology.toolkit.projection.model.entities.Property;
 import uio.ifi.ontology.toolkit.projection.utils.URIUtils;
 import uio.ifi.ontology.toolkit.projection.view.OntologyProjectionAPI;
 
@@ -385,6 +387,100 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		return triples;
 		
 	}
+	
+	
+	
+	
+	/**
+	 * Possible types for an identified object in the image
+	 * @param session_id
+	 * @return
+	 */
+	public TreeSet<Concept> getOntologyConcepts(String session_id){
+		
+		return sessionManager.getSession(session_id).getCoreConcepts();
+	
+	}
+	
+	
+	/**
+	 * Possible values for subject and objects
+	 * @param session_id
+	 * @return
+	 */
+	public TreeSet<Instance> getIndividuals(String session_id){
+		
+		//TODO we may want to filter by type
+		return sessionManager.getSession(session_id).getInstances();
+	}
+	
+	
+	/**
+	 * Possible values for subject and objects
+	 * @param session_id
+	 * @return
+	 */
+	public TreeSet<Instance> getIndividualsByType(String session_id, String type){
+		
+		//TODO we may want to filter by type
+		return sessionManager.getSession(session_id).getInstancesForType(type);
+	}
+	
+	
+	/**
+	 * Possible values for subject
+	 * @param session_id
+	 * @return
+	 */
+	public TreeSet<Instance> getSubjectsResources(String session_id){
+		return getIndividuals(session_id);
+	}
+	
+	
+	/**
+	 * Possible values for objects of type instance/resource
+	 * @param session_id
+	 * @return
+	 */
+	public TreeSet<Instance> getObjectResources(String session_id){
+		return getIndividuals(session_id);
+	}
+	
+	
+	
+	//TODO return literals? Only if there is a range of possible values: e.g. boolean, list of companies, etc. Check projection
+	public TreeSet<String> getAllowedValues(String session_id){
+		return null;
+		
+		//TODO Allow only if given predicate?
+		
+	}
+	
+	
+	
+	public TreeSet<Property> getPredicates(String session_id){
+		TreeSet<Property> predicates = new TreeSet<Property>();
+		
+		predicates.addAll(getDataPredicates(session_id));
+		predicates.addAll(getObjectPredicates(session_id));
+		
+		return predicates;
+		
+	}
+	
+	
+	public TreeSet<DataProperty> getDataPredicates(String session_id){
+		return sessionManager.getSession(session_id).getDataPredicates();
+	}
+	
+	
+	public TreeSet<ObjectProperty> getObjectPredicates(String session_id){
+		return sessionManager.getSession(session_id).getObjectPredicates();
+	}
+
+	
+	
+	
 	
 	
 	
