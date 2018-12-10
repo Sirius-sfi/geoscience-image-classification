@@ -1,4 +1,4 @@
-package no.siriuslabs.image;
+package no.siriuslabs.image.ui.widget;
 
 /**
  * Just a placeholder datacontainer cløass.

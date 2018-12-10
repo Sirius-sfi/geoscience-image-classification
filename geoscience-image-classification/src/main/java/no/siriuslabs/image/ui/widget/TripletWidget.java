@@ -1,4 +1,4 @@
-package no.siriuslabs.image;
+package no.siriuslabs.image.ui.widget;
 
 import eu.webtoolkit.jwt.WBoxLayout;
 import eu.webtoolkit.jwt.WContainerWidget;
@@ -122,14 +122,14 @@ public class TripletWidget extends WContainerWidget {
 	/**
 	 * Returns the current data object.
 	 */
-	protected TripletPlaceholder getData() {
+	public TripletPlaceholder getData() {
 		return data;
 	}
 
 	/**
 	 * Sets the current data object and updates the fields.
 	 */
-	protected void setData(TripletPlaceholder data) {
+	public void setData(TripletPlaceholder data) {
 		this.data = data;
 		part1.setText(data.getSubject());
 		part2.setText(data.getPredicate());
@@ -140,7 +140,7 @@ public class TripletWidget extends WContainerWidget {
 	/**
 	 * Resets the current data object and empties the fields and suggestions.
 	 */
-	protected void resetData() {
+	public void resetData() {
 		data = null;
 		part1.setText("");
 		part1Popup.clearSuggestions();

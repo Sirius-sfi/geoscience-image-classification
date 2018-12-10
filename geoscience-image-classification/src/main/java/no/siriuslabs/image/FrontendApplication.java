@@ -8,15 +8,21 @@ import eu.webtoolkit.jwt.WLength;
 import eu.webtoolkit.jwt.WMenu;
 import eu.webtoolkit.jwt.WWidget;
 import no.siriuslabs.image.model.GeologicalImage;
+import no.siriuslabs.image.ui.container.AnnotationContainer;
+import no.siriuslabs.image.ui.container.HomeContainer;
+import no.siriuslabs.image.ui.container.ImageSelectionContainer;
+import no.siriuslabs.image.ui.container.UploadContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * The main frontend application.
  */
-public class FrontendApplication extends WApplication {
+public class FrontendApplication extends WApplication implements PropertyChangeListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FrontendApplication.class);
 
@@ -123,7 +129,11 @@ public class FrontendApplication extends WApplication {
 
 	private ImageSelectionContainer createSelectContainer() {
 		LOGGER.info("Creating new ImageSelectionContainer");
-		return new ImageSelectionContainer(this, centerContainer);
+
+		final ImageSelectionContainer imageSelectionContainer = new ImageSelectionContainer(this, centerContainer);
+		imageSelectionContainer.addPropertyChangeListener(this); // TODO check if we are leaking memory on removal because opf this
+
+		return imageSelectionContainer;
 	}
 
 	private AnnotationContainer createAannotationContainer(GeologicalImage image) {
@@ -131,11 +141,16 @@ public class FrontendApplication extends WApplication {
 		return new AnnotationContainer(this, centerContainer, image);
 	}
 
-	protected ServletContext getServletContext() {
+	public ServletContext getServletContext() {
 		return context;
 	}
 
-	protected void showAnnotationContainer(GeologicalImage image) {
-		displayContainer(createAannotationContainer(image));
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if("imageSelectionContainer.startAnnotating".equals(evt.getPropertyName()) && evt.getNewValue() != null) {
+			GeologicalImage image = (GeologicalImage) evt.getNewValue();
+			LOGGER.info("previewSelectionWidget.imageSelected triggered - image selected is " + image.getLabel());
+			displayContainer(createAannotationContainer(image));
+		}
 	}
 }

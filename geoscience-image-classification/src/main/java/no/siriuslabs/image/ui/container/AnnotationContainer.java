@@ -1,10 +1,17 @@
-package no.siriuslabs.image;
+package no.siriuslabs.image.ui.container;
 
 import eu.webtoolkit.jwt.*;
+import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.model.triples.Triple;
 
+import no.siriuslabs.image.ui.widget.CreateShapeDialog;
+import no.siriuslabs.image.ui.widget.ShapeWidget;
+import no.siriuslabs.image.ui.widget.TripletPlaceholder;
+import no.siriuslabs.image.ui.widget.TripletTableModel;
+import no.siriuslabs.image.ui.widget.TripletWidget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

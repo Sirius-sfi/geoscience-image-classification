@@ -1,4 +1,4 @@
-package no.siriuslabs.image;
+package no.siriuslabs.image.ui.widget;
 
 import eu.webtoolkit.jwt.ItemDataRole;
 import eu.webtoolkit.jwt.Orientation;

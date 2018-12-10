@@ -1,4 +1,4 @@
-package no.siriuslabs.image;
+package no.siriuslabs.image.ui.container;
 
 import eu.webtoolkit.jwt.WContainerWidget;
 import eu.webtoolkit.jwt.WText;
