@@ -147,9 +147,9 @@ public class FrontendApplication extends WApplication implements PropertyChangeL
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if("imageSelectionContainer.startAnnotating".equals(evt.getPropertyName()) && evt.getNewValue() != null) {
+		if(ImageSelectionContainer.START_ANNOTATING_PROPERTY_NAME.equals(evt.getPropertyName()) && evt.getNewValue() != null) {
 			GeologicalImage image = (GeologicalImage) evt.getNewValue();
-			LOGGER.info("previewSelectionWidget.imageSelected triggered - image selected is " + image.getLabel());
+			LOGGER.info(ImageSelectionContainer.START_ANNOTATING_PROPERTY_NAME + " triggered - image selected is {}", image.getLabel());
 			displayContainer(createAannotationContainer(image));
 		}
 	}

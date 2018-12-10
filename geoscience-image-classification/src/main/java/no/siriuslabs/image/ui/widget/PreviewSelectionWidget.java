@@ -22,6 +22,8 @@ public class PreviewSelectionWidget extends WContainerWidget {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PreviewSelectionWidget.class);
 
+	public static final String IMAGE_SELECTED_PROPERTY_NAME = "previewSelectionWidget.imageSelected";
+
 	private static final int LINK_HEIGHT = 50;
 
 	private final GeologicalImage image;
@@ -90,7 +92,7 @@ public class PreviewSelectionWidget extends WContainerWidget {
 
 	private void performShowAnnotationContainerAction() {
 		LOGGER.info("Triggering annotation page for image {}", image.getRelativeImagePath());
-		propertyChangeSupport.firePropertyChange("previewSelectionWidget.imageSelected", null, image);
+		propertyChangeSupport.firePropertyChange(IMAGE_SELECTED_PROPERTY_NAME, null, image);
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {

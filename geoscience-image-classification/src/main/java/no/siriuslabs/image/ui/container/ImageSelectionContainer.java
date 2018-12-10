@@ -27,6 +27,8 @@ public class ImageSelectionContainer extends WContainerWidget implements Propert
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImageSelectionContainer.class);
 
+	public static final String START_ANNOTATING_PROPERTY_NAME = "imageSelectionContainer.startAnnotating";
+
 	private final FrontendApplication application;
 
 	private final PropertyChangeSupport propertyChangeSupport;
@@ -95,9 +97,9 @@ public class ImageSelectionContainer extends WContainerWidget implements Propert
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if("previewSelectionWidget.imageSelected".equals(evt.getPropertyName()) && evt.getNewValue() != null) {
-			LOGGER.info("previewSelectionWidget.imageSelected triggered");
-			propertyChangeSupport.firePropertyChange("imageSelectionContainer.startAnnotating", null, evt.getNewValue());
+		if(PreviewSelectionWidget.IMAGE_SELECTED_PROPERTY_NAME.equals(evt.getPropertyName()) && evt.getNewValue() != null) {
+			LOGGER.info(PreviewSelectionWidget.IMAGE_SELECTED_PROPERTY_NAME + " triggered");
+			propertyChangeSupport.firePropertyChange(START_ANNOTATING_PROPERTY_NAME, null, evt.getNewValue());
 		}
 	}
 }

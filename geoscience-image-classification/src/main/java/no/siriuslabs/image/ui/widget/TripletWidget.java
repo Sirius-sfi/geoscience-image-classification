@@ -23,6 +23,9 @@ public class TripletWidget extends WContainerWidget {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TripletWidget.class);
 
+	public static final String SAVED_PROPERTY_NAME = "tripletWidget.saved";
+	public static final String CANCELLED_PROPERTY_NAME = "tripletWidget.cancelled";
+
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	private WLineEdit part1;
@@ -109,14 +112,14 @@ public class TripletWidget extends WContainerWidget {
 			data.setObject(part3.getValueText().trim());
 		}
 
-		LOGGER.info("triggering tripletWidget.saved with values (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
-		propertyChangeSupport.firePropertyChange("tripletWidget.saved", false, true);
+		LOGGER.info("triggering " + SAVED_PROPERTY_NAME + " with values (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
+		propertyChangeSupport.firePropertyChange(SAVED_PROPERTY_NAME, false, true);
 	}
 
 	private void cancelButtonClickedAction() {
 		resetData();
-		LOGGER.info("triggering tripletWidget.cancelled");
-		propertyChangeSupport.firePropertyChange("tripletWidget.cancelled", false, true);
+		LOGGER.info("triggering " + CANCELLED_PROPERTY_NAME);
+		propertyChangeSupport.firePropertyChange(CANCELLED_PROPERTY_NAME, false, true);
 	}
 
 	/**

@@ -36,6 +36,8 @@ import java.util.Set;
  */
 public class ShapeWidget extends WPaintedWidget {
 
+	public static final String WIDGET_MODE_PROPERTY_NAME = "shapeWidget.widgetMode";
+
 	/**
 	 * Represents the current mode of operation of the ShapeWidget.
 	 */
@@ -255,7 +257,7 @@ public class ShapeWidget extends WPaintedWidget {
 	public void setWidgetMode(AnnotationWidgetMode mode) {
 		AnnotationWidgetMode oldValue = widgetMode;
 		widgetMode = mode;
-		propertyChangeSupport.firePropertyChange("shapeWidget.widgetMode", oldValue, widgetMode);
+		propertyChangeSupport.firePropertyChange(WIDGET_MODE_PROPERTY_NAME, oldValue, widgetMode);
 	}
 
 	public AnnotationWidgetMode getWidgetMode() {
