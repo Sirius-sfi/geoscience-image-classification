@@ -7,7 +7,8 @@
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:annotations="http://no.sirius.ontology/annotations#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:untitled-ontology-38="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#">
+     xmlns:untitled-ontology-38="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#"
+     xmlns:gico="http://no.sirius.ontology/gico#">
     <owl:Ontology rdf:about="http://no.sirius.ontology/gico"/>
     
 
@@ -92,6 +93,12 @@
     
 
 
+    <!-- http://no.sirius.ontology/gico#locatedIn -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/gico#locatedIn"/>
+    
+
+
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
@@ -100,6 +107,15 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
+    
+
+
+    <!-- http://no.sirius.ontology/gico#hasGeologicalAge -->
+
+    <owl:DatatypeProperty rdf:about="http://no.sirius.ontology/gico#hasGeologicalAge">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+        <rdfs:comment>in Ma (million years)</rdfs:comment>
+    </owl:DatatypeProperty>
     
 
 
@@ -157,6 +173,20 @@
     
 
 
+    <!-- http://no.sirius.ontology/gico#Basin -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Basin">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#Location"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#locatedIn"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/gico#Country"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
     <!-- http://no.sirius.ontology/gico#BlockDiagram -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/gico#BlockDiagram">
@@ -182,11 +212,35 @@
     
 
 
+    <!-- http://no.sirius.ontology/gico#Country -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Country">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#Location"/>
+    </owl:Class>
+    
+
+
     <!-- http://no.sirius.ontology/gico#EventChart -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/gico#EventChart">
         <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#GeologicalImage"/>
         <rdfs:label>Event chart</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#ExplorationWell -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#ExplorationWell">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#Well"/>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#Fault -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Fault">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#TectonicContact"/>
     </owl:Class>
     
 
@@ -215,6 +269,19 @@
     <owl:Class rdf:about="http://no.sirius.ontology/gico#GeologicalMap">
         <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#GeologicalImage"/>
         <rdfs:label>Geological map</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#GeologicalObject -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#GeologicalObject">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#locatedIn"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/gico#Location"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
     
 
@@ -273,6 +340,12 @@
     
 
 
+    <!-- http://no.sirius.ontology/gico#Location -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Location"/>
+    
+
+
     <!-- http://no.sirius.ontology/gico#PaleogeographicMap -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/gico#PaleogeographicMap">
@@ -322,6 +395,14 @@
     
 
 
+    <!-- http://no.sirius.ontology/gico#ProductionWell -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#ProductionWell">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#Well"/>
+    </owl:Class>
+    
+
+
     <!-- http://no.sirius.ontology/gico#Rectangle -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/gico#Rectangle">
@@ -333,6 +414,28 @@
                 <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#Rock -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Rock">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#GeologicalObject"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#hasGeologicalAge"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#TectonicContact -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#TectonicContact">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/gico#GeologicalObject"/>
     </owl:Class>
     
 
@@ -349,6 +452,56 @@
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#Well -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/gico#Well">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/gico#locatedIn"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/gico#Location"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://no.sirius.ontology/gico#NorthSea -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/gico#NorthSea">
+        <rdf:type rdf:resource="http://no.sirius.ontology/gico#Basin"/>
+        <gico:locatedIn rdf:resource="http://no.sirius.ontology/gico#Norway"/>
+        <gico:locatedIn rdf:resource="http://no.sirius.ontology/gico#UK"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#Norway -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/gico#Norway">
+        <rdf:type rdf:resource="http://no.sirius.ontology/gico#Country"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://no.sirius.ontology/gico#UK -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/gico#UK">
+        <rdf:type rdf:resource="http://no.sirius.ontology/gico#Country"/>
+    </owl:NamedIndividual>
 </rdf:RDF>
 
 

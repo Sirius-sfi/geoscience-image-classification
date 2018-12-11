@@ -560,7 +560,35 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	
+	
+	public String getNewSelectionShapeURI() {
+		
+		//Create URI for shape
+		return getNewResourceURI("shape");
+		
+	}
+	
+	
+	
+	public String getNewURIForObject(String typeName, String labelName) {
+		
+		//Create URI for object
+		//e.g.: typeName=Well, labelName=well 123
+		//return getNewResourceURI(typeName.toLowerCase() + "-" + labelName.replaceAll("\\s+","").toLowerCase());
+		return getNewResourceURI(typeName.toLowerCase());
+	}
+		
+	
+	
+	
 	public String saveNewSelectionShape(String session_id, String image_uri, AbstractShape shape) {
+		
+		return saveNewSelectionShape(session_id, image_uri, shape, getNewSelectionShapeURI());
+		
+	}
+	
+	
+	public String saveNewSelectionShape(String session_id, String image_uri, AbstractShape shape, String uri_shape) {
 	
 		//Store img annotation model		
 		AnnotationGraphModel data_model = new AnnotationGraphModel();
@@ -573,7 +601,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		
 		//Create URI for shape
-		String uri_shape = getNewResourceURI("shape");
+		//String uri_shape = getNewResourceURI("shape");
 		
 		//Assign URI type depending on the shapeType: Trianle, Circle...
 		String shape_type = GIC_URIUtils.getURIForOntologyEntity(
