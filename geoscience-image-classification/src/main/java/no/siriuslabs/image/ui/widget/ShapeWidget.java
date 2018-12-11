@@ -1,4 +1,4 @@
-package no.siriuslabs.image;
+package no.siriuslabs.image.ui.widget;
 
 import eu.webtoolkit.jwt.PaintFlag;
 import eu.webtoolkit.jwt.PenCapStyle;
@@ -12,6 +12,8 @@ import eu.webtoolkit.jwt.WPainter;
 import eu.webtoolkit.jwt.WPainterPath;
 import eu.webtoolkit.jwt.WPen;
 import eu.webtoolkit.jwt.WPointF;
+import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.model.shape.AbstractShape;
@@ -33,6 +35,8 @@ import java.util.Set;
  * Widget that displays and image and allows shapes to be drawn on the image.
  */
 public class ShapeWidget extends WPaintedWidget {
+
+	public static final String WIDGET_MODE_PROPERTY_NAME = "shapeWidget.widgetMode";
 
 	/**
 	 * Represents the current mode of operation of the ShapeWidget.
@@ -99,7 +103,7 @@ public class ShapeWidget extends WPaintedWidget {
 	/**
 	 * Cancels the points entered for the current shape and resets the shape definition.
 	 */
-	protected void resetShape() {
+	public void resetShape() {
 		LOGGER.info("resetting points");
 
 		setWidgetMode(AnnotationWidgetMode.SAVED_SHAPE);
@@ -111,7 +115,7 @@ public class ShapeWidget extends WPaintedWidget {
 	/**
 	 * Adds the coordinates from the event parameter as another point and paints a temporary marker for it.
 	 */
-	protected void addPointToShape(WMouseEvent arg) {
+	public void addPointToShape(WMouseEvent arg) {
 		LOGGER.info("adding point {}:{}", arg.getWidget().x, arg.getWidget().y);
 		final WPointF point = new WPointF(arg.getWidget());
 		points.add(point);
@@ -123,7 +127,7 @@ public class ShapeWidget extends WPaintedWidget {
 	 * Confirms the current collection of points and tries to construct a shape from them.
 	 * If successful, the shape will be drawn and the widgetMode changed.
 	 */
-	protected void confirmShape() {
+	public void confirmShape() {
 		int numberOfPoints = points.size();
 		LOGGER.info("creating shape - numberOfPoints={}", numberOfPoints);
 
@@ -173,7 +177,7 @@ public class ShapeWidget extends WPaintedWidget {
 	/**
 	 * Saves the current shape to the ontology, changes the widgetMode and redraws.
 	 */
-	protected void saveShape() {
+	public void saveShape() {
 		LOGGER.info("saving shape");
 
 		shapes.add(unsavedShape);
@@ -250,10 +254,10 @@ public class ShapeWidget extends WPaintedWidget {
 		return (ImageAnnotationAPI) application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY);
 	}
 
-	protected void setWidgetMode(AnnotationWidgetMode mode) {
+	public void setWidgetMode(AnnotationWidgetMode mode) {
 		AnnotationWidgetMode oldValue = widgetMode;
 		widgetMode = mode;
-		propertyChangeSupport.firePropertyChange("shapeWidget.widgetMode", oldValue, widgetMode);
+		propertyChangeSupport.firePropertyChange(WIDGET_MODE_PROPERTY_NAME, oldValue, widgetMode);
 	}
 
 	public AnnotationWidgetMode getWidgetMode() {

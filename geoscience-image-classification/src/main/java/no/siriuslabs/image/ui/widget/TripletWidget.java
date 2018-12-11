@@ -1,4 +1,4 @@
-package no.siriuslabs.image;
+package no.siriuslabs.image.ui.widget;
 
 import eu.webtoolkit.jwt.WBoxLayout;
 import eu.webtoolkit.jwt.WContainerWidget;
@@ -22,6 +22,9 @@ import java.util.List;
 public class TripletWidget extends WContainerWidget {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TripletWidget.class);
+
+	public static final String SAVED_PROPERTY_NAME = "tripletWidget.saved";
+	public static final String CANCELLED_PROPERTY_NAME = "tripletWidget.cancelled";
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
@@ -109,27 +112,27 @@ public class TripletWidget extends WContainerWidget {
 			data.setObject(part3.getValueText().trim());
 		}
 
-		LOGGER.info("triggering tripletWidget.saved with values (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
-		propertyChangeSupport.firePropertyChange("tripletWidget.saved", false, true);
+		LOGGER.info("triggering " + SAVED_PROPERTY_NAME + " with values (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
+		propertyChangeSupport.firePropertyChange(SAVED_PROPERTY_NAME, false, true);
 	}
 
 	private void cancelButtonClickedAction() {
 		resetData();
-		LOGGER.info("triggering tripletWidget.cancelled");
-		propertyChangeSupport.firePropertyChange("tripletWidget.cancelled", false, true);
+		LOGGER.info("triggering " + CANCELLED_PROPERTY_NAME);
+		propertyChangeSupport.firePropertyChange(CANCELLED_PROPERTY_NAME, false, true);
 	}
 
 	/**
 	 * Returns the current data object.
 	 */
-	protected TripletPlaceholder getData() {
+	public TripletPlaceholder getData() {
 		return data;
 	}
 
 	/**
 	 * Sets the current data object and updates the fields.
 	 */
-	protected void setData(TripletPlaceholder data) {
+	public void setData(TripletPlaceholder data) {
 		this.data = data;
 		part1.setText(data.getSubject());
 		part2.setText(data.getPredicate());
@@ -140,7 +143,7 @@ public class TripletWidget extends WContainerWidget {
 	/**
 	 * Resets the current data object and empties the fields and suggestions.
 	 */
-	protected void resetData() {
+	public void resetData() {
 		data = null;
 		part1.setText("");
 		part1Popup.clearSuggestions();

@@ -1,10 +1,17 @@
-package no.siriuslabs.image;
+package no.siriuslabs.image.ui.container;
 
 import eu.webtoolkit.jwt.*;
+import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.model.triples.Triple;
 
+import no.siriuslabs.image.ui.widget.CreateShapeDialog;
+import no.siriuslabs.image.ui.widget.ShapeWidget;
+import no.siriuslabs.image.ui.widget.TripletPlaceholder;
+import no.siriuslabs.image.ui.widget.TripletTableModel;
+import no.siriuslabs.image.ui.widget.TripletWidget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -295,9 +302,9 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if("shapeWidget.widgetMode".equals(evt.getPropertyName())) {
+		if(ShapeWidget.WIDGET_MODE_PROPERTY_NAME.equals(evt.getPropertyName())) {
 			final ShapeWidget.AnnotationWidgetMode widgetMode = (ShapeWidget.AnnotationWidgetMode) evt.getNewValue();
-			LOGGER.info("shapeWidget.widgetMode changed to {}", widgetMode);
+			LOGGER.info(ShapeWidget.WIDGET_MODE_PROPERTY_NAME + " changed to {}", widgetMode);
 
 			if(widgetMode == ShapeWidget.AnnotationWidgetMode.SET_POINTS) {
 				newShapeButton.disable();
@@ -315,12 +322,12 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 				saveAnnotationButton.disable();
 			}
 		}
-		else if("tripletWidget.cancelled".equals(evt.getPropertyName())) {
+		else if(TripletWidget.CANCELLED_PROPERTY_NAME.equals(evt.getPropertyName())) {
 			annotationEditorWidget.hide();
 		}
-		else if("tripletWidget.saved".equals(evt.getPropertyName())) {
+		else if(TripletWidget.SAVED_PROPERTY_NAME.equals(evt.getPropertyName())) {
 			if(isTripletValid()) {
-				LOGGER.info("tripletWidget.saved was triggered and triplet is valid --> saving to ontology");
+				LOGGER.info(TripletWidget.SAVED_PROPERTY_NAME + " was triggered and triplet is valid --> saving to ontology");
 				TripletPlaceholder placeholder = annotationEditorWidget.getData();
 
 				// TODO save to ontology

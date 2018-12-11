@@ -1,33 +1,48 @@
-package no.siriuslabs.image;
+package no.siriuslabs.image.ui.container;
 
 import eu.webtoolkit.jwt.Side;
 import eu.webtoolkit.jwt.WContainerWidget;
 import eu.webtoolkit.jwt.WGroupBox;
 import eu.webtoolkit.jwt.WLength;
-import eu.webtoolkit.jwt.WPointF;
 import eu.webtoolkit.jwt.WVBoxLayout;
+import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
-import no.siriuslabs.image.model.shape.Circle;
 import no.siriuslabs.image.services.FileService;
+import no.siriuslabs.image.ui.widget.PreviewSelectionWidget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.EnumSet;
 import java.util.List;
 
-public class ImageSelectionContainer extends WContainerWidget {
+/**
+ * Container class representing the image selection page.
+ */
+public class ImageSelectionContainer extends WContainerWidget implements PropertyChangeListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImageSelectionContainer.class);
 
+	public static final String START_ANNOTATING_PROPERTY_NAME = "imageSelectionContainer.startAnnotating";
+
 	private final FrontendApplication application;
 
+	private final PropertyChangeSupport propertyChangeSupport;
+
+	/**
+	 * Constructor taking the application and the parent container.
+	 */
 	public ImageSelectionContainer(FrontendApplication application, WContainerWidget parent) {
 		super(parent);
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 
 		this.application = application;
+
+		propertyChangeSupport = new PropertyChangeSupport(this);
 
 		WVBoxLayout layout = new WVBoxLayout();
 
@@ -53,6 +68,7 @@ public class ImageSelectionContainer extends WContainerWidget {
 			image.setAbsoluteImagePath(absolutePath);
 
 			PreviewSelectionWidget previewWidget = new PreviewSelectionWidget(this, image);
+			previewWidget.addPropertyChangeListener(this);
 			previewWidget.setMargin(new WLength(50), EnumSet.of(Side.Bottom));
 
 			if(!groupBox.getTitle().getValue().equals(image.getTypeLabel())) {
@@ -71,7 +87,19 @@ public class ImageSelectionContainer extends WContainerWidget {
 		LOGGER.info("{} constructor - end", getClass().getSimpleName());
 	}
 
-	protected FrontendApplication getApplication() {
-		return application;
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		propertyChangeSupport.addPropertyChangeListener(listener);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		propertyChangeSupport.removePropertyChangeListener(listener);
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if(PreviewSelectionWidget.IMAGE_SELECTED_PROPERTY_NAME.equals(evt.getPropertyName()) && evt.getNewValue() != null) {
+			LOGGER.info(PreviewSelectionWidget.IMAGE_SELECTED_PROPERTY_NAME + " triggered");
+			propertyChangeSupport.firePropertyChange(START_ANNOTATING_PROPERTY_NAME, null, evt.getNewValue());
+		}
 	}
 }

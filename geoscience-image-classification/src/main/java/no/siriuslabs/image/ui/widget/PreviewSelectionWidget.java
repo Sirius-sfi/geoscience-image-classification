@@ -1,4 +1,4 @@
-package no.siriuslabs.image;
+package no.siriuslabs.image.ui.widget;
 
 import eu.webtoolkit.jwt.AnchorTarget;
 import eu.webtoolkit.jwt.WAnchor;
@@ -7,28 +7,44 @@ import eu.webtoolkit.jwt.WLength;
 import eu.webtoolkit.jwt.WLink;
 import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WVBoxLayout;
-import eu.webtoolkit.jwt.WWidget;
 import no.siriuslabs.image.model.GeologicalImage;
+import no.siriuslabs.image.ui.container.ImageSelectionContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
+/**
+ * Widget combining an image preview, a link to the full size image and a selection button.
+ */
 public class PreviewSelectionWidget extends WContainerWidget {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PreviewSelectionWidget.class);
+
+	public static final String IMAGE_SELECTED_PROPERTY_NAME = "previewSelectionWidget.imageSelected";
 
 	private static final int LINK_HEIGHT = 50;
 
 	private final GeologicalImage image;
 
+	private final PropertyChangeSupport propertyChangeSupport;
+
 	private ImagePreviewWidget imagePreviewWidget;
 	private WAnchor anchor;
 	private WPushButton annotateButton;
 
+	/**
+	 * Constructor taking the parent container and the image to work with.
+	 */
 	public PreviewSelectionWidget(ImageSelectionContainer parent, GeologicalImage image) {
 		super(parent);
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 
 		this.image = image;
+
+		propertyChangeSupport = new PropertyChangeSupport(this);
+
 		initializePreviewWidget();
 
 		initializeLink(image.getRelativeImagePath());
@@ -75,9 +91,15 @@ public class PreviewSelectionWidget extends WContainerWidget {
 	}
 
 	private void performShowAnnotationContainerAction() {
-		LOGGER.info("Displaying annotation page for image {}", image.getRelativeImagePath());
-		WWidget groupBox = getParent();
-		ImageSelectionContainer imageSelectionContainer = (ImageSelectionContainer) groupBox.getParent();
-		imageSelectionContainer.getApplication().showAnnotationContainer(image);
+		LOGGER.info("Triggering annotation page for image {}", image.getRelativeImagePath());
+		propertyChangeSupport.firePropertyChange(IMAGE_SELECTED_PROPERTY_NAME, null, image);
+	}
+
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		propertyChangeSupport.addPropertyChangeListener(listener);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		propertyChangeSupport.removePropertyChangeListener(listener);
 	}
 }
