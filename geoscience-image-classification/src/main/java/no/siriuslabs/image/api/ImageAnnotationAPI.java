@@ -674,7 +674,8 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		triplesForInterface.add(
 				new ObjectPropertyTriple(
 						instance,
-						sessionManager.getSession(session_id).createObjectPropery(GIC_URIUtils.IS_VISUALLY_REPRESENTED),
+						sessionManager.getSession(session_id).createObjectPropery(
+								GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED)),
 						sessionManager.getSession(session_id).createInstance(uri_shape, shape_type)
 						));
 		
@@ -736,7 +737,9 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		data_model.addLabelTriple(uri_object, name_object);
 		
 		//Visually represented
-		data_model.addObjectTriple(uri_object, GIC_URIUtils.IS_VISUALLY_REPRESENTED, shape_uri);
+		data_model.addObjectTriple(uri_object, 
+				GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED),
+				shape_uri);
 		
 		
 		
