@@ -22,6 +22,8 @@ import org.eclipse.rdf4j.rio.UnsupportedRDFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uio.ifi.ontology.toolkit.projection.utils.URIUtils;
+
 /**
  * This class manages the RDF annotation graph model
  * @author ejimenez-ruiz
@@ -125,6 +127,8 @@ public class AnnotationGraphModel {
 	
 	public void addTypeTriple(String subject, String object){
 		addObjectTriple(vf.createIRI(subject), RDF.TYPE, vf.createIRI(object));
+		//We also add direct type
+		addObjectTriple(vf.createIRI(subject), vf.createIRI(URIUtils.DIRECT_TYPE), vf.createIRI(object));
 	}
 	
 	public void addLabelTriple(String subject, String object){

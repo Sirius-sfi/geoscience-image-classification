@@ -24,6 +24,7 @@ import no.siriuslabs.image.model.shape.Circle;
 import no.siriuslabs.image.model.shape.Polygon;
 import no.siriuslabs.image.model.shape.Rectangle;
 import no.siriuslabs.image.model.shape.Triangle;
+import no.siriuslabs.image.model.triples.DataPropertyTriple;
 import no.siriuslabs.image.model.triples.ObjectPropertyTriple;
 import no.siriuslabs.image.model.triples.Triple;
 import no.siriuslabs.image.model.triples.TypeDefinitionTriple;
@@ -32,6 +33,7 @@ import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionMa
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 import uio.ifi.ontology.toolkit.projection.model.entities.DataProperty;
 import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
+import uio.ifi.ontology.toolkit.projection.model.entities.LiteralValue;
 import uio.ifi.ontology.toolkit.projection.model.entities.ObjectProperty;
 import uio.ifi.ontology.toolkit.projection.model.entities.Property;
 import uio.ifi.ontology.toolkit.projection.utils.URIUtils;
@@ -58,7 +60,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	
-	public double getRandomNumber() {
+	protected double getRandomNumber() {
 		return Math.random();
 	}
 	
@@ -77,6 +79,10 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	public List<Concept> getImageTypes(String session_id){
 			
 		List<Concept> imageTypes = new ArrayList<Concept>();
+		
+		
+		//TODO Query for concepts of given namespace...
+		
 		
 		//Query for special annotation in ontology
 		Concept mainArtefact = sessionManager.getSession(session_id).getMainArtefactConcept();
@@ -469,6 +475,22 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	}
 	
 	
+	public TreeSet<Property> getPredicatesForSubject(String session_id, String subject_iri){
+		TreeSet<Property> predicates = new TreeSet<Property>();
+		
+		predicates.addAll(getDataPredicatesForSubject(session_id, subject_iri));
+		predicates.addAll(getObjectPredicatesForSubject(session_id, subject_iri));
+		
+		return predicates;
+		
+	}
+	
+	
+	
+	
+	
+	
+	
 	public TreeSet<DataProperty> getDataPredicates(String session_id){
 		return sessionManager.getSession(session_id).getDataPredicates();
 	}
@@ -476,6 +498,21 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	public TreeSet<ObjectProperty> getObjectPredicates(String session_id){
 		return sessionManager.getSession(session_id).getObjectPredicates();
+	}
+	
+	
+	public TreeSet<DataProperty> getDataPredicatesForSubject(String session_id, String subject_iri){
+		
+		//TODO When storing objects and types, store rdf:type but also the direct type for convenience
+		
+		//TODO Get facet predicates for the type of subject
+		return null;
+	}
+	
+	
+	public TreeSet<ObjectProperty> getObjectPredicatesForSubject(String session_id, String subject_iri){
+		//TODO Get neighbours for the type of subject
+		return null;
 	}
 
 	
@@ -496,6 +533,18 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		String data_file_path = sessionManager.getSession(session_id).getDataFilePath();
 		data_model.loadModelFromFile(data_file_path);
 		
+		//Add triples
+		addTriplesForAnnotations(data_model, triples);
+		
+		//Save new triples
+		saveDataModel(data_model, session_id);
+		
+		
+	}
+	
+	
+	protected void addTriplesForAnnotations(AnnotationGraphModel data_model, Set<Triple> triples) {
+		
 		//Add triples to model
 		for (Triple triple : triples) {
 			
@@ -511,15 +560,9 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 				data_model.addObjectTriple(
 						triple.getSubject().getIri(), triple.asObjectPropertyTriple().getPredicate().getIri(), triple.asObjectPropertyTriple().getObject().getIri());
 			
-			
-			
 		
 		}
-		
-		//Save new triples
-		saveDataModel(data_model, session_id);
-		
-		
+
 	}
 	
 	
@@ -577,7 +620,133 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//return getNewResourceURI(typeName.toLowerCase() + "-" + labelName.replaceAll("\\s+","").toLowerCase());
 		return getNewResourceURI(typeName.toLowerCase());
 	}
+	
+	
+	
+	
+	
 		
+	
+	
+	
+	
+	public Set<Triple> saveNewShapeAndObject(String session_id, String image_uri, AbstractShape shape, String type_object_uri, String name_object){
+		return saveNewShapeAndObject(session_id, image_uri, shape, getNewSelectionShapeURI(), type_object_uri, name_object);
+	}
+	
+	
+	
+	
+	
+	public Set<Triple> saveNewShapeAndObject(String session_id, String image_uri, AbstractShape shape, String uri_shape, String type_object_uri, String name_object){
+		
+		
+		//Load model
+		AnnotationGraphModel data_model = new AnnotationGraphModel();
+		
+		String data_file_path = sessionManager.getSession(session_id).getDataFilePath();
+		data_model.loadModelFromFile(data_file_path);
+		
+		//Add new triple to model
+		String shape_type = addNewShapeTriples(data_model, image_uri, shape, uri_shape);
+		String uri_object = addNewObjectTriples(data_model, uri_shape, type_object_uri, name_object);
+	
+		
+		//Save/store model
+		saveDataModel(data_model, session_id);
+		
+		
+		
+		
+		//Retrieve triples from store with necessary labelling/visual data
+		Set<Triple> triplesForInterface = new HashSet<Triple>();
+		
+		
+		Instance instance = sessionManager.getSession(session_id).createInstance(uri_object, type_object_uri);
+		
+		triplesForInterface.add(
+				new TypeDefinitionTriple(
+						instance,
+						sessionManager.getSession(session_id).createConcept(type_object_uri)
+						));
+		
+		
+		triplesForInterface.add(
+				new ObjectPropertyTriple(
+						instance,
+						sessionManager.getSession(session_id).createObjectPropery(GIC_URIUtils.IS_VISUALLY_REPRESENTED),
+						sessionManager.getSession(session_id).createInstance(uri_shape, shape_type)
+						));
+		
+		
+		DataProperty dp = new DataProperty(URIUtils.RDFS_LABEL);
+		dp.setLabel("rds:label");
+		triplesForInterface.add(
+				new DataPropertyTriple(
+						instance,
+						dp,
+						new LiteralValue(name_object)
+						));
+		
+		
+		
+		return triplesForInterface;
+		
+	}
+	
+	
+	
+	public String saveNewObject(String session_id, String shape_uri, String type_object_uri, String name_object) {
+		
+		
+		//Load model
+		AnnotationGraphModel data_model = new AnnotationGraphModel();
+		
+		String data_file_path = sessionManager.getSession(session_id).getDataFilePath();
+		data_model.loadModelFromFile(data_file_path);
+	
+		//Add triples to model
+		String uri_object = addNewObjectTriples(data_model, shape_uri, type_object_uri, name_object);
+		
+				
+		//Save new triples
+		saveDataModel(data_model, session_id);
+				
+		return uri_object;
+		
+	}
+	
+	
+	
+	protected String addNewObjectTriples(AnnotationGraphModel data_model, String shape_uri, String type_object_uri, String name_object) {
+
+		String uri_object = getNewURIForObject(URIUtils.getEntityLabelFromURI(type_object_uri), name_object);
+		
+		//Instance instance = new Instance(uri_object);
+		//instance.setLabel(name_object);
+		//instance.setClassType(type_object_uri);
+		//Concept type = new Concept(type_object_uri);
+		//new TypeDefinitionTriple(instance, type);
+		
+		
+		//Type object
+		data_model.addTypeTriple(uri_object, type_object_uri);
+		
+		//Label_name
+		data_model.addLabelTriple(uri_object, name_object);
+		
+		//Visually represented
+		data_model.addObjectTriple(uri_object, GIC_URIUtils.IS_VISUALLY_REPRESENTED, shape_uri);
+		
+		
+		
+		
+		return uri_object;
+		
+	}
+	
+	
+	
 	
 	
 	
@@ -599,7 +768,22 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		data_model.loadModelFromFile(data_file_path);
 		
 		
+		//Add triples to model
+		addNewShapeTriples(data_model, image_uri, shape, uri_shape);
 		
+		
+		//Save new triples
+		saveDataModel(data_model, session_id);
+		
+		return uri_shape;
+		
+		
+		
+	}
+	
+	
+	
+	protected String addNewShapeTriples(AnnotationGraphModel data_model, String image_uri, AbstractShape shape, String uri_shape) {
 		//Create URI for shape
 		//String uri_shape = getNewResourceURI("shape");
 		
@@ -639,15 +823,11 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			
 		}
 		
-		
-		//Save new triples
-		saveDataModel(data_model, session_id);
-		
-		return uri_shape;
-		
-		
+		return shape_type;
 		
 	}
+	
+	
 	
 	
 	/**
