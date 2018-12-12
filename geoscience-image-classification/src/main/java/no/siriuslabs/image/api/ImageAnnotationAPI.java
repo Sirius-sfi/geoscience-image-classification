@@ -48,13 +48,23 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(OntologyProjectionAPI.class);
 	
-	private ValueFactory vf;
+	//private ValueFactory vf;
 	
 	
 	public ImageAnnotationAPI(RDFoxSessionManager session){
 		sessionManager = session;
 		
-		vf = SimpleValueFactory.getInstance();
+		//vf = SimpleValueFactory.getInstance();
+		
+		
+		
+		//TODO: MISSING things
+		//1. Retrieval of triples for neighbours and facets
+		//2. Refined methods for autocompletion
+		//2a. Predicates for subject
+		//2b. Objects for subject-predicate (facets and neighbourhoods)
+		//2b1. Potential allowed values for facets: boolean, list of strings, etc. (slider?)
+		//2b2. Expected allowed objects uris
 		
 	}
 	
@@ -80,10 +90,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			
 		List<Concept> imageTypes = new ArrayList<Concept>();
 		
-		
-		//TODO Query for concepts of given namespace...
-		
-		
+		//TODO Possible alternative: Query for concepts of given namespace?
 		//Query for special annotation in ontology
 		Concept mainArtefact = sessionManager.getSession(session_id).getMainArtefactConcept();
 		imageTypes.add(mainArtefact);
@@ -283,7 +290,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		triples.addAll(getObjectsAndVisualRepresentationAnnotationsForImage(session_id, image_uri));
 		
 		
-		//TODO: Add triples for relationships and facets
+		//TODO: GET triples for relationships and facets
 		
 		
 		return triples;
