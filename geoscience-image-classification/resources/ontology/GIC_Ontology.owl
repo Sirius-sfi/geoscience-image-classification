@@ -213,7 +213,6 @@
                 <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <annotations:hidden rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:hidden>
         <rdfs:comment>A points is internally defined with two points. The first point establishes the center while the second (optional) fixes the distance to the center (i.e., the radius). If only one point is given the second point is automatically defined.</rdfs:comment>
     </owl:Class>
     
@@ -400,7 +399,6 @@
                 <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <annotations:hidden rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:hidden>
     </owl:Class>
     
 
@@ -424,7 +422,6 @@
                 <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <annotations:hidden rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:hidden>
     </owl:Class>
     
 
@@ -462,7 +459,6 @@
                 <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <annotations:hidden rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:hidden>
     </owl:Class>
     
 
