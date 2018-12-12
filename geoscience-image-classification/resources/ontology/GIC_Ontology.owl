@@ -24,6 +24,12 @@
     
 
 
+    <!-- http://no.sirius.ontology/annotations#hidden -->
+
+    <owl:AnnotationProperty rdf:about="http://no.sirius.ontology/annotations#hidden"/>
+    
+
+
     <!-- http://no.sirius.ontology/annotations#isMainArtefactClass -->
 
     <owl:AnnotationProperty rdf:about="http://no.sirius.ontology/annotations#isMainArtefactClass">
@@ -207,6 +213,7 @@
                 <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <annotations:hidden rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:hidden>
         <rdfs:comment>A points is internally defined with two points. The first point establishes the center while the second (optional) fixes the distance to the center (i.e., the radius). If only one point is given the second point is automatically defined.</rdfs:comment>
     </owl:Class>
     
@@ -326,6 +333,7 @@
                 <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/gico#ImageSelection"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <annotations:hidden rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:hidden>
         <rdfs:comment>Image segment will include different shapes</rdfs:comment>
     </owl:Class>
     
@@ -376,6 +384,7 @@
                 <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <annotations:hidden rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:hidden>
     </owl:Class>
     
 
@@ -391,6 +400,7 @@
                 <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <annotations:hidden rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:hidden>
     </owl:Class>
     
 
@@ -414,6 +424,7 @@
                 <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <annotations:hidden rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:hidden>
     </owl:Class>
     
 
@@ -451,6 +462,7 @@
                 <owl:onClass rdf:resource="http://no.sirius.ontology/gico#Point"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <annotations:hidden rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:hidden>
     </owl:Class>
     
 
