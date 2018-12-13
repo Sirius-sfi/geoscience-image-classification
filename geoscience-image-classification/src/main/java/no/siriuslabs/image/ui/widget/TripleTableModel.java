@@ -4,18 +4,21 @@ import eu.webtoolkit.jwt.ItemDataRole;
 import eu.webtoolkit.jwt.Orientation;
 import eu.webtoolkit.jwt.WAbstractTableModel;
 import eu.webtoolkit.jwt.WModelIndex;
+import no.siriuslabs.image.model.triples.Triple;
+import uio.ifi.ontology.toolkit.projection.model.entities.Entity;
+import uio.ifi.ontology.toolkit.projection.model.entities.LiteralValue;
 
 import java.util.List;
 
 /**
  * Table model of the annotation table.
  */
-public class TripletTableModel extends WAbstractTableModel {
+public class TripleTableModel extends WAbstractTableModel {
 
-	private final List<TripletPlaceholder> triplets;
+	private final List<Triple> data;
 
-	public TripletTableModel(List<TripletPlaceholder> triplets) {
-		this.triplets = triplets;
+	public TripleTableModel(List<Triple> data) {
+		this.data = data;
 	}
 
 	@Override
@@ -25,21 +28,30 @@ public class TripletTableModel extends WAbstractTableModel {
 
 	@Override
 	public int getRowCount(WModelIndex wModelIndex) {
-		return triplets.size();
+		return data.size();
 	}
 
 	@Override
 	public Object getData(WModelIndex index, int role) {
 		if(ItemDataRole.DisplayRole == role) {
-			TripletPlaceholder row = triplets.get(index.getRow());
+			Triple row = data.get(index.getRow());
 			if(index.getColumn() == 0) {
-				return row.getSubject();
+				return row.getSubject().getVisualRepresentation();
 			}
 			else if(index.getColumn() == 1) {
-				return row.getPredicate();
+				return ((Entity)row.getPredicate()).getVisualRepresentation();
 			}
 			else if(index.getColumn() == 2) {
-				return row.getObject();
+				final Object rowObject = row.getObject();
+				if(rowObject instanceof LiteralValue) {
+					return ((LiteralValue)rowObject).getVisualRepresentation();
+				}
+				else if(rowObject instanceof Entity) {
+					return ((Entity)rowObject).getVisualRepresentation();
+				}
+				else {
+					return row.getObject();
+				}
 			}
 		}
 		return null;

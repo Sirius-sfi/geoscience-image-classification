@@ -1,19 +1,35 @@
 package no.siriuslabs.image.ui.container;
 
-import eu.webtoolkit.jwt.*;
+import eu.webtoolkit.jwt.Icon;
+import eu.webtoolkit.jwt.KeyboardModifier;
+import eu.webtoolkit.jwt.SelectionMode;
+import eu.webtoolkit.jwt.Side;
+import eu.webtoolkit.jwt.StandardButton;
+import eu.webtoolkit.jwt.WBorderLayout;
+import eu.webtoolkit.jwt.WContainerWidget;
+import eu.webtoolkit.jwt.WDialog;
+import eu.webtoolkit.jwt.WHBoxLayout;
+import eu.webtoolkit.jwt.WLength;
+import eu.webtoolkit.jwt.WMessageBox;
+import eu.webtoolkit.jwt.WModelIndex;
+import eu.webtoolkit.jwt.WMouseEvent;
+import eu.webtoolkit.jwt.WPushButton;
+import eu.webtoolkit.jwt.WTableView;
+import eu.webtoolkit.jwt.WText;
+import eu.webtoolkit.jwt.WVBoxLayout;
+import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.FrontendApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.model.triples.Triple;
-
 import no.siriuslabs.image.ui.widget.CreateShapeDialog;
 import no.siriuslabs.image.ui.widget.ShapeWidget;
-import no.siriuslabs.image.ui.widget.TripletPlaceholder;
-import no.siriuslabs.image.ui.widget.TripletTableModel;
-import no.siriuslabs.image.ui.widget.TripletWidget;
+import no.siriuslabs.image.ui.widget.TripleTableModel;
+import no.siriuslabs.image.ui.widget.TripleWidget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -40,7 +56,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 	private WVBoxLayout annotationLayout;
 	private WTableView annotationsTable; // TODO replace with a tree-table to get a visual relation to the shape/feature?
-	private TripletWidget annotationEditorWidget;
+	private TripleWidget annotationEditorWidget;
 
 	private WContainerWidget topPanel;
 	private WContainerWidget annotationPanel;
@@ -51,7 +67,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 	private WText messageText;
 
-	private List<TripletPlaceholder> annotationTriplets;
+	private List<Triple> annotationTriples;
 
 	/**
 	 * Constructor taking the application, parent container and the GeologicalImage that is to be annotated.
@@ -127,7 +143,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		annotationLayout = new WVBoxLayout();
 
 		annotationsTable = new WTableView();
-		annotationsTable.setModel(new TripletTableModel(annotationTriplets));
+		annotationsTable.setModel(new TripleTableModel(annotationTriples));
 		annotationsTable.setSelectionMode(SelectionMode.SingleSelection);
 		annotationsTable.selectionChanged().addListener(this, () -> tableSelectionChangedAction());
 		annotationLayout.addWidget(annotationsTable, 1);
@@ -153,7 +169,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 		annotationLayout.addWidget(tableControlPanel);
 
-		annotationEditorWidget = new TripletWidget();
+		annotationEditorWidget = new TripleWidget();
 		annotationEditorWidget.hide();
 		annotationEditorWidget.setMinimumSize(WLength.Auto, new WLength(30));
 		annotationEditorWidget.addPropertyChangeListener(this);
@@ -185,7 +201,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 	private void editAnnotationButtonClickedAction() {
 		final WModelIndex selection = annotationsTable.getSelectedIndexes().first();
-		annotationEditorWidget.setData(annotationTriplets.get(selection.getRow()));
+		annotationEditorWidget.setData(annotationTriples.get(selection.getRow()));
 		annotationEditorWidget.show();
 	}
 
@@ -199,8 +215,8 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		if(messageBox.getButtonResult() == StandardButton.Yes) {
 			final WModelIndex selection = annotationsTable.getSelectedIndexes().first();
 			LOGGER.info("removing selected element: {}", selection.getRow());
-			annotationTriplets.remove(selection.getRow());
-			annotationsTable.setModel(new TripletTableModel(annotationTriplets));
+			annotationTriples.remove(selection.getRow());
+			annotationsTable.setModel(new TripleTableModel(annotationTriples));
 
 			editAnnotationButton.disable();
 			deleteAnnotationButton.disable();
@@ -234,7 +250,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 			shapeWidget.confirmShape();
 		}
 
-		CreateShapeDialog dialog = new CreateShapeDialog();
+		CreateShapeDialog dialog = new CreateShapeDialog(application);
 		dialog.finished().addListener(this, () -> {
 			if(dialog.getResult() == WDialog.DialogCode.Accepted) {
 				saveShapeAndInitialTriplets(dialog);
@@ -247,28 +263,23 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	}
 
 	private void saveShapeAndInitialTriplets(CreateShapeDialog dialog) {
-		if(isWidgetModeUnsavedShape()) {
-			LOGGER.info("saving shape");
-			shapeWidget.saveShape();
-		}
-
 		LOGGER.info("saving initial annotations");
 
-		// TODO replace with real data
-		TripletPlaceholder typePlaceholder = new TripletPlaceholder("Type", "is a", dialog.getTypeValue());
-		TripletPlaceholder namePlaceholder = new TripletPlaceholder("Name", "is", dialog.getNameValue());
-
-		// TODO save annotationTriplets to ontology
 		String sessionID = getSessionID();
 		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
-		//		imageAnnotationAPI.saveAnnotations(sessionID, );
 
-		annotationTriplets.add(typePlaceholder);
-		annotationTriplets.add(namePlaceholder);
+		Concept selectedType = dialog.getTypeValue();
+		String shapeID = imageAnnotationAPI.getNewSelectionShapeURI();
+
+		Set<Triple> result = imageAnnotationAPI.saveNewShapeAndObject(
+				sessionID, image.getIri(), shapeWidget.getUnsavedShape(), shapeID, selectedType.getIri(), dialog.getNameValue());
+
+		shapeWidget.handleShapeSaved();
+
+		annotationTriples.addAll(result);
+		annotationsTable.setModel(new TripleTableModel(annotationTriples));
 
 		LOGGER.info("initial save was successful");
-
-		annotationsTable.setModel(new TripletTableModel(annotationTriplets));
 	}
 
 	private boolean isTripletValid() {
@@ -322,30 +333,30 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 				saveAnnotationButton.disable();
 			}
 		}
-		else if(TripletWidget.CANCELLED_PROPERTY_NAME.equals(evt.getPropertyName())) {
+		else if(TripleWidget.CANCELLED_PROPERTY_NAME.equals(evt.getPropertyName())) {
 			annotationEditorWidget.hide();
 		}
-		else if(TripletWidget.SAVED_PROPERTY_NAME.equals(evt.getPropertyName())) {
+		else if(TripleWidget.SAVED_PROPERTY_NAME.equals(evt.getPropertyName())) {
 			if(isTripletValid()) {
-				LOGGER.info(TripletWidget.SAVED_PROPERTY_NAME + " was triggered and triplet is valid --> saving to ontology");
-				TripletPlaceholder placeholder = annotationEditorWidget.getData();
+				LOGGER.info(TripleWidget.SAVED_PROPERTY_NAME + " was triggered and triplet is valid --> saving to ontology");
+				Triple triple = annotationEditorWidget.getData();
 
 				// TODO save to ontology
 				String sessionID = getSessionID();
 				final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
 				//		imageAnnotationAPI.saveAnnotations(sessionID, );
 
-				if(annotationTriplets.contains(placeholder)) {
+				if(annotationTriples.contains(triple)) {
 					// nothing?
 				}
 				else {
-					annotationTriplets.add(placeholder);
+					annotationTriples.add(triple);
 				}
 
 				LOGGER.info("save was successful");
 
 				// TODO try this less noisy
-				annotationsTable.setModel(new TripletTableModel(annotationTriplets));
+				annotationsTable.setModel(new TripleTableModel(annotationTriples));
 
 				editAnnotationButton.disable();
 				deleteAnnotationButton.disable();
@@ -401,16 +412,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
 		Set<Triple> result = imageAnnotationAPI.getAllImageAnnotations(sessionID, image.getIri());
 
-		annotationTriplets = new ArrayList<>();
-		annotationTriplets.add(new TripletPlaceholder("Shape", "is a ", "Well"));
-		annotationTriplets.add(new TripletPlaceholder("Shape", "is a ", "Something"));
-		annotationTriplets.add(new TripletPlaceholder("Name", "is", "Bob"));
-		annotationTriplets.add(new TripletPlaceholder("Name", "is", "Kevin"));
-		annotationTriplets.add(new TripletPlaceholder("Name", "is", "Stuart"));
-
-		// TODO clear and add to annotationTriplets
-//		triplets.clear();
-//		triplets.addAll();
+		annotationTriples = new ArrayList<>(result);
 	}
 
 	private String getSessionID() {

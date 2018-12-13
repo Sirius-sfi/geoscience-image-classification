@@ -175,16 +175,12 @@ public class ShapeWidget extends WPaintedWidget {
 	}
 
 	/**
-	 * Saves the current shape to the ontology, changes the widgetMode and redraws.
+	 * Reacts to saving the current shape to the ontology.
 	 */
-	public void saveShape() {
+	public void handleShapeSaved() {
 		LOGGER.info("saving shape");
 
 		shapes.add(unsavedShape);
-
-		String sessionID = getSessionID();
-		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
-		imageAnnotationAPI.saveNewSelectionShape(sessionID, image.getIri(), unsavedShape);
 
 		setWidgetMode(AnnotationWidgetMode.SAVED_SHAPE);
 		unsavedShape = null;
@@ -262,6 +258,10 @@ public class ShapeWidget extends WPaintedWidget {
 
 	public AnnotationWidgetMode getWidgetMode() {
 		return widgetMode;
+	}
+
+	public AbstractShape getUnsavedShape() {
+		return unsavedShape;
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {

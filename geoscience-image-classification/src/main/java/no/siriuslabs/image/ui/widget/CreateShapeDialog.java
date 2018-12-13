@@ -10,10 +10,15 @@ import eu.webtoolkit.jwt.WLineEdit;
 import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WSuggestionPopup;
 import eu.webtoolkit.jwt.WValidator;
+import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.FrontendServlet;
+import no.siriuslabs.image.api.ImageAnnotationAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 
 import java.util.EnumSet;
+import java.util.TreeSet;
 
 /**
  * Widget for a dialog that queries type and name of a new shape.
@@ -22,17 +27,24 @@ public class CreateShapeDialog extends WDialog {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CreateShapeDialog.class);
 
+	private final FrontendApplication application;
+
 	private WLabel typeLabel;
 	private WLineEdit typeLineEdit;
+	private WSuggestionPopup typePopup;
 	private WLabel nameLabel;
 	private WLineEdit nameLineEdit;
 	private WPushButton saveButton;
 
+	private TreeSet<Concept> availableTypes;
+
 	/**
 	 * Default constructor.
 	 */
-	public CreateShapeDialog() {
+	public CreateShapeDialog(FrontendApplication application) {
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
+
+		this.application = application;
 
 		setWindowTitle("Save shape");
 		rejectWhenEscapePressed();
@@ -45,6 +57,9 @@ public class CreateShapeDialog extends WDialog {
 		initializeLayout();
 
 		setupValidation();
+
+		initializeAutoComplete();
+
 		LOGGER.info("{} constructor - end", getClass().getSimpleName());
 	}
 
@@ -60,8 +75,8 @@ public class CreateShapeDialog extends WDialog {
 		options.appendReplacedText = ", ";
 
 		typeLineEdit = new WLineEdit();
-		WSuggestionPopup typePopup = new WSuggestionPopup(options);
-		typePopup.forEdit(typeLineEdit);
+		typePopup = new WSuggestionPopup(options);
+		typePopup.forEdit(typeLineEdit, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
 		typeLineEdit.setValidator(new WValidator(true));
 		typeLineEdit.setMaximumSize(new WLength(300), WLength.Auto);
 
@@ -108,12 +123,35 @@ public class CreateShapeDialog extends WDialog {
 		nameLineEdit.keyWentUp().addListener(this, () -> saveButton.setEnabled(areFieldsValid()));
 	}
 
+	private void initializeAutoComplete() {
+		String sessionID = getSessionID();
+		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
+
+		// TODO we want only types here...
+		availableTypes = imageAnnotationAPI.getOntologyConcepts(sessionID);
+
+		for(Concept concept : availableTypes) {
+			typePopup.addSuggestion(concept.getVisualRepresentation());
+		}
+	}
+
 	/**
 	 * Returns the value from the type field.
 	 */
-	public String getTypeValue() {
-		// TODO return type from ontology instead
-		return typeLineEdit.getValueText().trim();
+	public Concept getTypeValue() {
+		// TODO get rid of the ',' and do not allow multiple entries
+		String typeLabel = typeLineEdit.getValueText().trim();
+		typeLabel = typeLabel.replace(',', ' ');
+		typeLabel = typeLabel.trim();
+
+		for(Concept type : availableTypes) {
+			if(type.getVisualRepresentation().equals(typeLabel)) {
+				return type;
+			}
+		}
+
+		LOGGER.warn("Selected type " + typeLabel + " not found in conepts list.");
+		return null;
 	}
 
 	/**
@@ -121,5 +159,13 @@ public class CreateShapeDialog extends WDialog {
 	 */
 	public String getNameValue() {
 		return nameLineEdit.getValueText().trim();
+	}
+
+	private String getSessionID() {
+		return (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
+	}
+
+	private ImageAnnotationAPI getImageAnnotationAPI() {
+		return (ImageAnnotationAPI) application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY);
 	}
 }

@@ -8,6 +8,7 @@ import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WSuggestionPopup;
 import eu.webtoolkit.jwt.WVBoxLayout;
 import eu.webtoolkit.jwt.WValidator;
+import no.siriuslabs.image.model.triples.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,14 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Widget representing an annotation triplet of three fields (subject, predicate, object).
+ * Widget representing an annotation triple of three fields (subject, predicate, object).
  */
-public class TripletWidget extends WContainerWidget {
+public class TripleWidget extends WContainerWidget {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(TripletWidget.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(TripleWidget.class);
 
-	public static final String SAVED_PROPERTY_NAME = "tripletWidget.saved";
-	public static final String CANCELLED_PROPERTY_NAME = "tripletWidget.cancelled";
+	public static final String SAVED_PROPERTY_NAME = "tripleWidget.saved";
+	public static final String CANCELLED_PROPERTY_NAME = "tripleWidget.cancelled";
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
@@ -37,12 +38,12 @@ public class TripletWidget extends WContainerWidget {
 	private WLineEdit part3;
 	private WSuggestionPopup part3Popup;
 
-	private TripletPlaceholder data;
+	private Triple data;
 
 	/**
 	 * Default constructor.
 	 */
-	public TripletWidget() {
+	public TripleWidget() {
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 		initialize();
 
@@ -103,14 +104,15 @@ public class TripletWidget extends WContainerWidget {
 	}
 
 	private void saveButtonClickedAction() {
-		if(data == null) {
-			data = new TripletPlaceholder(part1.getValueText().trim(), part2.getValueText().trim(), part3.getValueText().trim());
-		}
-		else {
-			data.setSubject(part1.getValueText().trim());
-			data.setPredicate(part2.getValueText().trim());
-			data.setObject(part3.getValueText().trim());
-		}
+		// TODO temporary removed to clear errors
+//		if(data == null) {
+//			data = new TripletPlaceholder(part1.getValueText().trim(), part2.getValueText().trim(), part3.getValueText().trim());
+//		}
+//		else {
+//			data.setSubject(part1.getValueText().trim());
+//			data.setPredicate(part2.getValueText().trim());
+//			data.setObject(part3.getValueText().trim());
+//		}
 
 		LOGGER.info("triggering " + SAVED_PROPERTY_NAME + " with values (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
 		propertyChangeSupport.firePropertyChange(SAVED_PROPERTY_NAME, false, true);
@@ -125,18 +127,19 @@ public class TripletWidget extends WContainerWidget {
 	/**
 	 * Returns the current data object.
 	 */
-	public TripletPlaceholder getData() {
+	public Triple getData() {
 		return data;
 	}
 
 	/**
 	 * Sets the current data object and updates the fields.
 	 */
-	public void setData(TripletPlaceholder data) {
+	public void setData(Triple data) {
 		this.data = data;
-		part1.setText(data.getSubject());
-		part2.setText(data.getPredicate());
-		part3.setText(data.getObject());
+		part1.setText(data.getSubject().getVisualRepresentation());
+		// TODO temporary removed to clear errors
+//		part2.setText(data.getPredicate());
+//		part3.setText(data.getObject());
 		LOGGER.info("triplet data set (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
 	}
 
