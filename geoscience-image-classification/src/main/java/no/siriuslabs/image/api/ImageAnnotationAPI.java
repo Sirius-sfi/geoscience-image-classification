@@ -295,12 +295,15 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			//Get Semantic type
 			String sem_type = sessionManager.getSession(session_id).getMostConcreteTypeForInstance(object_uri);
 			
-		
+			//Create instance object
+			Instance object_instance = sessionManager.getSession(session_id).createInstance(object_uri, sem_type);
+			
+			
 			//Types
-			triples.addAll(getObjectsAndTypeAnnotationsForImage(session_id, object_uri, sem_type));
+			triples.addAll(getObjectsAndTypeAnnotationsForImage(session_id, object_instance));
 			
 			//Shapes
-			triples.addAll(getObjectsAndVisualRepresentationAnnotationsForImage(session_id, object_uri, sem_type, image_uri));
+			triples.addAll(getObjectsAndVisualRepresentationAnnotationsForImage(session_id, object_instance, image_uri));
 			
 			
 			//TODO: GET triples for relationships and facets
@@ -322,27 +325,24 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 * @param image_uri
 	 * @return
 	 */
-	public Set<Triple> getObjectsAndTypeAnnotationsForImage(String session_id, String object_uri, String sem_type){
+	protected Set<Triple> getObjectsAndTypeAnnotationsForImage(String session_id, Instance instance_object){
 	
 		Set<Triple> triples = new HashSet<Triple>();
 		
 			
-		//Instance object_instance = sessionManager.getSession(session_id).createInstance(object_uri, sem_type);
+	
 		//Concept type_concept = sessionManager.getSession(session_id).createConcept(sem_type);
 			
 			
-		if (sem_type.equals(""))
+		if (instance_object.getClassType().equals(URIUtils.OWLTHING))
 			triples.add(new TypeDefinitionTriple(
-					//new Instance(object_uri), 
-					sessionManager.getSession(session_id).createInstance(object_uri),//added OWLThing by default
+					instance_object,
 					new Concept(URIUtils.OWLTHING)));
 		
 		else
 			triples.add(new TypeDefinitionTriple(
-					//new Instance(object_uri),
-					sessionManager.getSession(session_id).createInstance(object_uri, sem_type),
-					//new Concept(sem_type)
-					sessionManager.getSession(session_id).createConcept(sem_type)));
+					instance_object,
+					sessionManager.getSession(session_id).createConcept(instance_object.getClassType())));
 			
 		
 		return triples;
@@ -358,35 +358,27 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 * @param image_uri
 	 * @return
 	 */
-	public Set<Triple> getObjectsAndVisualRepresentationAnnotationsForImage(String session_id, String object_uri, String sem_type, String image_uri){
+	protected Set<Triple> getObjectsAndVisualRepresentationAnnotationsForImage(String session_id, Instance instance_object, String image_uri){
 		
 		Set<Triple> triples = new HashSet<Triple>();
 		
-		
 		String predicate = GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED);
-		
 			
 		//TODO Can an object be attached to more than one selection? (Transitivity and containment of selections not allowed yet)
-		Set<String> selection_uris = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(object_uri, predicate, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IMAGE_SELECTION));
-		
-		
+		Set<String> selection_uris = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance_object.getIri(), predicate, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IMAGE_SELECTION));
 		
 		//if empty then object was not attached to image selection
 		if (selection_uris.isEmpty()) 
 				
 			triples.add(new ObjectPropertyTriple(
-					//new Instance(object_uri),
-					sessionManager.getSession(session_id).createInstance(object_uri, sem_type),
-					//new ObjectProperty(predicate),
+					instance_object,
 					sessionManager.getSession(session_id).createObjectPropery(predicate),
 					new Instance(image_uri)));
 			
 		else {
 			for (String selection_uri : selection_uris) { //only one expected
 				triples.add(new ObjectPropertyTriple(
-						//new Instance(object_uri), 
-						sessionManager.getSession(session_id).createInstance(object_uri, sem_type),
-						//new ObjectProperty(predicate), 
+						instance_object,
 						sessionManager.getSession(session_id).createObjectPropery(predicate),
 						new Instance(selection_uri)));
 			}
