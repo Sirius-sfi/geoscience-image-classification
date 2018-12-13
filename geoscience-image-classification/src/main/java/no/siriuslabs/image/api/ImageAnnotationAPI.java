@@ -285,13 +285,29 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		Set<Triple> triples = new HashSet<Triple>();
 		
 		
-		triples.addAll(getObjectsAndTypeAnnotationsForImage(session_id, image_uri));
+		//Get elements visually represented in image: reasoning important as some object may be represented in a selection and the selection in the image
+		Set<String> object_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED), image_uri);
+				
+				
+		for (String object_uri : object_uris) {
 		
-		triples.addAll(getObjectsAndVisualRepresentationAnnotationsForImage(session_id, image_uri));
+			
+			//Get Semantic type
+			String sem_type = sessionManager.getSession(session_id).getMostConcreteTypeForInstance(object_uri);
+			
 		
+			//Types
+			triples.addAll(getObjectsAndTypeAnnotationsForImage(session_id, object_uri, sem_type));
+			
+			//Shapes
+			triples.addAll(getObjectsAndVisualRepresentationAnnotationsForImage(session_id, object_uri, sem_type, image_uri));
+			
+			
+			//TODO: GET triples for relationships and facets
 		
-		//TODO: GET triples for relationships and facets
-		
+			
+			
+		}
 		
 		return triples;
 		
@@ -306,76 +322,79 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 * @param image_uri
 	 * @return
 	 */
-	public Set<Triple> getObjectsAndTypeAnnotationsForImage(String session_id, String image_uri){
+	public Set<Triple> getObjectsAndTypeAnnotationsForImage(String session_id, String object_uri, String sem_type){
 	
 		Set<Triple> triples = new HashSet<Triple>();
 		
-		
-		//Get elements visually represented in image: reasoning important as some object may be represented in a selection and the selection in the image
-		Set<String> object_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED), image_uri);
-		
-		
-		for (String object_uri : object_uris) {
 			
-			String sem_type = sessionManager.getSession(session_id).getMostConcreteTypeForInstance(object_uri);
+		//Instance object_instance = sessionManager.getSession(session_id).createInstance(object_uri, sem_type);
+		//Concept type_concept = sessionManager.getSession(session_id).createConcept(sem_type);
 			
-			if (sem_type.equals(""))
-				//triples.add(vf.createStatement(
-				//		vf.createIRI(object_uri), RDF.TYPE, vf.createIRI(URIUtils.OWLTHING)));
-				triples.add(new TypeDefinitionTriple(new Instance(object_uri), new Concept(URIUtils.OWLTHING)));
-			else
-				//triples.add(vf.createStatement(
-				//		vf.createIRI(object_uri), RDF.TYPE, vf.createIRI(sem_type)));
-				triples.add(new TypeDefinitionTriple(new Instance(object_uri), new Concept(sem_type)));
 			
-		}
-				
-				
+		if (sem_type.equals(""))
+			triples.add(new TypeDefinitionTriple(
+					//new Instance(object_uri), 
+					sessionManager.getSession(session_id).createInstance(object_uri),//added OWLThing by default
+					new Concept(URIUtils.OWLTHING)));
+		
+		else
+			triples.add(new TypeDefinitionTriple(
+					//new Instance(object_uri),
+					sessionManager.getSession(session_id).createInstance(object_uri, sem_type),
+					//new Concept(sem_type)
+					sessionManager.getSession(session_id).createConcept(sem_type)));
+			
+		
 		return triples;
 		
 	}
 	
 	
 	/**
-	 * Retrieves annotated objects and in which selection it appearts (default: the whole image)
+	 * Retrieves annotated objects and in which selection it appears (default: the whole image)
 	 * Triples like: well_1 isVisuallyRepresentedIn circle_2
 	 * 
 	 * @param session_id
 	 * @param image_uri
 	 * @return
 	 */
-	public Set<Triple> getObjectsAndVisualRepresentationAnnotationsForImage(String session_id, String image_uri){
+	public Set<Triple> getObjectsAndVisualRepresentationAnnotationsForImage(String session_id, String object_uri, String sem_type, String image_uri){
 		
 		Set<Triple> triples = new HashSet<Triple>();
 		
 		
 		String predicate = GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED);
 		
-		//All object in the image. Applied property chain to get also object in the image selection shapes
-		Set<String> object_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(predicate, image_uri);
-		
-		
-		for (String object_uri : object_uris) {
 			
-			//TODO Can an object be attached to more than one selection? (Transitivity and containment of selections not allowed yet)
-			Set<String> selection_uris = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(object_uri, predicate, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IMAGE_SELECTION));
-			
-			//if empty then object was not attached to image selection
-			if (selection_uris.isEmpty()) 
-				//triples.add(vf.createStatement(
-				//		vf.createIRI(object_uri), vf.createIRI(predicate), vf.createIRI(image_uri)));
-				triples.add(new ObjectPropertyTriple(new Instance(object_uri), new ObjectProperty(predicate), new Instance(image_uri)));
-			else {
-				for (String selection_uri : selection_uris) { //only one expected
-					//triples.add(vf.createStatement(
-					//		vf.createIRI(object_uri), vf.createIRI(predicate), vf.createIRI(selection_uri)));
-					triples.add(new ObjectPropertyTriple(new Instance(object_uri), new ObjectProperty(predicate), new Instance(selection_uri)));
-				}
-			}							
+		//TODO Can an object be attached to more than one selection? (Transitivity and containment of selections not allowed yet)
+		Set<String> selection_uris = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(object_uri, predicate, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IMAGE_SELECTION));
 		
-		}
+		
+		
+		//if empty then object was not attached to image selection
+		if (selection_uris.isEmpty()) 
+				
+			triples.add(new ObjectPropertyTriple(
+					//new Instance(object_uri),
+					sessionManager.getSession(session_id).createInstance(object_uri, sem_type),
+					//new ObjectProperty(predicate),
+					sessionManager.getSession(session_id).createObjectPropery(predicate),
+					new Instance(image_uri)));
+			
+		else {
+			for (String selection_uri : selection_uris) { //only one expected
+				triples.add(new ObjectPropertyTriple(
+						//new Instance(object_uri), 
+						sessionManager.getSession(session_id).createInstance(object_uri, sem_type),
+						//new ObjectProperty(predicate), 
+						sessionManager.getSession(session_id).createObjectPropery(predicate),
+						new Instance(selection_uri)));
+			}
+		}							
 			
 		return triples;
+		
+		
 	}
 		
 
