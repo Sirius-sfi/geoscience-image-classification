@@ -8,14 +8,22 @@ import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WSuggestionPopup;
 import eu.webtoolkit.jwt.WVBoxLayout;
 import eu.webtoolkit.jwt.WValidator;
+import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.FrontendServlet;
+import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.triples.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uio.ifi.ontology.toolkit.projection.model.entities.Entity;
+import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
+import uio.ifi.ontology.toolkit.projection.model.entities.LiteralValue;
+import uio.ifi.ontology.toolkit.projection.model.entities.Property;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  * Widget representing an annotation triple of three fields (subject, predicate, object).
@@ -27,24 +35,32 @@ public class TripleWidget extends WContainerWidget {
 	public static final String SAVED_PROPERTY_NAME = "tripleWidget.saved";
 	public static final String CANCELLED_PROPERTY_NAME = "tripleWidget.cancelled";
 
+	private final FrontendApplication application;
+
 	private final PropertyChangeSupport propertyChangeSupport;
 
-	private WLineEdit part1;
-	private WSuggestionPopup part1Popup;
+	private WLineEdit subject;
+	private WSuggestionPopup subjectPopup;
 
-	private WLineEdit part2;
-	private WSuggestionPopup part2Popup;
+	private WLineEdit predicate;
+	private WSuggestionPopup predicatePopup;
 
-	private WLineEdit part3;
-	private WSuggestionPopup part3Popup;
+	private WLineEdit object;
+	private WSuggestionPopup objectPopup;
 
 	private Triple data;
+
+	private TreeSet<Instance> availableSubjects;
+	private TreeSet<Property> availablePredicates;
+	private TreeSet<Instance> availableObjects;
 
 	/**
 	 * Default constructor.
 	 */
-	public TripleWidget() {
+	public TripleWidget(FrontendApplication application) {
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
+		this.application = application;
+
 		initialize();
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
@@ -65,26 +81,26 @@ public class TripleWidget extends WContainerWidget {
 		options.wordSeparators = "-., \"@\\n;";
 		options.appendReplacedText = ", ";
 
-		part1 = new WLineEdit();
-		part1.setEmptyText("Subject");
-		part1Popup = new WSuggestionPopup(options);
-		part1Popup.forEdit(part1);
-		part1.setValidator(new WValidator(true));
-		fieldsLayout.addWidget(part1);
+		subject = new WLineEdit();
+		subject.setEmptyText("Subject");
+		subjectPopup = new WSuggestionPopup(options);
+		subjectPopup.forEdit(subject);
+		subject.setValidator(new WValidator(true));
+		fieldsLayout.addWidget(subject);
 
-		part2 = new WLineEdit();
-		part2.setEmptyText("Predicate");
-		part2Popup = new WSuggestionPopup(options);
-		part2Popup.forEdit(part2);
-		part2.setValidator(new WValidator(true));
-		fieldsLayout.addWidget(part2);
+		predicate = new WLineEdit();
+		predicate.setEmptyText("Predicate");
+		predicatePopup = new WSuggestionPopup(options);
+		predicatePopup.forEdit(predicate);
+		predicate.setValidator(new WValidator(true));
+		fieldsLayout.addWidget(predicate);
 
-		part3 = new WLineEdit();
-		part3.setEmptyText("Object");
-		part3Popup = new WSuggestionPopup(options);
-		part3Popup.forEdit(part3);
-		part3.setValidator(new WValidator(true));
-		fieldsLayout.addWidget(part3);
+		object = new WLineEdit();
+		object.setEmptyText("Object");
+		objectPopup = new WSuggestionPopup(options);
+		objectPopup.forEdit(object);
+		object.setValidator(new WValidator(true));
+		fieldsLayout.addWidget(object);
 
 		layout.addLayout(fieldsLayout);
 
@@ -106,12 +122,12 @@ public class TripleWidget extends WContainerWidget {
 	private void saveButtonClickedAction() {
 		// TODO temporary removed to clear errors
 //		if(data == null) {
-//			data = new TripletPlaceholder(part1.getValueText().trim(), part2.getValueText().trim(), part3.getValueText().trim());
+//			data = new TripletPlaceholder(subject.getValueText().trim(), predicate.getValueText().trim(), object.getValueText().trim());
 //		}
 //		else {
-//			data.setSubject(part1.getValueText().trim());
-//			data.setPredicate(part2.getValueText().trim());
-//			data.setObject(part3.getValueText().trim());
+//			data.setSubject(subject.getValueText().trim());
+//			data.setPredicate(predicate.getValueText().trim());
+//			data.setObject(object.getValueText().trim());
 //		}
 
 		LOGGER.info("triggering " + SAVED_PROPERTY_NAME + " with values (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
@@ -136,11 +152,44 @@ public class TripleWidget extends WContainerWidget {
 	 */
 	public void setData(Triple data) {
 		this.data = data;
-		part1.setText(data.getSubject().getVisualRepresentation());
-		// TODO temporary removed to clear errors
-//		part2.setText(data.getPredicate());
-//		part3.setText(data.getObject());
+
+		subject.setText(data.getSubject().getVisualRepresentation());
+		predicate.setText(((Entity)data.getPredicate()).getVisualRepresentation());
+
+		final Object tempObject = data.getObject();
+		if(tempObject instanceof LiteralValue) {
+			object.setText(((LiteralValue)tempObject).getVisualRepresentation());
+		}
+		else if(tempObject instanceof Entity) {
+			object.setText(((Entity)tempObject).getVisualRepresentation());
+		}
+		else {
+			object.setText(tempObject.toString());
+		}
+
+		updateSuggestions();
 		LOGGER.info("triplet data set (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
+	}
+
+	public void updateSuggestions() {
+		String sessionID = getSessionID();
+		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
+
+		availableSubjects = imageAnnotationAPI.getSubjectsResources(sessionID);
+		for(Instance sub : availableSubjects) {
+			subjectPopup.addSuggestion(sub.getVisualRepresentation());
+		}
+
+		availablePredicates = imageAnnotationAPI.getPredicates(sessionID);
+		for(Property pred : availablePredicates) {
+			predicatePopup.addSuggestion(pred.getVisualRepresentation());
+		}
+
+		availableObjects = imageAnnotationAPI.getObjectResources(sessionID);
+		for(Instance obj : availableObjects) {
+			objectPopup.addSuggestion(obj.getVisualRepresentation());
+		}
+		// TODO context sensitive
 	}
 
 	/**
@@ -148,12 +197,12 @@ public class TripleWidget extends WContainerWidget {
 	 */
 	public void resetData() {
 		data = null;
-		part1.setText("");
-		part1Popup.clearSuggestions();
-		part2.setText("");
-		part2Popup.clearSuggestions();
-		part3.setText("");
-		part3Popup.clearSuggestions();
+		subject.setText("");
+		subjectPopup.clearSuggestions();
+		predicate.setText("");
+		predicatePopup.clearSuggestions();
+		object.setText("");
+		objectPopup.clearSuggestions();
 		LOGGER.info("triplet data cleared");
 	}
 
@@ -162,10 +211,18 @@ public class TripleWidget extends WContainerWidget {
 	 */
 	public List<WValidator.State> validate() {
 		List<WValidator.State> results = new ArrayList<>(3);
-		results.add(part1.validate());
-		results.add(part2.validate());
-		results.add(part3.validate());
+		results.add(subject.validate());
+		results.add(predicate.validate());
+		results.add(object.validate());
 		return results;
+	}
+
+	private String getSessionID() {
+		return (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
+	}
+
+	private ImageAnnotationAPI getImageAnnotationAPI() {
+		return (ImageAnnotationAPI) application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY);
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {

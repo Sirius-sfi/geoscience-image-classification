@@ -169,7 +169,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 		annotationLayout.addWidget(tableControlPanel);
 
-		annotationEditorWidget = new TripleWidget();
+		annotationEditorWidget = new TripleWidget(application);
 		annotationEditorWidget.hide();
 		annotationEditorWidget.setMinimumSize(WLength.Auto, new WLength(30));
 		annotationEditorWidget.addPropertyChangeListener(this);
@@ -196,6 +196,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 	private void addAnnotationButtonClickedAction() {
 		annotationEditorWidget.resetData();
+		annotationEditorWidget.updateSuggestions();
 		annotationEditorWidget.show();
 	}
 
@@ -215,6 +216,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		if(messageBox.getButtonResult() == StandardButton.Yes) {
 			final WModelIndex selection = annotationsTable.getSelectedIndexes().first();
 			LOGGER.info("removing selected element: {}", selection.getRow());
+			// TODO remove from ontology
 			annotationTriples.remove(selection.getRow());
 			annotationsTable.setModel(new TripleTableModel(annotationTriples));
 
