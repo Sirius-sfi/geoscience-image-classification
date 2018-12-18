@@ -34,6 +34,7 @@ import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -196,11 +197,13 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 	private void addAnnotationButtonClickedAction() {
 		annotationEditorWidget.resetData();
+		annotationEditorWidget.setMode(TripleWidget.Mode.ADD);
 		annotationEditorWidget.updateSuggestions();
 		annotationEditorWidget.show();
 	}
 
 	private void editAnnotationButtonClickedAction() {
+		annotationEditorWidget.setMode(TripleWidget.Mode.EDIT);
 		final WModelIndex selection = annotationsTable.getSelectedIndexes().first();
 		annotationEditorWidget.setData(annotationTriples.get(selection.getRow()));
 		annotationEditorWidget.show();
@@ -216,7 +219,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		if(messageBox.getButtonResult() == StandardButton.Yes) {
 			final WModelIndex selection = annotationsTable.getSelectedIndexes().first();
 			LOGGER.info("removing selected element: {}", selection.getRow());
-			// TODO remove from ontology
+			// TODO remove from ontology when API method comes available
 			annotationTriples.remove(selection.getRow());
 			annotationsTable.setModel(new TripleTableModel(annotationTriples));
 
@@ -340,18 +343,14 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		}
 		else if(TripleWidget.SAVED_PROPERTY_NAME.equals(evt.getPropertyName())) {
 			if(isTripletValid()) {
-				LOGGER.info(TripleWidget.SAVED_PROPERTY_NAME + " was triggered and triplet is valid --> saving to ontology");
+				LOGGER.info(TripleWidget.SAVED_PROPERTY_NAME + " was triggered and triple is valid --> saving to ontology");
 				Triple triple = annotationEditorWidget.getData();
 
-				// TODO save to ontology
 				String sessionID = getSessionID();
 				final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
-				//		imageAnnotationAPI.saveAnnotations(sessionID, );
+				imageAnnotationAPI.saveAnnotations(sessionID, Collections.singleton(triple));
 
-				if(annotationTriples.contains(triple)) {
-					// nothing?
-				}
-				else {
+				if(TripleWidget.Mode.ADD == annotationEditorWidget.getMode()) {
 					annotationTriples.add(triple);
 				}
 

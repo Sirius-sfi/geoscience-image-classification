@@ -11,6 +11,8 @@ import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.FrontendApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
+import no.siriuslabs.image.model.triples.DataPropertyTriple;
+import no.siriuslabs.image.model.triples.ObjectPropertyTriple;
 import no.siriuslabs.image.model.triples.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +32,10 @@ import java.util.TreeSet;
  */
 public class TripleWidget extends WContainerWidget {
 
+	public enum Mode {
+		ADD, EDIT;
+	}
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(TripleWidget.class);
 
 	public static final String SAVED_PROPERTY_NAME = "tripleWidget.saved";
@@ -39,13 +45,15 @@ public class TripleWidget extends WContainerWidget {
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
-	private WLineEdit subject;
+	private Mode mode;
+
+	private WLineEdit subjectField;
 	private WSuggestionPopup subjectPopup;
 
-	private WLineEdit predicate;
+	private WLineEdit predicateField;
 	private WSuggestionPopup predicatePopup;
 
-	private WLineEdit object;
+	private WLineEdit objectField;
 	private WSuggestionPopup objectPopup;
 
 	private Triple data;
@@ -81,26 +89,26 @@ public class TripleWidget extends WContainerWidget {
 		options.wordSeparators = "-., \"@\\n;";
 		options.appendReplacedText = ", ";
 
-		subject = new WLineEdit();
-		subject.setEmptyText("Subject");
+		subjectField = new WLineEdit();
+		subjectField.setEmptyText("Subject");
 		subjectPopup = new WSuggestionPopup(options);
-		subjectPopup.forEdit(subject);
-		subject.setValidator(new WValidator(true));
-		fieldsLayout.addWidget(subject);
+		subjectPopup.forEdit(subjectField);
+		subjectField.setValidator(new WValidator(true));
+		fieldsLayout.addWidget(subjectField);
 
-		predicate = new WLineEdit();
-		predicate.setEmptyText("Predicate");
+		predicateField = new WLineEdit();
+		predicateField.setEmptyText("Predicate");
 		predicatePopup = new WSuggestionPopup(options);
-		predicatePopup.forEdit(predicate);
-		predicate.setValidator(new WValidator(true));
-		fieldsLayout.addWidget(predicate);
+		predicatePopup.forEdit(predicateField);
+		predicateField.setValidator(new WValidator(true));
+		fieldsLayout.addWidget(predicateField);
 
-		object = new WLineEdit();
-		object.setEmptyText("Object");
+		objectField = new WLineEdit();
+		objectField.setEmptyText("Object");
 		objectPopup = new WSuggestionPopup(options);
-		objectPopup.forEdit(object);
-		object.setValidator(new WValidator(true));
-		fieldsLayout.addWidget(object);
+		objectPopup.forEdit(objectField);
+		objectField.setValidator(new WValidator(true));
+		fieldsLayout.addWidget(objectField);
 
 		layout.addLayout(fieldsLayout);
 
@@ -120,17 +128,51 @@ public class TripleWidget extends WContainerWidget {
 	}
 
 	private void saveButtonClickedAction() {
-		// TODO temporary removed to clear errors
-//		if(data == null) {
-//			data = new TripletPlaceholder(subject.getValueText().trim(), predicate.getValueText().trim(), object.getValueText().trim());
-//		}
-//		else {
-//			data.setSubject(subject.getValueText().trim());
-//			data.setPredicate(predicate.getValueText().trim());
-//			data.setObject(object.getValueText().trim());
-//		}
+		// TODO make adding annotations work --> currently not working due to
+			// - missing content from imageAnnotationAPI.getSubjectsResources() and imageAnnotationAPI.getObjectResources()
+			// - uncertain selection of Triple class and their constructors
+		// TODO make editing annotations work --> currently not working due to
+			// - missing content from imageAnnotationAPI.getSubjectsResources() and imageAnnotationAPI.getObjectResources()
 
-		LOGGER.info("triggering " + SAVED_PROPERTY_NAME + " with values (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
+		Instance subject = null;
+		for(Instance instance : availableSubjects) {
+			if(instance.getVisualRepresentation().equals(subjectField.getValueText().trim())) {
+				subject = instance;
+				break;
+			}
+		}
+
+		Entity predicate = null;
+		for(Entity entity : availablePredicates) {
+			if(entity.getVisualRepresentation().equals(predicateField.getValueText().trim())) {
+				predicate = entity;
+				break;
+			}
+		}
+
+		// TODO how about objects that are Entities or just values?
+		Instance object = null;
+		for(Instance instance : availableObjects) {
+			if(instance.getVisualRepresentation().equals(objectField.getValueText().trim())) {
+				object = instance;
+				break;
+			}
+		}
+
+		if(Mode.ADD == mode) {
+			// TODO temporarily disabled due to types constructors expect
+//			data = new ObjectPropertyTriple(subject, predicate, object);
+			// TODO how to decide which type of Triple we need to use?
+//			data = new DataPropertyTriple(subject, predicate, ?);
+		}
+		else {
+			data.setSubject(subject);
+			data.setPredicate(predicate);
+			data.setObject(object);
+		}
+
+		LOGGER.info("triggering " + SAVED_PROPERTY_NAME + " with values (S,P,O): {}, {}, {}", new Object[]{subject.getVisualRepresentation(), predicate.getVisualRepresentation(), object.getVisualRepresentation()});
+
 		propertyChangeSupport.firePropertyChange(SAVED_PROPERTY_NAME, false, true);
 	}
 
@@ -153,24 +195,27 @@ public class TripleWidget extends WContainerWidget {
 	public void setData(Triple data) {
 		this.data = data;
 
-		subject.setText(data.getSubject().getVisualRepresentation());
-		predicate.setText(((Entity)data.getPredicate()).getVisualRepresentation());
+		subjectField.setText(data.getSubject().getVisualRepresentation());
+		predicateField.setText(((Entity)data.getPredicate()).getVisualRepresentation());
 
 		final Object tempObject = data.getObject();
 		if(tempObject instanceof LiteralValue) {
-			object.setText(((LiteralValue)tempObject).getVisualRepresentation());
+			objectField.setText(((LiteralValue)tempObject).getVisualRepresentation());
 		}
 		else if(tempObject instanceof Entity) {
-			object.setText(((Entity)tempObject).getVisualRepresentation());
+			objectField.setText(((Entity)tempObject).getVisualRepresentation());
 		}
 		else {
-			object.setText(tempObject.toString());
+			objectField.setText(tempObject.toString());
 		}
 
 		updateSuggestions();
-		LOGGER.info("triplet data set (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
+		LOGGER.info("triple data set (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
 	}
 
+	/**
+	 * Updates the contents of the auto-complete suggestions for the SPO fields.
+	 */
 	public void updateSuggestions() {
 		String sessionID = getSessionID();
 		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
@@ -189,7 +234,7 @@ public class TripleWidget extends WContainerWidget {
 		for(Instance obj : availableObjects) {
 			objectPopup.addSuggestion(obj.getVisualRepresentation());
 		}
-		// TODO context sensitive
+		// TODO make context sensitive
 	}
 
 	/**
@@ -197,11 +242,11 @@ public class TripleWidget extends WContainerWidget {
 	 */
 	public void resetData() {
 		data = null;
-		subject.setText("");
+		subjectField.setText("");
 		subjectPopup.clearSuggestions();
-		predicate.setText("");
+		predicateField.setText("");
 		predicatePopup.clearSuggestions();
-		object.setText("");
+		objectField.setText("");
 		objectPopup.clearSuggestions();
 		LOGGER.info("triplet data cleared");
 	}
@@ -211,10 +256,18 @@ public class TripleWidget extends WContainerWidget {
 	 */
 	public List<WValidator.State> validate() {
 		List<WValidator.State> results = new ArrayList<>(3);
-		results.add(subject.validate());
-		results.add(predicate.validate());
-		results.add(object.validate());
+		results.add(subjectField.validate());
+		results.add(predicateField.validate());
+		results.add(objectField.validate());
 		return results;
+	}
+
+	public Mode getMode() {
+		return mode;
+	}
+
+	public void setMode(Mode mode) {
+		this.mode = mode;
 	}
 
 	private String getSessionID() {
