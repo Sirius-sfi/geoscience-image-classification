@@ -14,6 +14,15 @@ public abstract class Image extends Instance{
 	
 	private String location; //file name
 	private String type_label; //label of the type of the image
+
+	/**
+	 * Width of the image in pixels.
+ 	 */
+	private int width = 0;
+	/**
+	 * Height of the image in pixels.
+	 */
+	private int height = 0;
 	
 	
 	public Image() {
@@ -105,9 +114,23 @@ public abstract class Image extends Instance{
 	public void setAbsoluteImagePath(String absoluteImagePath) {
 		this.absoluteImagePath = absoluteImagePath;
 	}
-	
-	
-	//public abstract void covertToTriples();
+
+	public int getWidth() {
+		return width;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
+	}
+//public abstract void covertToTriples();
 	
 	
 }

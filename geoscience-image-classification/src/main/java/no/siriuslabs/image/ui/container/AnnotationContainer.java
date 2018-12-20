@@ -1,23 +1,6 @@
 package no.siriuslabs.image.ui.container;
 
-import eu.webtoolkit.jwt.Icon;
-import eu.webtoolkit.jwt.KeyboardModifier;
-import eu.webtoolkit.jwt.SelectionMode;
-import eu.webtoolkit.jwt.Side;
-import eu.webtoolkit.jwt.StandardButton;
-import eu.webtoolkit.jwt.WBorderLayout;
-import eu.webtoolkit.jwt.WContainerWidget;
-import eu.webtoolkit.jwt.WDialog;
-import eu.webtoolkit.jwt.WHBoxLayout;
-import eu.webtoolkit.jwt.WLength;
-import eu.webtoolkit.jwt.WMessageBox;
-import eu.webtoolkit.jwt.WModelIndex;
-import eu.webtoolkit.jwt.WMouseEvent;
-import eu.webtoolkit.jwt.WPushButton;
-import eu.webtoolkit.jwt.WTableView;
-import eu.webtoolkit.jwt.WText;
-import eu.webtoolkit.jwt.WVBoxLayout;
-import eu.webtoolkit.jwt.WValidator;
+import eu.webtoolkit.jwt.*;
 import no.siriuslabs.image.FrontendApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
@@ -50,6 +33,8 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	private final GeologicalImage image;
 
 	private WContainerWidget shapeContainer;
+	private WScrollArea shapeScrollArea;
+	private WToolBar shapeToolBar;
 	private ShapeWidget shapeWidget;
 	private WPushButton newShapeButton;
 	private WPushButton cancelShapeButton;
@@ -83,7 +68,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		loadAnnotations();
 
 		initializeTopPanel();
-		initializeShapeWidget();
+		initializeShapePanel();
 		initializeAnnotationPanel();
 
 		initializeLayout();
@@ -102,18 +87,17 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		topLayout.addWidget(messageText);
 	}
 
-	private void initializeShapeWidget() {
+	private void initializeShapePanel() {
 		initializeShapeButtonPanel();
+		initializeShapeWidget();
+		initializeShapeScrollArea();
+		initializeShapeToolbar();
 
-		shapeWidget = new ShapeWidget(application, image);
-		shapeWidget.setMinimumSize(new WLength(800, WLength.Unit.Pixel), new WLength(600, WLength.Unit.Pixel));
-		shapeWidget.addPropertyChangeListener(this);
-		shapeWidget.mouseWentDown().addListener(this, arg -> mouseClickedOnImageAction(arg));
-
-		shapeContainer = new WContainerWidget();
 		WVBoxLayout shapeLayout = new WVBoxLayout();
-		shapeLayout.addWidget(shapeWidget);
+		shapeLayout.addWidget(shapeToolBar);
+		shapeLayout.addWidget(shapeScrollArea);
 		shapeLayout.addWidget(buttonPanel);
+		shapeContainer = new WContainerWidget();
 		shapeContainer.setLayout(shapeLayout);
 	}
 
@@ -122,20 +106,65 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		WHBoxLayout buttonLayout = new WHBoxLayout();
 
 		newShapeButton = new WPushButton("New Shape");
-		newShapeButton.clicked().addListener(this, arg -> newButtonClickedAction());
+		newShapeButton.clicked().addListener(this, (WMouseEvent arg) -> newButtonClickedAction());
 		buttonLayout.addWidget(newShapeButton);
 
 		saveAnnotationButton = new WPushButton("Save Shape...");
 		saveAnnotationButton.disable();
-		saveAnnotationButton.clicked().addListener(this, arg -> saveButtonClickedAction());
+		saveAnnotationButton.clicked().addListener(this, (WMouseEvent arg) -> saveButtonClickedAction());
 		buttonLayout.addWidget(saveAnnotationButton);
 
 		cancelShapeButton = new WPushButton("Cancel Shape");
 		cancelShapeButton.disable();
-		cancelShapeButton.clicked().addListener(this, arg -> cancelButtonClickedAction());
+		cancelShapeButton.clicked().addListener(this, (WMouseEvent arg) -> cancelButtonClickedAction());
 		buttonLayout.addWidget(cancelShapeButton);
 
 		buttonPanel.setLayout(buttonLayout);
+	}
+
+	private void initializeShapeWidget() {
+		shapeWidget = new ShapeWidget(application, image);
+		shapeWidget.setMinimumSize(new WLength(image.getWidth(), WLength.Unit.Pixel), new WLength(image.getHeight(), WLength.Unit.Pixel));
+		shapeWidget.resize(image.getWidth(), image.getHeight()); // without this resize the widget seems to collapse to 0-size when put into the ScrollArea
+		shapeWidget.addPropertyChangeListener(this);
+		shapeWidget.mouseWentDown().addListener(this, arg -> mouseClickedOnImageAction(arg));
+		shapeWidget.mouseWheel().addListener(this, (WMouseEvent arg) -> {
+			if(arg.getWheelDelta() < 0) {
+				decreaseImageZoomAction();
+			}
+			else if(arg.getWheelDelta() > 0) {
+				increaseImageZoomAction();
+			}
+		});
+	}
+
+	private void initializeShapeScrollArea() {
+		shapeScrollArea = new WScrollArea();
+		shapeScrollArea.setScrollBarPolicy(WScrollArea.ScrollBarPolicy.ScrollBarAlwaysOn);
+		shapeScrollArea.setWidget(shapeWidget);
+		shapeScrollArea.setMinimumSize(new WLength(image.getWidth(), WLength.Unit.Pixel), new WLength(image.getHeight(), WLength.Unit.Pixel));
+		shapeScrollArea.setMaximumSize(WLength.Auto, new WLength(600, WLength.Unit.Pixel)); // TODO needed to enable vertical scrollbar - better number?
+	}
+
+	private void initializeShapeToolbar() {
+		shapeToolBar = new WToolBar();
+
+		WPushButton zoomInButton = new WPushButton("+");
+		zoomInButton.setToolTip("Zoom in");
+		zoomInButton.clicked().addListener(this, (WMouseEvent arg) -> increaseImageZoomAction());
+		shapeToolBar.addButton(zoomInButton);
+
+		WPushButton zoomOutButton = new WPushButton("-");
+		zoomOutButton.setToolTip("Zoom out");
+		zoomOutButton.clicked().addListener(this, (WMouseEvent arg) -> decreaseImageZoomAction());
+		shapeToolBar.addButton(zoomOutButton);
+
+		shapeToolBar.addSeparator();
+
+		WPushButton resetZoomButton = new WPushButton("Reset");
+		resetZoomButton.setToolTip("Reset zoom");
+		resetZoomButton.clicked().addListener(this, (WMouseEvent arg) -> resetZoomLevelAction());
+		shapeToolBar.addButton(resetZoomButton);
 	}
 
 	private void initializeAnnotationPanel() {
@@ -240,6 +269,21 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		else if(isMiddleMouseButton(arg) && (isWidgetModeSetPoints() || isWidgetModeUnsavedShape())) {
 			saveButtonClickedAction();
 		}
+	}
+
+	private void increaseImageZoomAction() {
+		shapeWidget.increaseZoomLevel();
+		shapeWidget.update();
+	}
+
+	private void decreaseImageZoomAction() {
+		shapeWidget.decreaseZoomLevel();
+		shapeWidget.update();
+	}
+
+	private void resetZoomLevelAction() {
+		shapeWidget.resetZoomLevel();
+		shapeWidget.update();
 	}
 	
 	private void newButtonClickedAction() {

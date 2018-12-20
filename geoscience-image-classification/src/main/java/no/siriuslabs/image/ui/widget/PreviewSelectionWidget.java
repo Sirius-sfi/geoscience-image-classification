@@ -92,6 +92,11 @@ public class PreviewSelectionWidget extends WContainerWidget {
 
 	private void performShowAnnotationContainerAction() {
 		LOGGER.info("Triggering annotation page for image {}", image.getRelativeImagePath());
+
+		// capture the measurements of the image - we need that to size the annotation page soon
+		image.setWidth(imagePreviewWidget.getOriginalImageWidth());
+		image.setHeight(imagePreviewWidget.getOriginalImageHeight());
+
 		propertyChangeSupport.firePropertyChange(IMAGE_SELECTED_PROPERTY_NAME, null, image);
 	}
 

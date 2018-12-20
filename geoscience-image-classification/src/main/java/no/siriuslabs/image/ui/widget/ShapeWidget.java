@@ -53,8 +53,69 @@ public class ShapeWidget extends WPaintedWidget {
 		/**
 		 * Shape was saved, temporary markers were removed.
 		 */
-		// TODO can we omit this state?
 		SAVED_SHAPE;
+	}
+
+	/**
+	 * Represents a zoom level of an image.
+	 * The order of the elements must be in the correct order of magnification to work correctly.
+	 */
+	public enum ZoomLevel {
+		X1_0(1.0d),
+		X1_5(1.5d),
+		X2_0(2.0d),
+		X3_0(3.0d);
+
+		private final double magnification;
+
+		ZoomLevel(double magnification) {
+			this.magnification = magnification;
+		}
+
+		/**
+		 * Returns the magnification of this level as a number.
+		 */
+		public double getMagnification() {
+			return magnification;
+		}
+
+		/**
+		 * Returns false if we are already at highest magnification, otherwise true.
+		 */
+		public boolean canIncrease() {
+			return this != X3_0;
+		}
+
+		/**
+		 * Returns false if we are already at standard (lowest) magnification, otherwise true.
+		 */
+		public boolean canDecrease() {
+			return this != X1_0;
+		}
+
+		/**
+		 * Returns the next higher zoom level to the given one or the highest if this is already reached.
+		 */
+		public static ZoomLevel findNextLevel(ZoomLevel level) {
+			if(level.canIncrease()) {
+				int next = level.ordinal() +1;
+				return ZoomLevel.values()[next];
+			}
+
+			return level;
+		}
+
+		/**
+		 * Returns the next lower zoom level to the given one or the lowest if this is already reached.
+		 */
+		public static ZoomLevel findPreviousLevel(ZoomLevel level) {
+			if(level.canDecrease()) {
+				int prev = level.ordinal() -1;
+				return ZoomLevel.values()[prev];
+			}
+
+			return level;
+		}
 	}
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ShapeWidget.class);
@@ -65,6 +126,8 @@ public class ShapeWidget extends WPaintedWidget {
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	private WPainterPath path;
+
+	private ZoomLevel currentZoomLevel = ZoomLevel.X1_0;
 
 	/**
 	 * List of points in the image which will define the shape when it is confirmed.
@@ -116,10 +179,20 @@ public class ShapeWidget extends WPaintedWidget {
 	 * Adds the coordinates from the event parameter as another point and paints a temporary marker for it.
 	 */
 	public void addPointToShape(WMouseEvent arg) {
-		LOGGER.info("adding point {}:{}", arg.getWidget().x, arg.getWidget().y);
-		final WPointF point = new WPointF(arg.getWidget());
+		// take coordinates from mouse click and modify by current magnification level --> point of click in 100% zoom
+		double xCoordinate = arg.getWidget().x / currentZoomLevel.getMagnification();
+		double yCoordinate = arg.getWidget().y / currentZoomLevel.getMagnification();
+
+		LOGGER.info("adding point {}:{}", xCoordinate, yCoordinate);
+
+		final WPointF point = new WPointF(xCoordinate, yCoordinate);
+		// add point of click to list of points for the current shape
 		points.add(point);
-		path.addEllipse(point.getX()-10, point.getY()-10, 20, 20);
+
+		// draw a marker around the point of click
+		final int markerRadius = 10;
+		path.addEllipse(point.getX()-markerRadius, point.getY()-markerRadius, markerRadius *2, markerRadius *2);
+
 		update(EnumSet.of(PaintFlag.PaintUpdate));
 	}
 
@@ -204,6 +277,10 @@ public class ShapeWidget extends WPaintedWidget {
 	protected void paintEvent(WPaintDevice paintDevice) {
 		WPainter painter = new WPainter(paintDevice);
 		WPainter.Image paintedImage = new WPainter.Image(image.getRelativeImagePath(), image.getAbsoluteImagePath());
+
+		// scale the image to the zoom level set by the user
+		painter.scale(currentZoomLevel.getMagnification(), currentZoomLevel.getMagnification());
+
 		painter.drawImage(new WPointF(0, 0), paintedImage);
 
 
@@ -262,6 +339,34 @@ public class ShapeWidget extends WPaintedWidget {
 
 	public AbstractShape getUnsavedShape() {
 		return unsavedShape;
+	}
+
+	/**
+	 * Increases the image's zoom level by one if possible.
+	 */
+	public void increaseZoomLevel() {
+		if(currentZoomLevel.canIncrease()) {
+			currentZoomLevel = ZoomLevel.findNextLevel(currentZoomLevel);
+			resize(new WLength(image.getWidth() * currentZoomLevel.getMagnification()), new WLength(image.getHeight() * currentZoomLevel.getMagnification()));
+		}
+	}
+
+	/**
+	 * Decreases the image's zoom level by one if possible.
+	 */
+	public void decreaseZoomLevel() {
+		if(currentZoomLevel.canDecrease()) {
+			currentZoomLevel = ZoomLevel.findPreviousLevel(currentZoomLevel);
+			resize(new WLength(image.getWidth() * currentZoomLevel.getMagnification()), new WLength(image.getHeight() * currentZoomLevel.getMagnification()));
+		}
+	}
+
+	/**
+	 * Resets the image's zoom level to standard.
+	 */
+	public void resetZoomLevel() {
+		currentZoomLevel = ZoomLevel.X1_0;
+		resize(new WLength(image.getWidth() * currentZoomLevel.getMagnification()), new WLength(image.getHeight() * currentZoomLevel.getMagnification()));
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
