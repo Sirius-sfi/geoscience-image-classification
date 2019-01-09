@@ -77,8 +77,26 @@
           </webResources>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>dockerfile-maven-plugin</artifactId>
+        <version>1.4.9</version>
+        <executions>
+          <!-- we do not want execution with the standard goals as to avoid everyone to be required to have Docker installed and running just for a compile -->
+          <execution>
+            <id>default</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <repository>docker.io/ostahluio/${project.name}</repository>
+          <tag>${project.version}</tag>
+          <!-- explicitly activating authentication via Maven settings.xml -->
+          <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
-
-
 </project>
