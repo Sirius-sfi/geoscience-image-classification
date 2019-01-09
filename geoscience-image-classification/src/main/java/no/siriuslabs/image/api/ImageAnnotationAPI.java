@@ -434,7 +434,6 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 */
 	public TreeSet<Instance> getIndividuals(String session_id){
 		
-		//TODO we may want to filter by type
 		return sessionManager.getSession(session_id).getInstances();
 	}
 	
@@ -446,7 +445,6 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 */
 	public TreeSet<Instance> getIndividualsByType(String session_id, String type){
 		
-		//TODO we may want to filter by type
 		return sessionManager.getSession(session_id).getInstancesForType(type);
 	}
 	
@@ -476,7 +474,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	public TreeSet<String> getAllowedValues(String session_id){
 		return null;
 		
-		//TODO Allow only if given predicate?
+		//TODO Allow only if given predicate?  This will also serve for autocompletion!
 		
 	}
 	
@@ -521,7 +519,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	public TreeSet<DataProperty> getDataPredicatesForSubject(String session_id, String subject_iri){
 		
-		//TODO When storing objects and types, store rdf:type but also the direct type for convenience
+		//TODO When storing objects and types, store rdf:type but also the direct type for convenience  (DONE?)
 		
 		//TODO Get facet predicates for the type of subject
 		return null;
@@ -534,6 +532,14 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	}
 
 	
+	
+	
+	public TreeSet<Instance> getObjectsForSubjectPredicate(String session_id, String subject_iri, String predicate_iri){
+		//TODO
+		//There is a method in session: getObjectsforSubjectPredicate
+	
+		return null;
+	}
 	
 	
 	
@@ -869,6 +875,9 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			//Sync RDFox reasoner
 			sessionManager.getSession(session_id).performMaterializationAdditionalData(tmp_file, true);//incremental reasoning
 			
+			//TODO In case we want to remove triples: https://oxfordsemtech.github.io/RDFox/#/05-shell?id=import
+			//1. We should remove from DataModel
+			//2. We should perform a Negative Import
 			
 			//dispose/clear models
 			data_model.dispose();
