@@ -5,7 +5,6 @@ import no.siriuslabs.image.FrontendApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
-import no.siriuslabs.image.model.triples.Triple;
 import no.siriuslabs.image.ui.widget.CreateShapeDialog;
 import no.siriuslabs.image.ui.widget.ShapeWidget;
 import no.siriuslabs.image.ui.widget.TripleTreeTableNode;
@@ -15,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 import uio.ifi.ontology.toolkit.projection.model.entities.Entity;
 import uio.ifi.ontology.toolkit.projection.model.entities.LiteralValue;
+import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

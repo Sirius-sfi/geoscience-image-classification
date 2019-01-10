@@ -2,7 +2,7 @@ package no.siriuslabs.image.ui.widget;
 
 import eu.webtoolkit.jwt.WIconPair;
 import eu.webtoolkit.jwt.WTreeTableNode;
-import no.siriuslabs.image.model.triples.Triple;
+import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
 
 /**
  * Specialized TreeTableNode to hold Triple data in the node instead of Strings only.

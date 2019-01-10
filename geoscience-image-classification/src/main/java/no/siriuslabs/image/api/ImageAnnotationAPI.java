@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -24,10 +25,6 @@ import no.siriuslabs.image.model.shape.Circle;
 import no.siriuslabs.image.model.shape.Polygon;
 import no.siriuslabs.image.model.shape.Rectangle;
 import no.siriuslabs.image.model.shape.Triangle;
-import no.siriuslabs.image.model.triples.DataPropertyTriple;
-import no.siriuslabs.image.model.triples.ObjectPropertyTriple;
-import no.siriuslabs.image.model.triples.Triple;
-import no.siriuslabs.image.model.triples.TypeDefinitionTriple;
 import uio.ifi.ontology.toolkit.constraint.utils.Utility;
 import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
@@ -36,6 +33,10 @@ import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 import uio.ifi.ontology.toolkit.projection.model.entities.LiteralValue;
 import uio.ifi.ontology.toolkit.projection.model.entities.ObjectProperty;
 import uio.ifi.ontology.toolkit.projection.model.entities.Property;
+import uio.ifi.ontology.toolkit.projection.model.triples.DataPropertyTriple;
+import uio.ifi.ontology.toolkit.projection.model.triples.ObjectPropertyTriple;
+import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
+import uio.ifi.ontology.toolkit.projection.model.triples.TypeDefinitionTriple;
 import uio.ifi.ontology.toolkit.projection.utils.URIUtils;
 import uio.ifi.ontology.toolkit.projection.view.OntologyProjectionAPI;
 
@@ -286,6 +287,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		
 		//Get elements visually represented in image: reasoning important as some object may be represented in a selection and the selection in the image
+		//Shapes belong to image but a different property was used
 		Set<String> object_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED), image_uri);
 				
 				
@@ -306,8 +308,12 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			triples.addAll(getObjectsAndVisualRepresentationAnnotationsForImage(session_id, object_instance, image_uri));
 			
 			
-			//TODO: GET triples for relationships and facets
-		
+			//Realationships
+			triples.addAll(getObjectRelationships(session_id, object_instance));
+			
+			//Facets
+			triples.addAll(getFacets(session_id, object_instance));
+			
 			
 			
 		}
@@ -390,11 +396,29 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	}
 		
 
-	public Set<Triple> getRelationshipsAmongObjectsForImage(String session_id, String image_uri){
+	public Set<ObjectPropertyTriple> getObjectRelationships(String session_id, Instance instance_object){
 		
-		Set<Triple> triples = new HashSet<Triple>();
+		Set<ObjectPropertyTriple> triples = new HashSet<ObjectPropertyTriple>();
 		
 		//TODO Retrieve triples where object is of type Thing (is this inferred? YES) (and/or predicate of type object property)
+		
+		
+		Map<String, Set<String>> object_relationhips_map = sessionManager.getSession(session_id).getObjectRelationhipsForSubject(instance_object.getIri());
+		
+		
+		for (String p : object_relationhips_map.keySet()){
+			
+			if (p.equals(GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED)))
+				continue;
+			
+			for (String o: object_relationhips_map.get(p)) {
+			triples.add(new ObjectPropertyTriple(
+					instance_object,
+					sessionManager.getSession(session_id).createObjectPropery(p),
+					sessionManager.getSession(session_id).createInstance(o)));
+			}
+		}
+		
 		
 		return triples;
 		
@@ -402,11 +426,24 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	
-	public Set<Triple> getObjectFacetsForImage(String session_id, String image_uri){
+	public Set<DataPropertyTriple> getFacets(String session_id, Instance instance_object){
 		
-		Set<Triple> triples = new HashSet<Triple>();
+		Set<DataPropertyTriple> triples = new HashSet<DataPropertyTriple>();
 		
-		//TODO Retrieve triples where object is a literal (and/or predicate of type data property)
+		//TODO Retrieve triples where object is a literal (and/or predicate of type data property)x
+		
+		Map<String, Set<String>> data_relationhips_map = sessionManager.getSession(session_id).getDataRelationhipsForSubject(instance_object.getIri());
+		
+		
+		for (String p : data_relationhips_map.keySet()){
+			for (String literal: data_relationhips_map.get(p)) {
+			triples.add(new DataPropertyTriple(
+					instance_object,
+					sessionManager.getSession(session_id).createDataPropery(p),
+					new LiteralValue(literal)));
+			}
+		}
+		
 		
 		return triples;
 		

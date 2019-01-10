@@ -11,9 +11,7 @@ import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.FrontendApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
-import no.siriuslabs.image.model.triples.DataPropertyTriple;
-import no.siriuslabs.image.model.triples.ObjectPropertyTriple;
-import no.siriuslabs.image.model.triples.Triple;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.model.entities.DataProperty;
@@ -22,6 +20,9 @@ import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 import uio.ifi.ontology.toolkit.projection.model.entities.LiteralValue;
 import uio.ifi.ontology.toolkit.projection.model.entities.ObjectProperty;
 import uio.ifi.ontology.toolkit.projection.model.entities.Property;
+import uio.ifi.ontology.toolkit.projection.model.triples.DataPropertyTriple;
+import uio.ifi.ontology.toolkit.projection.model.triples.ObjectPropertyTriple;
+import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

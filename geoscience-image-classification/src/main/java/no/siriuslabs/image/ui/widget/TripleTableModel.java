@@ -4,9 +4,9 @@ import eu.webtoolkit.jwt.ItemDataRole;
 import eu.webtoolkit.jwt.Orientation;
 import eu.webtoolkit.jwt.WAbstractTableModel;
 import eu.webtoolkit.jwt.WModelIndex;
-import no.siriuslabs.image.model.triples.Triple;
 import uio.ifi.ontology.toolkit.projection.model.entities.Entity;
 import uio.ifi.ontology.toolkit.projection.model.entities.LiteralValue;
+import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
 
 import java.util.List;
 
