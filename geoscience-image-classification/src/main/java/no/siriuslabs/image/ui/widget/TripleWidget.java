@@ -16,14 +16,17 @@ import no.siriuslabs.image.model.triples.ObjectPropertyTriple;
 import no.siriuslabs.image.model.triples.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uio.ifi.ontology.toolkit.projection.model.entities.DataProperty;
 import uio.ifi.ontology.toolkit.projection.model.entities.Entity;
 import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 import uio.ifi.ontology.toolkit.projection.model.entities.LiteralValue;
+import uio.ifi.ontology.toolkit.projection.model.entities.ObjectProperty;
 import uio.ifi.ontology.toolkit.projection.model.entities.Property;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -92,21 +95,21 @@ public class TripleWidget extends WContainerWidget {
 		subjectField = new WLineEdit();
 		subjectField.setEmptyText("Subject");
 		subjectPopup = new WSuggestionPopup(options);
-		subjectPopup.forEdit(subjectField);
+		subjectPopup.forEdit(subjectField, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
 		subjectField.setValidator(new WValidator(true));
 		fieldsLayout.addWidget(subjectField);
 
 		predicateField = new WLineEdit();
 		predicateField.setEmptyText("Predicate");
 		predicatePopup = new WSuggestionPopup(options);
-		predicatePopup.forEdit(predicateField);
+		predicatePopup.forEdit(predicateField, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
 		predicateField.setValidator(new WValidator(true));
 		fieldsLayout.addWidget(predicateField);
 
 		objectField = new WLineEdit();
 		objectField.setEmptyText("Object");
 		objectPopup = new WSuggestionPopup(options);
-		objectPopup.forEdit(objectField);
+		objectPopup.forEdit(objectField, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
 		objectField.setValidator(new WValidator(true));
 		fieldsLayout.addWidget(objectField);
 
@@ -128,52 +131,70 @@ public class TripleWidget extends WContainerWidget {
 	}
 
 	private void saveButtonClickedAction() {
-		// TODO make adding annotations work --> currently not working due to
-			// - missing content from imageAnnotationAPI.getSubjectsResources() and imageAnnotationAPI.getObjectResources()
-			// - uncertain selection of Triple class and their constructors
-		// TODO make editing annotations work --> currently not working due to
-			// - missing content from imageAnnotationAPI.getSubjectsResources() and imageAnnotationAPI.getObjectResources()
-
+		// find the data representations for the texts/labels entered or selected
 		Instance subject = null;
 		for(Instance instance : availableSubjects) {
-			if(instance.getVisualRepresentation().equals(subjectField.getValueText().trim())) {
+			String subjectLabel = subjectField.getValueText().trim();
+			subjectLabel = removeAutoCompleteComma(subjectLabel);
+			if(instance.getVisualRepresentation().equals(subjectLabel)) {
 				subject = instance;
 				break;
 			}
 		}
 
-		Entity predicate = null;
-		for(Entity entity : availablePredicates) {
-			if(entity.getVisualRepresentation().equals(predicateField.getValueText().trim())) {
-				predicate = entity;
+		Property predicate = null;
+		for(Property property : availablePredicates) {
+			String predicateLabel = predicateField.getValueText().trim();
+			predicateLabel = removeAutoCompleteComma(predicateLabel);
+			if(property.getVisualRepresentation().equals(predicateLabel)) {
+				predicate = property;
 				break;
 			}
 		}
 
-		// TODO how about objects that are Entities or just values?
-		Instance object = null;
-		for(Instance instance : availableObjects) {
-			if(instance.getVisualRepresentation().equals(objectField.getValueText().trim())) {
-				object = instance;
-				break;
+		Instance objectInstance = null;
+		LiteralValue objectValue = null;
+		if(predicate.isObjectProperty()) {
+			for(Instance instance : availableObjects) {
+				String objectLabel = objectField.getValueText().trim();
+				objectLabel = removeAutoCompleteComma(objectLabel);
+				if(instance.getVisualRepresentation().equals(objectLabel)) {
+					objectInstance = instance;
+					break;
+				}
 			}
 		}
+		else {
+			String objectLabel = objectField.getValueText().trim();
+			objectLabel = removeAutoCompleteComma(objectLabel);
+			objectValue = new LiteralValue(objectLabel);
+		}
+
 
 		if(Mode.ADD == mode) {
-			// TODO temporarily disabled due to types constructors expect
-//			data = new ObjectPropertyTriple(subject, predicate, object);
-			// TODO how to decide which type of Triple we need to use?
-//			data = new DataPropertyTriple(subject, predicate, ?);
+			if(predicate.isObjectProperty()) {
+				data = new ObjectPropertyTriple(subject, (ObjectProperty) predicate, objectInstance);
+			}
+			else {
+				data = new DataPropertyTriple(subject, (DataProperty) predicate, objectValue);
+			}
 		}
 		else {
 			data.setSubject(subject);
 			data.setPredicate(predicate);
-			data.setObject(object);
+			data.setObject(predicate.isObjectProperty() ? objectInstance : objectValue);
 		}
 
-		LOGGER.info("triggering " + SAVED_PROPERTY_NAME + " with values (S,P,O): {}, {}, {}", new Object[]{subject.getVisualRepresentation(), predicate.getVisualRepresentation(), object.getVisualRepresentation()});
+		LOGGER.info("triggering " + SAVED_PROPERTY_NAME + " with values (S,P,O): {}, {}, {}",
+				new Object[]{subject.getVisualRepresentation(), predicate.getVisualRepresentation(), predicate.isObjectProperty() ? objectInstance.getVisualRepresentation() : objectValue.getValue()});
 
 		propertyChangeSupport.firePropertyChange(SAVED_PROPERTY_NAME, false, true);
+	}
+
+	private String removeAutoCompleteComma(String label) {
+		label = label.replace(',', ' ');
+		label = label.trim();
+		return label;
 	}
 
 	private void cancelButtonClickedAction() {
@@ -187,6 +208,11 @@ public class TripleWidget extends WContainerWidget {
 	 */
 	public Triple getData() {
 		return data;
+	}
+
+	public void setSubject(Instance subject) {
+		subjectField.setText(subject.getVisualRepresentation());
+		updateSuggestions();
 	}
 
 	/**

@@ -182,8 +182,6 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		annotationsTable.addColumn("Predicate", new WLength(150));
 		annotationsTable.addColumn("Object", new WLength(150));
 
-		populateTreeTable();
-
 		annotationLayout.addWidget(annotationsTable, 1);
 
 		WContainerWidget tableControlPanel = new WContainerWidget();
@@ -214,6 +212,8 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		annotationLayout.addWidget(annotationEditorWidget);
 
 		annotationPanel.setLayout(annotationLayout);
+
+		populateTreeTable();
 	}
 
 	private void initializeLayout() {
@@ -258,15 +258,19 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 			}
 			node.setColumnWidget(2, new WText(objectText));
 		}
+
+		annotationsTable.getTree().select(annotationsTable.getTreeRoot());
 	}
 
 	private void tableSelectionChangedAction() {
 		// enable edit and delete buttons only if data is present and node is an annotation-level node
 		if(annotationsTable.getTree().getSelectedNodes().size() == 1 && annotationsTable.getTree().getSelectedNodes().iterator().next() instanceof TripleTreeTableNode) {
+			addAnnotationButton.enable();
 			editAnnotationButton.enable();
 			deleteAnnotationButton.enable();
 		}
 		else {
+			addAnnotationButton.disable();
 			editAnnotationButton.disable();
 			deleteAnnotationButton.disable();
 		}
@@ -275,7 +279,8 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	private void addAnnotationButtonClickedAction() {
 		annotationEditorWidget.resetData();
 		annotationEditorWidget.setMode(TripleWidget.Mode.ADD);
-		annotationEditorWidget.updateSuggestions();
+		final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
+		annotationEditorWidget.setSubject(selection.getData().getSubject());
 		annotationEditorWidget.show();
 	}
 
