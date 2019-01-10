@@ -493,10 +493,17 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	public TreeSet<Property> getPredicatesForSubject(String session_id, String subject_iri){
 		TreeSet<Property> predicates = new TreeSet<Property>();
-		
-		predicates.addAll(getDataPredicatesForSubject(session_id, subject_iri));
-		predicates.addAll(getObjectPredicatesForSubject(session_id, subject_iri));
-		
+
+		final TreeSet<DataProperty> dataPredicatesForSubject = getDataPredicatesForSubject(session_id, subject_iri);
+		if(dataPredicatesForSubject != null) {
+			predicates.addAll(dataPredicatesForSubject);
+		}
+
+		final TreeSet<ObjectProperty> objectPredicatesForSubject = getObjectPredicatesForSubject(session_id, subject_iri);
+		if(objectPredicatesForSubject != null) {
+			predicates.addAll(objectPredicatesForSubject);
+		}
+
 		return predicates;
 		
 	}
