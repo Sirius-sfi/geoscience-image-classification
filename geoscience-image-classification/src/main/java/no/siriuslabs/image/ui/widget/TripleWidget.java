@@ -111,6 +111,7 @@ public class TripleWidget extends WContainerWidget {
 		objectPopup = new WSuggestionPopup(options);
 		objectPopup.forEdit(objectField, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
 		objectField.setValidator(new WValidator(true));
+		objectField.focussed().addListener(this, () -> updateObjectSuggestions()); // TODO possible performance issue?
 		fieldsLayout.addWidget(objectField);
 
 		layout.addLayout(fieldsLayout);
@@ -132,25 +133,9 @@ public class TripleWidget extends WContainerWidget {
 
 	private void saveButtonClickedAction() {
 		// find the data representations for the texts/labels entered or selected
-		Instance subject = null;
-		for(Instance instance : availableSubjects) {
-			String subjectLabel = subjectField.getValueText().trim();
-			subjectLabel = removeAutoCompleteComma(subjectLabel);
-			if(instance.getVisualRepresentation().equals(subjectLabel)) {
-				subject = instance;
-				break;
-			}
-		}
 
-		Property predicate = null;
-		for(Property property : availablePredicates) {
-			String predicateLabel = predicateField.getValueText().trim();
-			predicateLabel = removeAutoCompleteComma(predicateLabel);
-			if(property.getVisualRepresentation().equals(predicateLabel)) {
-				predicate = property;
-				break;
-			}
-		}
+		Instance subject = getSubjectInstanceFromLabel();
+		Property predicate = getPredicateInstanceFromLabel();
 
 		Instance objectInstance = null;
 		LiteralValue objectValue = null;
@@ -191,6 +176,32 @@ public class TripleWidget extends WContainerWidget {
 		propertyChangeSupport.firePropertyChange(SAVED_PROPERTY_NAME, false, true);
 	}
 
+	private Instance getSubjectInstanceFromLabel() {
+		String subjectLabel = "";
+		for(Instance instance : availableSubjects) {
+			subjectLabel = subjectField.getValueText().trim();
+			subjectLabel = removeAutoCompleteComma(subjectLabel);
+			if(instance.getVisualRepresentation().equals(subjectLabel)) {
+				return instance;
+			}
+		}
+		LOGGER.warn("No subject instance found for field-value {}", subjectLabel);
+		return null; // this should never happen for subjects
+	}
+
+	private Property getPredicateInstanceFromLabel() {
+		String predicateLabel = "";
+		for(Property property : availablePredicates) {
+			predicateLabel = predicateField.getValueText().trim();
+			predicateLabel = removeAutoCompleteComma(predicateLabel);
+			if(property.getVisualRepresentation().equals(predicateLabel)) {
+				return property;
+			}
+		}
+		LOGGER.warn("No predicate instance found for field-value {}", predicateLabel);
+		return null; // this should never happen for predicates
+	}
+
 	private String removeAutoCompleteComma(String label) {
 		label = label.replace(',', ' ');
 		label = label.trim();
@@ -213,6 +224,36 @@ public class TripleWidget extends WContainerWidget {
 	public void setSubject(Instance subject) {
 		subjectField.setText(subject.getVisualRepresentation());
 		updateSuggestions();
+		updatePredicateSuggestions();
+	}
+
+	private void updatePredicateSuggestions() {
+		String sessionID = getSessionID();
+		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
+
+		final Instance subjectInstance = getSubjectInstanceFromLabel();
+		// TODO enable this, as soon as we get data from getPredicatesForSubject()
+//		availablePredicates = imageAnnotationAPI.getPredicatesForSubject(sessionID, subjectInstance.getIri());
+//
+//		predicatePopup.clearSuggestions();
+//		for(Property pred : availablePredicates) {
+//			predicatePopup.addSuggestion(pred.getVisualRepresentation());
+//		}
+	}
+
+	private void updateObjectSuggestions() {
+		String sessionID = getSessionID();
+		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
+
+		final Instance subjectInstance = getSubjectInstanceFromLabel();
+		final Property predicate = getPredicateInstanceFromLabel();
+		// TODO enable this, as soon as getObjectsForSubjectPredicate() is implemented and we get data
+//		availableObjects = imageAnnotationAPI.getObjectsForSubjectPredicate(sessionID, subjectInstance.getIri(), predicate.getIri());
+//
+//		objectPopup.clearSuggestions();
+//		for(Instance obj : availableObjects) {
+//			objectPopup.addSuggestion(obj.getVisualRepresentation());
+//		}
 	}
 
 	/**
@@ -260,7 +301,6 @@ public class TripleWidget extends WContainerWidget {
 		for(Instance obj : availableObjects) {
 			objectPopup.addSuggestion(obj.getVisualRepresentation());
 		}
-		// TODO make context sensitive
 	}
 
 	/**
