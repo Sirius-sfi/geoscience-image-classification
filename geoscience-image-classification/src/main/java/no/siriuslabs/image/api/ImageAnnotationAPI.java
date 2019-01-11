@@ -48,6 +48,12 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 public class ImageAnnotationAPI extends OntologyProjectionAPI {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(OntologyProjectionAPI.class);
+
+	/**
+	 * List of predicates that should be hidden in visualization.
+	 * Could/should be moved to separate ontology to replace constant.
+	 */
+	private static final String[] PREDICATES_TO_HIDE_IN_TABLE = {"label", GIC_URIUtils.IS_VISUALLY_REPRESENTED};
 	
 	//private ValueFactory vf;
 	
@@ -941,18 +947,9 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		return  GIC_URIUtils.getURIForResource(base_name + "-"+ random + Calendar.getInstance().getTimeInMillis());
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	public List<String> getPredicatesToHideInVisualization() {
+		return Arrays.asList(PREDICATES_TO_HIDE_IN_TABLE);
+	}
 	
 
 	

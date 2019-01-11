@@ -240,6 +240,10 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 				lastSubjectLabel = triple.getSubject().getVisualRepresentation();
 			}
 
+			if(getImageAnnotationAPI().getPredicatesToHideInVisualization().contains(((Entity)triple.getPredicate()).getVisualRepresentation())) {
+				continue;
+			}
+
 			// add annotation-level node
 			TripleTreeTableNode node = new TripleTreeTableNode("", null, currentShapeNode, triple);
 
