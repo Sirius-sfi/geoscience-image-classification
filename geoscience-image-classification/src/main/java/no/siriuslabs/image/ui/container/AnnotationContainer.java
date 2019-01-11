@@ -302,7 +302,8 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 			final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
 //			LOGGER.info("removing selected element: {}", selection.getRow());
 			// TODO remove from ontology when API method comes available
-			annotationTriples.remove(selection.getData());
+
+			loadAnnotations();
 			populateTreeTable();
 
 			editAnnotationButton.disable();
@@ -378,7 +379,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 		shapeWidget.handleShapeSaved();
 
-		annotationTriples.addAll(result);
+		loadAnnotations();
 		populateTreeTable();
 
 		LOGGER.info("initial save was successful");
@@ -447,13 +448,9 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 				final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
 				imageAnnotationAPI.saveAnnotations(sessionID, Collections.singleton(triple));
 
-				if(TripleWidget.Mode.ADD == annotationEditorWidget.getMode()) {
-					annotationTriples.add(triple);
-				}
-
 				LOGGER.info("save was successful");
 
-				// TODO try this less noisy
+				loadAnnotations();
 				populateTreeTable();
 
 				editAnnotationButton.disable();
