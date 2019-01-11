@@ -320,8 +320,15 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		else if(isMiddleMouseButton(arg) && isShiftKeyPressed(arg)) {
 			cancelButtonClickedAction();
 		}
-		else if(isMiddleMouseButton(arg) && (isWidgetModeSetPoints() || isWidgetModeUnsavedShape())) {
-			saveButtonClickedAction();
+		else if(isMiddleMouseButton(arg)) {
+			// while defining a shape the click means "save"...
+			if(isWidgetModeSetPoints() || isWidgetModeUnsavedShape()) {
+				saveButtonClickedAction();
+			}
+			// ...in "clean" state it means "start a new shape"
+			else {
+				newButtonClickedAction();
+			}
 		}
 	}
 
