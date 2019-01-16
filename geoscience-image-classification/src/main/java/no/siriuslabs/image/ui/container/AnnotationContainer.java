@@ -59,6 +59,11 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	private List<Triple> annotationTriples;
 
 	/**
+	 * List of tree nodes that describe the path to the last selected node as seen from the root.
+	 */
+	private List<WTreeNode> selectedPath = Collections.emptyList();
+
+	/**
 	 * Constructor taking the application, parent container and the GeologicalImage that is to be annotated.
 	 */
 	public AnnotationContainer(FrontendApplication application, WContainerWidget parent, GeologicalImage image) {
@@ -264,11 +269,12 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		}
 
 		annotationsTable.getTree().select(annotationsTable.getTreeRoot());
+		annotationsTable.getTreeRoot().expand();
 	}
 
 	private void tableSelectionChangedAction() {
 		// enable edit and delete buttons only if data is present and node is an annotation-level node
-		if(annotationsTable.getTree().getSelectedNodes().size() == 1 && annotationsTable.getTree().getSelectedNodes().iterator().next() instanceof TripleTreeTableNode) {
+		if(annotationsTable.getTree().getSelectedNodes().size() == 1 && isTripleTreeTableNode(annotationsTable.getTree().getSelectedNodes().iterator().next())) {
 			addAnnotationButton.enable();
 			editAnnotationButton.enable();
 			deleteAnnotationButton.enable();
@@ -307,8 +313,10 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 //			LOGGER.info("removing selected element: {}", selection.getRow());
 			// TODO remove from ontology when API method comes available
 
+			saveSelection();
 			loadAnnotations();
 			populateTreeTable();
+			restoreSelection();
 
 			editAnnotationButton.disable();
 			deleteAnnotationButton.disable();
@@ -390,10 +398,94 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 		shapeWidget.handleShapeSaved();
 
+		saveSelection();
 		loadAnnotations();
 		populateTreeTable();
+		restoreSelection();
 
 		LOGGER.info("initial save was successful");
+	}
+
+	private void saveSelection() {
+		// we allow only single selection, so we only take the first element
+		WTreeNode selectedNode = annotationsTable.getTree().getSelectedNodes().iterator().next();
+		selectedPath = new ArrayList<>();
+
+		addNodeToSelectedPath(selectedNode);
+		Collections.reverse(selectedPath);
+	}
+
+	private void addNodeToSelectedPath(WTreeNode node) {
+		if(!annotationsTable.getTreeRoot().equals(node)) {
+			// if we haven't reached the tree root yet, we remember the current node go further up
+			selectedPath.add(node);
+			addNodeToSelectedPath(node.getParentNode());
+		}
+	}
+
+	private void restoreSelection() {
+		if(!selectedPath.isEmpty()) {
+			findNextStepInSelectedPath(annotationsTable.getTreeRoot());
+		}
+	}
+
+	private void findNextStepInSelectedPath(WTreeNode baseNode) {
+		baseNode.expand();
+
+		WTreeNode nodeInTree = null;
+		WTreeNode nodeInPath = null;
+		// node instances change because of reloading, so we have to identify the nodes to be selected/expanded by contents
+		for(WTreeNode node : baseNode.getChildNodes()) {
+			// we check if one of the children of baseNode matches the first element in the saved path to the selected node (the path is sorted from POV of the root, so the sequence fits)
+			if(!selectedPath.isEmpty()) {
+				WTreeNode pathNode = selectedPath.get(0);
+				if(isTripleTreeTableNode(node) && isTripleTreeTableNode(pathNode)) {
+					// for TripleTreeTableNodes we check the subject + predicate combination
+					Triple nodeTriple = ((TripleTreeTableNode)node).getData();
+					Triple pathTriple = ((TripleTreeTableNode)pathNode).getData();
+					if(hasSameSubject(nodeTriple, pathTriple) && hasSamePredicate(nodeTriple, pathTriple)) {
+						nodeInTree = node;
+						nodeInPath = pathNode;
+						break;
+					}
+				}
+				else {
+					// for standard nodes we check the node's label
+					if(hasSameLabel(node, pathNode)) {
+						nodeInTree = node;
+						nodeInPath = pathNode;
+						break;
+					}
+				}
+			}
+		}
+
+		if(nodeInTree != null) {
+			// if the next node towards the selected one was found, we remove it from the saved path
+			selectedPath.remove(nodeInPath);
+
+			annotationsTable.getTree().select(nodeInTree);
+			// if there are more layers to do in the saved path, we do the same again for the next layer
+			if(!selectedPath.isEmpty()) {
+				findNextStepInSelectedPath(nodeInTree);
+			}
+		}
+	}
+
+	private boolean isTripleTreeTableNode(WTreeNode node) {
+		return node instanceof TripleTreeTableNode;
+	}
+
+	private boolean hasSameSubject(Triple nodeTriple, Triple pathTriple) {
+		return nodeTriple.getSubject().equals(pathTriple.getSubject());
+	}
+
+	private boolean hasSamePredicate(Triple nodeTriple, Triple pathTriple) {
+		return nodeTriple.getPredicate().equals(pathTriple.getPredicate());
+	}
+
+	private boolean hasSameLabel(WTreeNode node, WTreeNode pathNode) {
+		return node.getLabel().getText().equals(pathNode.getLabel().getText());
 	}
 
 	private boolean isTripletValid() {
@@ -461,8 +553,10 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 				LOGGER.info("save was successful");
 
+				saveSelection();
 				loadAnnotations();
 				populateTreeTable();
+				restoreSelection();
 
 				editAnnotationButton.disable();
 				deleteAnnotationButton.disable();
@@ -519,7 +613,8 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		Set<Triple> result = imageAnnotationAPI.getAllImageAnnotations(sessionID, image.getIri());
 
 		annotationTriples = new ArrayList<>(result);
-		annotationTriples.sort(Comparator.comparing((Triple o) -> o.getSubject().getVisualRepresentation()));
+		annotationTriples.sort(
+				Comparator.comparing((Triple o) -> o.getSubject().getVisualRepresentation()).thenComparing((Triple o) -> ((Entity)o.getPredicate()).getVisualRepresentation()));
 	}
 
 	private String getSessionID() {
