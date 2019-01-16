@@ -60,12 +60,13 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		
 		//TODO: MISSING things
-		//1. Retrieval of triples for neighbours and facets
+		//1. Retrieval of triples for neighbours (OK) and facets (OK)
 		//2. Refined methods for autocompletion
 		//2a. Predicates for subject
 		//2b. Objects for subject-predicate (facets and neighbourhoods)
 		//2b1. Potential allowed values for facets: boolean, list of strings, etc. (slider?)
 		//2b2. Expected allowed objects uris
+		//3. Remove, modify triples
 		
 	}
 	
@@ -507,19 +508,13 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	
-	//TODO return literals? Only if there is a range of possible values: e.g. boolean, list of companies, etc. Check projection
-	public TreeSet<String> getAllowedValues(String session_id){
-		return null;
-		
-		//TODO Allow only if given predicate?  This will also serve for autocompletion!
-		
-	}
 	
 	
 	
 	public TreeSet<Property> getPredicates(String session_id){
 		TreeSet<Property> predicates = new TreeSet<Property>();
 		
+		//TODO avoid null or return empty set
 		predicates.addAll(getDataPredicates(session_id));
 		predicates.addAll(getObjectPredicates(session_id));
 		
@@ -582,10 +577,23 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//TODO
 		//There is a method in session: getObjectsforSubjectPredicate
 	
+		//TODO subject may not play a role
+		
 		return null;
 	}
 	
 	
+	
+
+	//TODO return literals? Only if there is a range of possible values: e.g. boolean, list of companies, etc. Check projection
+	public TreeSet<String> getAllowedValues(String session_id, String subject_iri, String predicate_iri){
+		return null;
+		
+		//TODO Allow only if given predicate?  This will also serve for autocompletion!
+		
+		//TODO subject may not play a role
+		
+	}
 	
 	
 	
