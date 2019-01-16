@@ -1,5 +1,6 @@
 package no.siriuslabs.image.services;
 
+import no.siriuslabs.image.FrontendServlet;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,16 +35,8 @@ public class FileService {
 	 */
 	public void storeImageFile(String tempServerPath, String originalFilename) {
 		try {
-			final String imagePath = getImagePathInEnvironment();
-			File imageDir = new File(imagePath);
-			if(!imageDir.exists()) {
-				LOGGER.info("image directory {} does not exist - creating", imagePath);
-				boolean success = imageDir.mkdir();
-				if(!success) {
-					LOGGER.info("image directory creation at {} {}", imagePath, success ? "successful" : "failed");
-					throw new UncheckedIOException(new IOException("Creation of image directory failed."));
-				}
-			}
+			String imagePath = getImagePathInEnvironment();
+			createDirectory(imagePath);
 
 			File destFile = new File(getAbsolutePathForFile(originalFilename));
 
@@ -54,6 +47,14 @@ public class FileService {
 			LOGGER.info("copying image from {} to {}", tempServerPath, destFile);
 			File tempfile = new File(tempServerPath);
 			FileUtils.copyFile(tempfile, destFile);
+
+			// if an external directory was set, also save the image to the server's image directory
+			if(Boolean.TRUE.equals(servletContext.getAttribute(FrontendServlet.EXTERNAL_DIRECTORY_SET))) {
+				String serverLocalImagePath = getAbsoluteImageDirectoryPath();
+				createDirectory(serverLocalImagePath);
+				File serverFile = new File(getAbsoluteImageDirectoryPath() + '/' + originalFilename);
+				FileUtils.copyFile(tempfile, serverFile);
+			}
 		}
 		catch(IOException e) {
 			LOGGER.error(e.getMessage(), e);
@@ -61,11 +62,23 @@ public class FileService {
 		}
 	}
 
+	private void createDirectory(String path) {
+		File imageDir = new File(path);
+		if(!imageDir.exists()) {
+			LOGGER.info("directory {} does not exist - creating", path);
+			boolean success = imageDir.mkdir();
+			if(!success) {
+				LOGGER.info("directory creation at {} {}", path, success ? "successful" : "failed");
+				throw new UncheckedIOException(new IOException("Creation of image directory failed."));
+			}
+		}
+	}
+
 	/**
 	 * Returns the application's "real" path.
 	 */
 	public String getBasePath() {
-		return servletContext.getRealPath("./");
+		return (String) servletContext.getAttribute(FrontendServlet.WORK_DIRECTORY);
 	}
 
 	/**
@@ -86,14 +99,41 @@ public class FileService {
 	 * Returns the absolute path for the given filename.
 	 */
 	public String getAbsolutePathForFile(String filename) {
-		return getImagePathInEnvironment() + "/" + filename;
+		return getImagePathInEnvironment() + '/' + filename;
+	}
+
+	/**
+	 * Synchronizes all images in the external image directory to the server's local image directory.
+	 */
+	public void synchronizeImageDirectories() {
+		if(Boolean.TRUE.equals(servletContext.getAttribute(FrontendServlet.EXTERNAL_DIRECTORY_SET))) {
+			String serverLocalImagePath = getAbsoluteImageDirectoryPath();
+			createDirectory(serverLocalImagePath);
+
+			String imagePath = getImagePathInEnvironment();
+			File imageDirectory = new File(imagePath);
+			for(File file : imageDirectory.listFiles()) {
+				File serverFile = new File(getAbsoluteImageDirectoryPath() + '/' + file.getName());
+				try {
+					FileUtils.copyFile(file, serverFile);
+					LOGGER.info("synchronizing file: " + file.getAbsolutePath() + " to " + serverFile.getAbsolutePath());
+				}
+				catch(IOException e) {
+					LOGGER.error("error while trying to copy {} to {}", new Object[]{file.getAbsolutePath(), serverFile.getAbsolutePath(), e});
+				}
+			}
+		}
+	}
+
+	public String getAbsoluteImageDirectoryPath() {
+		return servletContext.getRealPath("./") + getImageDirectoryName();
 	}
 
 	/**
 	 * Returns the relative image path for the given filename (image directory + filename).
 	 */
 	public String getRelativeImagePathForFile(String filename) {
-		return getImageDirectoryName() + "/" + filename;
+		return getImageDirectoryName() + '/' + filename;
 	}
 
 }

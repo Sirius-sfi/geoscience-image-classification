@@ -25,7 +25,9 @@ public class FrontendServlet extends WtServlet {
 	public static final String FILE_SERVICE_KEY = "fileService";
 	public static final String IMAGE_ANNOTATION_API_KEY = "imageAnnotationAPI";
 	public static final String SESSION_ID_KEY = "sessionID";
-	
+
+	public static final String WORK_DIRECTORY = "workDirectory";
+	public static final String EXTERNAL_DIRECTORY_SET = "externalDirectorySet";
 	
 
 	@Override
@@ -57,9 +59,15 @@ public class FrontendServlet extends WtServlet {
 
 		RDFoxSessionManager session = (RDFoxSessionManager) getServletContext().getAttribute(RDFoxSessionContextListener.RDFOX_SESSION);
 		ImageAnnotationAPI icg = new ImageAnnotationAPI(session);
-		
+
+		String workDirectory = System.getProperty("workDirectory");
+		boolean externalDirectorySet = workDirectory != null;
+		getServletContext().setAttribute(EXTERNAL_DIRECTORY_SET, externalDirectorySet);
+		LOGGER.info("system property workDirectory was: {}", workDirectory);
+		String absoluteWebPath = externalDirectorySet ? workDirectory : getServletContext().getRealPath("/");
+		getServletContext().setAttribute(WORK_DIRECTORY, absoluteWebPath);
+
 		//Load default ontology
-		String absoluteWebPath = getServletContext().getRealPath("/");
 		String ontology_path = getServletContext().getInitParameter("ontology-path");
 		String annotations_path = getServletContext().getInitParameter("annotations-path");
 		
@@ -68,6 +76,7 @@ public class FrontendServlet extends WtServlet {
 			protocol+="/";
 		
 		String sessionID = protocol + absoluteWebPath + ontology_path;
+		LOGGER.info("sesionID is: {}", sessionID);
 		
 		//New session with ontology and data (available annotations)
 		icg.createNewSession(
@@ -80,6 +89,11 @@ public class FrontendServlet extends WtServlet {
 
 		FileService fileService = new FileService(getServletContext());
 		getServletContext().setAttribute(FILE_SERVICE_KEY, fileService);
+
+		// if an external directory was set, copy all images from there to the server's local image directory
+		if(externalDirectorySet) {
+			fileService.synchronizeImageDirectories();
+		}
 
 		LOGGER.info("services ready");
 	}
