@@ -26,9 +26,13 @@ public class FrontendServlet extends WtServlet {
 	public static final String IMAGE_ANNOTATION_API_KEY = "imageAnnotationAPI";
 	public static final String SESSION_ID_KEY = "sessionID";
 
+	public static final String ONTOLOGY_PATH_KEY = "ontology-path";
+	public static final String ONTOLOGY_FILENAME_KEY = "ontology-filename";
+	public static final String ANNOTATIONS_PATH_KEY = "annotations-path";
+	public static final String ANNOTATIONS_FILENAME_KEY = "annotations-filename";
+
 	public static final String WORK_DIRECTORY = "workDirectory";
 	public static final String EXTERNAL_DIRECTORY_SET = "externalDirectorySet";
-	
 
 	@Override
 	public WApplication createApplication(WEnvironment wEnvironment) {
@@ -68,6 +72,7 @@ public class FrontendServlet extends WtServlet {
 		// if an external directory was set, copy all images from there to the server's local image directory
 		if(externalDirectorySet) {
 			fileService.synchronizeImageDirectories();
+			fileService.synchronizeDatafilesToInitialDataDirectory();
 		}
 	}
 
@@ -80,20 +85,22 @@ public class FrontendServlet extends WtServlet {
 		String absoluteWebPath = (String) getServletContext().getAttribute(WORK_DIRECTORY);
 
 		//Load default ontology
-		String ontology_path = getServletContext().getInitParameter("ontology-path");
-		String annotations_path = getServletContext().getInitParameter("annotations-path");
-		
+		String ontology_path = getServletContext().getInitParameter(ONTOLOGY_PATH_KEY);
+		String ontology_filename = getServletContext().getInitParameter(ONTOLOGY_FILENAME_KEY);
+		String annotations_path = getServletContext().getInitParameter(ANNOTATIONS_PATH_KEY);
+		String annotations_filename = getServletContext().getInitParameter(ANNOTATIONS_FILENAME_KEY);
+
 		String protocol = "file:";
 		if (!absoluteWebPath.startsWith("/"))
 			protocol+="/";
 		
-		String sessionID = protocol + absoluteWebPath + ontology_path;
+		String sessionID = protocol + absoluteWebPath + ontology_path + ontology_filename;
 		LOGGER.info("sesionID is: {}", sessionID);
 		
 		//New session with ontology and data (available annotations)
 		icg.createNewSession(
 				sessionID,
-				absoluteWebPath + annotations_path);
+				absoluteWebPath + annotations_path + annotations_filename);
 		//end load default ontology
 		
 		getServletContext().setAttribute(IMAGE_ANNOTATION_API_KEY, icg);

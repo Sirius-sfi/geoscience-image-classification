@@ -44,11 +44,18 @@
   
    <context-param>
             <param-name>ontology-path</param-name>
-            <param-value>ontology/GIC_Ontology.owl</param-value>
+            <param-value>ontology/</param-value>
+   </context-param><context-param>
+            <param-name>ontology-filename</param-name>
+            <param-value>GIC_Ontology.owl</param-value>
    </context-param>
    <context-param>
             <param-name>annotations-path</param-name>
-            <param-value>annotations/annotations.ttl</param-value>
+            <param-value>annotations/</param-value>
+   </context-param>
+    <context-param>
+            <param-name>annotations-filename</param-name>
+            <param-value>annotations.ttl</param-value>
    </context-param>
   
 </web-app>

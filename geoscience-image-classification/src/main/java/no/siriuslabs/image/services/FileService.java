@@ -10,6 +10,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import static no.siriuslabs.image.FrontendServlet.ANNOTATIONS_FILENAME_KEY;
+import static no.siriuslabs.image.FrontendServlet.ANNOTATIONS_PATH_KEY;
+import static no.siriuslabs.image.FrontendServlet.ONTOLOGY_FILENAME_KEY;
+import static no.siriuslabs.image.FrontendServlet.ONTOLOGY_PATH_KEY;
+
 /**
  * Service class providing file-based functionality.
  */
@@ -62,6 +67,48 @@ public class FileService {
 		}
 	}
 
+	/**
+	 * Synchronizes all images in the external image directory to the server's local image directory.
+	 */
+	public void synchronizeImageDirectories() {
+		if(Boolean.TRUE.equals(servletContext.getAttribute(FrontendServlet.EXTERNAL_DIRECTORY_SET))) {
+			String serverLocalImagePath = getAbsoluteImageDirectoryPath();
+			createDirectory(serverLocalImagePath);
+
+			String imagePath = getImagePathInEnvironment();
+			File imageDirectory = new File(imagePath);
+			if(!imageDirectory.exists()) {
+				LOGGER.info("image directory " + imageDirectory.getAbsolutePath() + " does not exist - nothing to synchronize");
+				return;
+			}
+
+			for(File file : imageDirectory.listFiles()) {
+				File serverFile = new File(getAbsoluteImageDirectoryPath() + '/' + file.getName());
+				copyFile(file, serverFile);
+			}
+		}
+	}
+
+	/**
+	 * Synchronizes the ontology and annotations files from the server deployment to the data directory (if present) should the be missing there.
+	 */
+	public void synchronizeDatafilesToInitialDataDirectory() {
+		if(Boolean.TRUE.equals(servletContext.getAttribute(FrontendServlet.EXTERNAL_DIRECTORY_SET))) {
+			synchronizeOntology();
+			synchronizeAnnotations();
+		}
+	}
+
+	private void synchronizeOntology() {
+		LOGGER.info("synchronizing ontology files to data directory if initial start-up");
+		synchronizeToDataDirectory(ONTOLOGY_PATH_KEY, ONTOLOGY_FILENAME_KEY);
+	}
+
+	private void synchronizeAnnotations() {
+		LOGGER.info("synchronizing annotation files to data directory if initial start-up");
+		synchronizeToDataDirectory(ANNOTATIONS_PATH_KEY, ANNOTATIONS_FILENAME_KEY);
+	}
+
 	private void createDirectory(String path) {
 		File imageDir = new File(path);
 		if(!imageDir.exists()) {
@@ -71,6 +118,36 @@ public class FileService {
 				LOGGER.info("directory creation at {} {}", path, success ? "successful" : "failed");
 				throw new UncheckedIOException(new IOException("Creation of image directory failed."));
 			}
+		}
+	}
+
+	private boolean copyFile(File sourceFile, File serverFile) {
+		try {
+			FileUtils.copyFile(sourceFile, serverFile);
+			LOGGER.info("synchronizing file: {} to {}", sourceFile.getAbsolutePath(), serverFile.getAbsolutePath());
+			return true;
+		}
+		catch(IOException e) {
+			LOGGER.error("error while trying to copy {} to {}", new Object[]{sourceFile.getAbsolutePath(), serverFile.getAbsolutePath(), e});
+			return false;
+		}
+	}
+
+	private void synchronizeToDataDirectory(String resourcePathKey, String resourceFilenameKey) {
+		String directoryPath = servletContext.getInitParameter(resourcePathKey);
+		String filename = servletContext.getInitParameter(resourceFilenameKey);
+
+		String externalDirectoryPath = getBasePath() + directoryPath;
+		File externalDirectory = new File(externalDirectoryPath);
+		if(!externalDirectory.exists()) {
+			createDirectory(externalDirectoryPath);
+
+			String serverLocalDataFilePath = getServerBasePath() + directoryPath + filename;
+			File serverLocalDataFile = new File(serverLocalDataFilePath);
+			String absoluteExternalPath = externalDirectoryPath + filename;
+			File externalFile = new File(absoluteExternalPath);
+
+			copyFile(serverLocalDataFile, externalFile);
 		}
 	}
 
@@ -103,35 +180,14 @@ public class FileService {
 	}
 
 	/**
-	 * Synchronizes all images in the external image directory to the server's local image directory.
+	 * Returns the absolute path of the image directory.
 	 */
-	public void synchronizeImageDirectories() {
-		if(Boolean.TRUE.equals(servletContext.getAttribute(FrontendServlet.EXTERNAL_DIRECTORY_SET))) {
-			String serverLocalImagePath = getAbsoluteImageDirectoryPath();
-			createDirectory(serverLocalImagePath);
-
-			String imagePath = getImagePathInEnvironment();
-			File imageDirectory = new File(imagePath);
-			if(!imageDirectory.exists()) {
-				LOGGER.info("image directory " + imageDirectory.getAbsolutePath() + " does not exist - nothing to synchronize");
-				return;
-			}
-
-			for(File file : imageDirectory.listFiles()) {
-				File serverFile = new File(getAbsoluteImageDirectoryPath() + '/' + file.getName());
-				try {
-					FileUtils.copyFile(file, serverFile);
-					LOGGER.info("synchronizing file: " + file.getAbsolutePath() + " to " + serverFile.getAbsolutePath());
-				}
-				catch(IOException e) {
-					LOGGER.error("error while trying to copy {} to {}", new Object[]{file.getAbsolutePath(), serverFile.getAbsolutePath(), e});
-				}
-			}
-		}
+	public String getAbsoluteImageDirectoryPath() {
+		return getServerBasePath() + getImageDirectoryName();
 	}
 
-	public String getAbsoluteImageDirectoryPath() {
-		return servletContext.getRealPath("./") + getImageDirectoryName();
+	private String getServerBasePath() {
+		return servletContext.getRealPath("./");
 	}
 
 	/**
