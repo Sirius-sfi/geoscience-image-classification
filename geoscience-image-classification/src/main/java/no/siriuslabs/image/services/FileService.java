@@ -112,6 +112,11 @@ public class FileService {
 
 			String imagePath = getImagePathInEnvironment();
 			File imageDirectory = new File(imagePath);
+			if(!imageDirectory.exists()) {
+				LOGGER.info("image directory " + imageDirectory.getAbsolutePath() + " does not exist - nothing to synchronize");
+				return;
+			}
+
 			for(File file : imageDirectory.listFiles()) {
 				File serverFile = new File(getAbsoluteImageDirectoryPath() + '/' + file.getName());
 				try {
