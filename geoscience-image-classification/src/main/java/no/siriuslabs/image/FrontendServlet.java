@@ -35,7 +35,8 @@ public class FrontendServlet extends WtServlet {
 		LOGGER.info("creating application...");
 		alterConfiguration();
 
-		createServices();
+		initializeEnvironment();
+		initializeOntologyConnection();
 
 		final FrontendApplication application = new FrontendApplication(wEnvironment);
 		initializeApplicationWithStylesheets(application);
@@ -54,18 +55,29 @@ public class FrontendServlet extends WtServlet {
 		});
 	}
 
-	private void createServices() {
-		LOGGER.info("creating services...");
-
-		RDFoxSessionManager session = (RDFoxSessionManager) getServletContext().getAttribute(RDFoxSessionContextListener.RDFOX_SESSION);
-		ImageAnnotationAPI icg = new ImageAnnotationAPI(session);
-
+	private void initializeEnvironment() {
 		String workDirectory = System.getProperty("workDirectory");
 		boolean externalDirectorySet = workDirectory != null;
 		getServletContext().setAttribute(EXTERNAL_DIRECTORY_SET, externalDirectorySet);
 		LOGGER.info("system property workDirectory was: {}", workDirectory);
-		String absoluteWebPath = externalDirectorySet ? workDirectory : getServletContext().getRealPath("/");
-		getServletContext().setAttribute(WORK_DIRECTORY, absoluteWebPath);
+		String workDirectoryPath = externalDirectorySet ? workDirectory : getServletContext().getRealPath("/");
+		getServletContext().setAttribute(WORK_DIRECTORY, workDirectoryPath);
+
+		FileService fileService = new FileService(getServletContext());
+		getServletContext().setAttribute(FILE_SERVICE_KEY, fileService);
+		// if an external directory was set, copy all images from there to the server's local image directory
+		if(externalDirectorySet) {
+			fileService.synchronizeImageDirectories();
+		}
+	}
+
+	private void initializeOntologyConnection() {
+		LOGGER.info("connecting to ontology and creating services...");
+
+		RDFoxSessionManager session = (RDFoxSessionManager) getServletContext().getAttribute(RDFoxSessionContextListener.RDFOX_SESSION);
+		ImageAnnotationAPI icg = new ImageAnnotationAPI(session);
+
+		String absoluteWebPath = (String) getServletContext().getAttribute(WORK_DIRECTORY);
 
 		//Load default ontology
 		String ontology_path = getServletContext().getInitParameter("ontology-path");
@@ -87,15 +99,7 @@ public class FrontendServlet extends WtServlet {
 		getServletContext().setAttribute(IMAGE_ANNOTATION_API_KEY, icg);
 		getServletContext().setAttribute(SESSION_ID_KEY, sessionID);
 
-		FileService fileService = new FileService(getServletContext());
-		getServletContext().setAttribute(FILE_SERVICE_KEY, fileService);
-
-		// if an external directory was set, copy all images from there to the server's local image directory
-		if(externalDirectorySet) {
-			fileService.synchronizeImageDirectories();
-		}
-
-		LOGGER.info("services ready");
+		LOGGER.info("ontology connected, services ready");
 	}
 
 	private void initializeApplicationWithStylesheets(FrontendApplication application) {
