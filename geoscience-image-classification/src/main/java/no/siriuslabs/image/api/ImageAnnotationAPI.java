@@ -39,9 +39,8 @@ import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
 import uio.ifi.ontology.toolkit.projection.model.triples.TypeDefinitionTriple;
 import uio.ifi.ontology.toolkit.projection.utils.URIUtils;
 import uio.ifi.ontology.toolkit.projection.view.OntologyProjectionAPI;
+import uk.ac.ox.cs.JRDFox.store.DataStore.UpdateType;
 
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 
 
@@ -72,7 +71,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//2b. Objects for subject-predicate (facets and neighbourhoods)
 		//2b1. Potential allowed values for facets: boolean, list of strings, etc. (slider?)
 		//2b2. Expected allowed objects uris
-		//3. Remove, modify triples
+		//3. Remove triples (OK)
 		
 	}
 	
@@ -604,7 +603,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	/**
-	 * Saves annotations from interface. 
+	 * Saves annotations/triples from interface. 
 	 */
 	public void saveAnnotations(String session_id, Set<Triple> triples){
 		
@@ -619,7 +618,29 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		addTriplesForAnnotations(data_model, triples);
 		
 		//Save new triples
-		saveDataModel(data_model, session_id);
+		saveDataModel(data_model, session_id); //by default is addition
+		
+		
+	}
+	
+	
+	
+	/**
+	 * Removed annotations/tripels from interface. 
+	 */
+	public void removeAnnotations(String session_id, Set<Triple> triples){
+		
+		//Store img annotation model		
+		AnnotationGraphModel data_model = new AnnotationGraphModel();
+		
+		//Load model
+		String data_file_path = sessionManager.getSession(session_id).getDataFilePath();
+		data_model.loadModelFromFile(data_file_path);
+		
+		removeTriplesForAnnotations(data_model, triples);
+		
+		//Save new triples
+		saveDataModel(data_model, session_id, UpdateType.ScheduleForDeletion);
 		
 		
 	}
@@ -633,16 +654,43 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			//is_visually_represented triple already added (internally) when associating object to selection shape or to image
 			
 			if (triple.isTypeDefinitionTriple())
-				data_model.addTypeTriple(triple.getSubject().getIri(), triple.asTypeDefinitionTriple().getObject().getIri());
+				data_model.addTypeTriple(
+						triple.getSubject().getIri(), triple.asTypeDefinitionTriple().getObject().getIri());
+			
 			else if(triple.isDataPropertyTriple())
 				data_model.addLiteralTriple(
 						triple.getSubject().getIri(), triple.asDataPropertyTriple().getPredicate().getIri(), 
-						triple.asDataPropertyTriple().getObject().getValue(), triple.asDataPropertyTriple().getObject().getDatatypeString());	
+						triple.asDataPropertyTriple().getObject().getValue(), triple.asDataPropertyTriple().getObject().getDatatypeString());
+			
 			else if (triple.isObjectPropertyTriple())
 				data_model.addObjectTriple(
 						triple.getSubject().getIri(), triple.asObjectPropertyTriple().getPredicate().getIri(), triple.asObjectPropertyTriple().getObject().getIri());
 			
 		
+		}
+
+	}
+	
+	
+	protected void removeTriplesForAnnotations(AnnotationGraphModel data_model, Set<Triple> triples) {
+	
+		//Remove triples from main model (also keep triples to remove from Rdfox)
+		for (Triple triple : triples) {
+			
+			if (triple.isTypeDefinitionTriple())
+				data_model.removeTypeTriple(
+						triple.getSubject().getIri(), triple.asTypeDefinitionTriple().getObject().getIri());
+			
+			else if(triple.isDataPropertyTriple())
+				data_model.removeLiteralTriple(
+						triple.getSubject().getIri(), triple.asDataPropertyTriple().getPredicate().getIri(), 
+						triple.asDataPropertyTriple().getObject().getValue(), triple.asDataPropertyTriple().getObject().getDatatypeString());	
+			
+			
+			else if (triple.isObjectPropertyTriple())
+				data_model.removeObjectTriple(
+						triple.getSubject().getIri(), triple.asObjectPropertyTriple().getPredicate().getIri(), triple.asObjectPropertyTriple().getObject().getIri());
+			
 		}
 
 	}
@@ -916,26 +964,36 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	/**
-	 * Saves models and clears structures
+	 * Saves models and clears structures. Default update strategy: addition
 	 * @param data_model
 	 * @param session_id
 	 */
 	private void saveDataModel(AnnotationGraphModel data_model, String session_id) {
+		saveDataModel(data_model, session_id, UpdateType.ScheduleForAddition);
+	}
+
+		
+	
+	
+	/**
+	 * Saves models and clears structures
+	 * @param data_model
+	 * @param session_id
+	 * @param importType To add or to remove triple isn RDFox
+	 */
+	private void saveDataModel(AnnotationGraphModel data_model, String session_id, UpdateType updateType) {
+		
 		
 		try {
 			
 			String data_file_path = sessionManager.getSession(session_id).getDataFilePath();
 			data_model.saveModel(data_file_path);
 			
-			//Save tmp file with new annotations and perform incremental reasoning
+			//Save tmp file with new added/removed annotations and perform incremental reasoning in RDFox
 			String tmp_file = Utility.tmp_directory + "tmp_file_annotations.ttl";
-			data_model.saveNewAnnotationsModel(tmp_file);
+			data_model.saveTmpModelWithUpdates(tmp_file);
 			//Sync RDFox reasoner
-			sessionManager.getSession(session_id).performMaterializationAdditionalData(tmp_file, true);//incremental reasoning
-			
-			//TODO In case we want to remove triples: https://oxfordsemtech.github.io/RDFox/#/05-shell?id=import
-			//1. We should remove from DataModel
-			//2. We should perform a Negative Import
+			sessionManager.getSession(session_id).performMaterializationAdditionalData(tmp_file, true, updateType);//incremental reasoning
 			
 			//dispose/clear models
 			data_model.dispose();

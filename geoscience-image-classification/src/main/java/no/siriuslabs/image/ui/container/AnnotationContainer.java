@@ -312,6 +312,12 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 			final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
 //			LOGGER.info("removing selected element: {}", selection.getRow());
 			// TODO remove from ontology when API method comes available
+			
+			//TODO test by Ernesto 
+			String sessionID = getSessionID();
+			final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
+			imageAnnotationAPI.removeAnnotations(sessionID, Collections.singleton(selection.getData()));
+			//--------------------------
 
 			saveSelection();
 			loadAnnotations();

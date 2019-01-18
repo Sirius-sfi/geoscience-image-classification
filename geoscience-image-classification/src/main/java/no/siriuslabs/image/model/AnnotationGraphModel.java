@@ -39,7 +39,8 @@ public class AnnotationGraphModel {
 	//RDF Model
 	Model model;
 	
-	Model model_new;
+	//New triples to remove or to add (tmp file for RDFox) 
+	Model model_updates;
 		
 		
 		
@@ -48,7 +49,7 @@ public class AnnotationGraphModel {
 		vf = SimpleValueFactory.getInstance();
 		
 		//For the new annotations. necessary for incremental reasoning
-		model_new=new TreeModel();			
+		model_updates=new TreeModel();			
 			
 	}
 	
@@ -80,21 +81,31 @@ public class AnnotationGraphModel {
 	
 	public void dispose(){
 		model.clear();
-		model_new.clear();
+		model_updates.clear();
 	}
 	
 	
 	
+	/** 
+	 * Gets main data model
+	 * 
+	 * @return
+	 */
 	public Model getRDFModel(){		
 		return model;
 	}
 	
 	
-	public Model getRDFModelNewAnnoations(){		
-		return model_new;
+	/**
+	 * Gets the triples that were either removed or added from/to main models 
+	 * @return
+	 */
+	public Model getRDFModelWithUpdates(){		
+		return model_updates;
 	}
 	
 	
+
 
 	public void saveModel(String file) throws IOException{
 		
@@ -116,13 +127,15 @@ public class AnnotationGraphModel {
 	 * @param file
 	 * @throws IOException
 	 */
-	public void saveNewAnnotationsModel(String tmp_file) throws IOException{
+	public void saveTmpModelWithUpdates(String tmp_file) throws IOException{
 	
 		FileOutputStream output_stream = new FileOutputStream(new File(tmp_file));
-		Rio.write(model_new, output_stream, RDFFormat.TURTLE); //System.out
+		Rio.write(model_updates, output_stream, RDFFormat.TURTLE); //System.out
 		output_stream.close();
 		
 	}
+	
+	
 	
 	
 	public void addTypeTriple(String subject, String object){
@@ -131,47 +144,123 @@ public class AnnotationGraphModel {
 		addObjectTriple(vf.createIRI(subject), vf.createIRI(URIUtils.DIRECT_TYPE), vf.createIRI(object));
 	}
 	
+	
+	public void removeTypeTriple(String subject, String object){
+		removeObjectTriple(vf.createIRI(subject), RDF.TYPE, vf.createIRI(object));
+		//We also remove direct type
+		removeObjectTriple(vf.createIRI(subject), vf.createIRI(URIUtils.DIRECT_TYPE), vf.createIRI(object));
+	}
+	
+	
+	
+	
 	public void addLabelTriple(String subject, String object){
 		addLiteralTriple(vf.createIRI(subject), RDFS.LABEL, vf.createLiteral(object));
 	}
+	
+	
+	public void removeLabelTriple(String subject, String object){
+		removeLiteralTriple(vf.createIRI(subject), RDFS.LABEL, vf.createLiteral(object));
+	}
+	
+	
 	
 	public void addCommentTriple(String subject, String object){
 		addLiteralTriple(vf.createIRI(subject), RDFS.COMMENT, vf.createLiteral(object));
 	}
 	
 	
+	public void removeCommentTriple(String subject, String object){
+		removeLiteralTriple(vf.createIRI(subject), RDFS.COMMENT, vf.createLiteral(object));
+	}
+	
+	
+	
+	
+	
 	public void addObjectTriple(String subject, String predicate, String object){
-		model.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createIRI(object));
-		model_new.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createIRI(object));
+		//model.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createIRI(object));
+		//model_new.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createIRI(object));
+		addObjectTriple(vf.createIRI(subject), vf.createIRI(predicate), vf.createIRI(object));
 	}
 	
 	
 	public void addObjectTriple(Resource subject, IRI predicate, Value object){
 		model.add(subject, predicate, object);
-		model_new.add(subject, predicate, object);
+		model_updates.add(subject, predicate, object);
 	}
 	
 	public void addLiteralTriple(String subject, String predicate, String object){
-		model.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object));
-		model_new.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object));
+		//model.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object));
+		//model_new.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object));
+		addLiteralTriple(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object));
 	}
 	
 	public void addLiteralTriple(String subject, String predicate, String object, String datatype_object){
-		model.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object, vf.createIRI(datatype_object)));
-		model_new.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object, vf.createIRI(datatype_object)));
+		//model.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object, vf.createIRI(datatype_object)));
+		//model_new.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object, vf.createIRI(datatype_object)));
+		addLiteralTriple(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object, vf.createIRI(datatype_object)));
 	}
 	
 	
 	public void addLiteralTriple(Resource subject, IRI predicate, Value object){
 		model.add(subject, predicate, object);
-		model_new.add(subject, predicate, object);
+		model_updates.add(subject, predicate, object);
+		
 	}
+	
+	
+	
+	
+	public void removeObjectTriple(String subject, String predicate, String object){
+		removeObjectTriple(vf.createIRI(subject), vf.createIRI(predicate), vf.createIRI(object));
+	}
+	
+	
+	public void removeObjectTriple(Resource subject, IRI predicate, Value object){
+		model.remove(subject, predicate, object);
+		model_updates.add(subject, predicate, object); //keeps deleted triples
+	}
+	
+	public void removeLiteralTriple(String subject, String predicate, String object){
+		removeLiteralTriple(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object));
+	}
+	
+	public void removeLiteralTriple(String subject, String predicate, String object, String datatype_object){
+		removeLiteralTriple(vf.createIRI(subject), vf.createIRI(predicate), vf.createLiteral(object, vf.createIRI(datatype_object)));
+	}
+	
+	
+	public void removeLiteralTriple(Resource subject, IRI predicate, Value object){
+		model.remove(subject, predicate, object);
+		model_updates.add(subject, predicate, object); //keeps delted triples
+	}
+	
+	
+	
+	
+	
+	
 	
 	
 	
 	public void addTripleStatement(Statement triple) {
 		model.add(triple);
-		model_new.add(triple);
+		model_updates.add(triple);
 	}
+	
+	
+	
+	public void removeTripleStatement(Statement triple) {
+		
+		model.remove(triple);
+		
+		//mode_new is a tmp object with elements that have been removed or added
+		model_updates.add(triple);
+	}
+	
+	
+	
+	
 
 }
