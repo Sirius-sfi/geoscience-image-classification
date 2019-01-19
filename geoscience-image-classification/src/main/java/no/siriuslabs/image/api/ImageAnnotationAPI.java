@@ -72,6 +72,9 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//2b1. Potential allowed values for facets: boolean, list of strings, etc. (slider?)
 		//2b2. Expected allowed objects uris
 		//3. Remove triples (OK)
+		//4. Namespace: filter by namespace in table and in autocompletion (1/2 ok)
+		//4a. Give to projection manager a set of ontologies or ontology URIs! (ok)
+		
 		
 	}
 	
@@ -91,6 +94,10 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		sessionManager.createNewSession(iri, data_file);
 	}
 	
+	public void createNewSession(String session_id, Set<String> iris, String data_file) {
+		sessionManager.createNewSession(session_id, iris, data_file);
+	}
+	
 	
 	//First element top class
 	public List<Concept> getImageTypes(String session_id){
@@ -98,6 +105,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		List<Concept> imageTypes = new ArrayList<Concept>();
 		
 		//TODO Possible alternative: Query for concepts of given namespace?
+		//TODO Configure in annotations ontology
 		//Query for special annotation in ontology
 		Concept mainArtefact = sessionManager.getSession(session_id).getMainArtefactConcept();
 		imageTypes.add(mainArtefact);
@@ -132,7 +140,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			//Get location: get ?o given "s" and "p" : generic getObjets SPARQL query: unary results
 			
 			//There should be only one location
-			Set<String> locations = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance.getIri(), GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HAS_PHYISICAL_LOCATION));
+			Set<String> locations = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance.getIri(), GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HAS_PHYISICAL_LOCATION));
 			for(String location: locations) {
 				geoImage.setLocation(location);
 			}
@@ -176,7 +184,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		
 		//1. Get Points (object) for a shape
-		Set<String> point_uris = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(shape_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASPOINT));
+		Set<String> point_uris = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(shape_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASPOINT));
 		
 		//We initialize with the proper size
 		WPointF[] points_vector = new WPointF[point_uris.size()];
@@ -187,18 +195,18 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			WPointF point = new WPointF();
 			
 			//coordinate x
-			Set<String> values = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASX));
+			Set<String> values = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(point_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASX));
 			for (String value: values) {//only one expected
 				point.setX(Double.valueOf(value));
 			}
 			
 			//coordinate y
-			values = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASY));
+			values = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(point_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASY));
 			for (String value: values) {//only one expected
 				point.setY(Double.valueOf(value));
 			}
 			
-			values = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASPOINTORDER));
+			values = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(point_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASPOINTORDER));
 			
 			//Typically only one
 			int order_point=0;
@@ -228,7 +236,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		
 		//1. Get shapes (subject) visually represented in image
-		Set<String> shape_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_SELECTION_OF), image_uri);
+		Set<String> shape_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_SELECTION_OF), image_uri);
 		
 		//Utility.println(shape_uris.size() + " shapes for " +image_uri);
 		
@@ -294,8 +302,10 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		//Get elements visually represented in image: reasoning important as some object may be represented in a selection and the selection in the image
 		//Shapes belong to image but a different property was used
-		Set<String> object_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED), image_uri);
-				
+		Set<String> object_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED), image_uri);
+		
+		//System.out.println("Objects in image: " + object_uris);
+		
 				
 		for (String object_uri : object_uris) {
 		
@@ -374,10 +384,10 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		Set<Triple> triples = new HashSet<Triple>();
 		
-		String predicate = GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED);
+		String predicate = GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED);
 			
 		//TODO Can an object be attached to more than one selection? (Transitivity and containment of selections not allowed yet)
-		Set<String> selection_uris = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance_object.getIri(), predicate, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IMAGE_SELECTION));
+		Set<String> selection_uris = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance_object.getIri(), predicate, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IMAGE_SELECTION));
 		
 		//if empty then object was not attached to image selection
 		if (selection_uris.isEmpty()) 
@@ -414,7 +424,8 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		for (String p : object_relationhips_map.keySet()){
 			
-			if (p.equals(GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED)))
+			if (p.equals(GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED))
+				|| p.equals("http://www.w3.org/2002/07/owl#topObjectProperty"))
 				continue;
 			
 			for (String o: object_relationhips_map.get(p)) {
@@ -720,7 +731,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//location
 		data_model.addLiteralTriple(
 				gimg.getIri(), 
-				GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HAS_PHYISICAL_LOCATION), 
+				GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HAS_PHYISICAL_LOCATION), 
 				gimg.getLocation());
 		
 		
@@ -805,7 +816,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 				new ObjectPropertyTriple(
 						instance,
 						sessionManager.getSession(session_id).createObjectPropery(
-								GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED)),
+								GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED)),
 						sessionManager.getSession(session_id).createInstance(uri_shape, shape_type)
 						));
 		
@@ -868,7 +879,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		//Visually represented
 		data_model.addObjectTriple(uri_object, 
-				GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED),
+				GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED),
 				shape_uri);
 		
 		
@@ -921,14 +932,14 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//String uri_shape = getNewResourceURI("shape");
 		
 		//Assign URI type depending on the shapeType: Trianle, Circle...
-		String shape_type = GIC_URIUtils.getURIForOntologyEntity(
+		String shape_type = GIC_URIUtils.getURIForAnnotationOntologyEntity(
 				StringUtils.capitalize(shape.getShapeType().toString().toLowerCase()));
 		
 		data_model.addTypeTriple(uri_shape, shape_type);
 		
 		
 		//Link image with shape/selection
-		data_model.addObjectTriple(uri_shape, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.IS_SELECTION_OF), image_uri);
+		data_model.addObjectTriple(uri_shape, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_SELECTION_OF), image_uri);
 		
 		//Add points to shape
 		String point_uri;
@@ -937,17 +948,17 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			point_uri = getNewResourceURI("point");
 			
 			//Type Point
-			data_model.addTypeTriple(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.POINT));
+			data_model.addTypeTriple(point_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.POINT));
 			
 			//link between shape and points
-			data_model.addObjectTriple(uri_shape, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASPOINT), point_uri);
+			data_model.addObjectTriple(uri_shape, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASPOINT), point_uri);
 			
 			//coordinates
-			data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASX), String.valueOf(point.getX()), URIUtils.XSD_DOUBLE);
-			data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASY), String.valueOf(point.getY()), URIUtils.XSD_DOUBLE);
+			data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASX), String.valueOf(point.getX()), URIUtils.XSD_DOUBLE);
+			data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASY), String.valueOf(point.getY()), URIUtils.XSD_DOUBLE);
 			
 			//For circles and polygons with 5 or more points the order of points matters
-			data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForOntologyEntity(GIC_URIUtils.HASPOINTORDER), String.valueOf(i), URIUtils.XSD_INTEGER);
+			data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASPOINTORDER), String.valueOf(i), URIUtils.XSD_INTEGER);
 			
 			//System.out.println(i + " " + point.getX() + "  " + point.getY());
 			i++;
@@ -1015,6 +1026,10 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	public List<String> getPredicatesToHideInVisualization() {
 		return Arrays.asList(PREDICATES_TO_HIDE_IN_TABLE);
+	}
+	
+	public String getNamespaceToHideInVisualization() {
+		return GIC_URIUtils.BASE_URI_ANNOTATIONS + "#";
 	}
 	
 

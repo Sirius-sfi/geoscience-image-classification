@@ -9,6 +9,10 @@ import eu.webtoolkit.jwt.WtServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.context.RDFoxSessionContextListener;
 import no.siriuslabs.image.services.FileService;
+
+import java.util.HashSet;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
@@ -28,6 +32,7 @@ public class FrontendServlet extends WtServlet {
 
 	public static final String ONTOLOGY_PATH_KEY = "ontology-path";
 	public static final String ONTOLOGY_FILENAME_KEY = "ontology-filename";
+	public static final String ONTOLOGY_ANNOTATIONS_FILENAME_KEY = "ontology-annotations-filename";
 	public static final String ANNOTATIONS_PATH_KEY = "annotations-path";
 	public static final String ANNOTATIONS_FILENAME_KEY = "annotations-filename";
 
@@ -87,6 +92,7 @@ public class FrontendServlet extends WtServlet {
 		//Load default ontology
 		String ontology_path = getServletContext().getInitParameter(ONTOLOGY_PATH_KEY);
 		String ontology_filename = getServletContext().getInitParameter(ONTOLOGY_FILENAME_KEY);
+		String ontology_annotations_filename = getServletContext().getInitParameter(ONTOLOGY_ANNOTATIONS_FILENAME_KEY);
 		String annotations_path = getServletContext().getInitParameter(ANNOTATIONS_PATH_KEY);
 		String annotations_filename = getServletContext().getInitParameter(ANNOTATIONS_FILENAME_KEY);
 
@@ -95,11 +101,20 @@ public class FrontendServlet extends WtServlet {
 			protocol+="/";
 		
 		String sessionID = protocol + absoluteWebPath + ontology_path + ontology_filename;
+		String annotation_ontology_uri = protocol + absoluteWebPath + ontology_path + ontology_annotations_filename;
+		Set<String> ontology_uris = new HashSet<String>();
+		ontology_uris.add(sessionID);
+		ontology_uris.add(annotation_ontology_uri);
+		
 		LOGGER.info("sesionID is: {}", sessionID);
 		
 		//New session with ontology and data (available annotations)
+		//icg.createNewSession(
+		//		sessionID,
+		//		absoluteWebPath + annotations_path + annotations_filename);
 		icg.createNewSession(
 				sessionID,
+				ontology_uris,
 				absoluteWebPath + annotations_path + annotations_filename);
 		//end load default ontology
 		

@@ -5,8 +5,10 @@ import no.siriuslabs.image.model.shape.ShapeType;
 public class GIC_URIUtils {
 	
 	//This could potentially be added to the configuration file web services too.
-	public static final String BASE_URI_GEOLOGICAL_ONTOLOGY  = "http://no.sirius.ontology/gico";
-	public static final String BASE_URI_GEOLOGICAL_RESOURCES = "http://no.sirius.ontology/gicr";
+	public static final String BASE_URI_ONTOLOGY  = "http://no.sirius.ontology/ontology";
+	public static final String BASE_URI_RESOURCES = "http://no.sirius.ontology/res";
+	public static final String BASE_URI_ANNOTATIONS = "http://no.sirius.ontology/ann";
+	
 	
 	
 	public static final String HAS_PROVENANCE= "hasProvenance";
@@ -43,13 +45,16 @@ public class GIC_URIUtils {
 	
 	
 	
+	
+	
+	
 
-	public static String getURIForOntologyEntity(String name_entity) {
-		return BASE_URI_GEOLOGICAL_ONTOLOGY + "#" + name_entity;
+	public static String getURIForAnnotationOntologyEntity(String name_entity) {
+		return BASE_URI_ANNOTATIONS + "#" + name_entity;
 	}
 	
 	public static String getURIForResource(String name_resource) {
-		return BASE_URI_GEOLOGICAL_RESOURCES + "#" + name_resource;
+		return BASE_URI_RESOURCES + "#" + name_resource;
 	}
 	
 	

@@ -1,0 +1,423 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#"
+     xml:base="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:terms="http://purl.org/dc/terms/"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:annotations="http://no.sirius.ontology/annotations#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:untitled-ontology-38="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#"
+     xmlns:gico="http://no.sirius.ontology/gico#">
+    <owl:Ontology rdf:about="http://no.sirius.ontology/ann">
+        <terms:creator>Oliver Stahl</terms:creator>
+        <terms:creator>Ernesto Jimenez Ruiz</terms:creator>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://no.sirius.ontology/annotations#hidden -->
+
+    <owl:AnnotationProperty rdf:about="http://no.sirius.ontology/annotations#hidden"/>
+    
+
+
+    <!-- http://no.sirius.ontology/annotations#isMainArtefactClass -->
+
+    <owl:AnnotationProperty rdf:about="http://no.sirius.ontology/annotations#isMainArtefactClass">
+        <rdfs:comment>Defines the main root type for artefact annotation.This can be customized,</rdfs:comment>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://purl.org/dc/terms/creator -->
+
+    <owl:AnnotationProperty rdf:about="http://purl.org/dc/terms/creator"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://no.sirius.ontology/ann#hasObjectRepresentation -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/ann#hasObjectRepresentation">
+        <owl:inverseOf rdf:resource="http://no.sirius.ontology/ann#isRepresentedIn"/>
+        <owl:inverseOf rdf:resource="http://no.sirius.ontology/ann#isVisuallyRepresentedIn"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+        <rdfs:comment>This object property will point to a segment or to an element (e.g., a Well) appearing in the image.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#hasPoint -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/ann#hasPoint">
+        <rdfs:domain rdf:resource="http://no.sirius.ontology/ann#ImageSelection"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#hasSelection -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/ann#hasSelection">
+        <owl:inverseOf rdf:resource="http://no.sirius.ontology/ann#isSelectionOf"/>
+        <rdfs:domain rdf:resource="http://no.sirius.ontology/ann#Image"/>
+        <rdfs:range rdf:resource="http://no.sirius.ontology/ann#ImageSelection"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#isRepresentedIn -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/ann#isRepresentedIn">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+        <owl:propertyChainAxiom rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://no.sirius.ontology/ann#isRepresentedIn"/>
+            <rdf:Description rdf:about="http://no.sirius.ontology/ann#isSelectionOf"/>
+        </owl:propertyChainAxiom>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#isSelectionOf -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/ann#isSelectionOf">
+        <rdfs:domain rdf:resource="http://no.sirius.ontology/ann#ImageSelection"/>
+        <rdfs:range rdf:resource="http://no.sirius.ontology/ann#Image"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#isVisuallyRepresentedIn -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/ann#isVisuallyRepresentedIn">
+        <rdfs:subPropertyOf rdf:resource="http://no.sirius.ontology/ann#isRepresentedIn"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+        <owl:propertyChainAxiom rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://no.sirius.ontology/ann#isVisuallyRepresentedIn"/>
+            <rdf:Description rdf:about="http://no.sirius.ontology/ann#isSelectionOf"/>
+        </owl:propertyChainAxiom>
+        <rdfs:comment>This object property will point to the whole image (by default) or to a segment/selection in the image</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://no.sirius.ontology/ann#hasOrder -->
+
+    <owl:DatatypeProperty rdf:about="http://no.sirius.ontology/ann#hasOrder">
+        <rdfs:domain rdf:resource="http://no.sirius.ontology/ann#Point"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#hasPhysicalLocation -->
+
+    <owl:DatatypeProperty rdf:about="http://no.sirius.ontology/ann#hasPhysicalLocation"/>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#hasProvenance -->
+
+    <owl:DatatypeProperty rdf:about="http://no.sirius.ontology/ann#hasProvenance">
+        <rdfs:label>Provenance information</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#hasX -->
+
+    <owl:DatatypeProperty rdf:about="http://no.sirius.ontology/ann#hasX">
+        <rdfs:domain rdf:resource="http://no.sirius.ontology/ann#Point"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+        <rdfs:comment>Coordinates X</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#hasY -->
+
+    <owl:DatatypeProperty rdf:about="http://no.sirius.ontology/ann#hasY">
+        <rdfs:domain rdf:resource="http://no.sirius.ontology/ann#Point"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+        <rdfs:comment>Coordinates Y</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://no.sirius.ontology/ann#Artefact -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#Artefact"/>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#BlockDiagram -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#BlockDiagram">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#GeologicalImage"/>
+        <rdfs:label>Block diagram</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#Circle -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#Circle">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#ImageSelection"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#hasPoint"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">2</owl:maxQualifiedCardinality>
+                <owl:onClass rdf:resource="http://no.sirius.ontology/ann#Point"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:comment>A points is internally defined with two points. The first point establishes the center while the second (optional) fixes the distance to the center (i.e., the radius). If only one point is given the second point is automatically defined.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#Document -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#Document">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#Artefact"/>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#EventChart -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#EventChart">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#GeologicalImage"/>
+        <rdfs:label>Event chart</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#ExcelFile -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#ExcelFile">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#Artefact"/>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#GeologicalCrossSection -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#GeologicalCrossSection">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#GeologicalImage"/>
+        <rdfs:label>Geological cross section</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#GeologicalImage -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#GeologicalImage">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#Image"/>
+        <annotations:isMainArtefactClass rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:isMainArtefactClass>
+        <rdfs:label>Geological image</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#GeologicalMap -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#GeologicalMap">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#GeologicalImage"/>
+        <rdfs:label>Geological map</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#Image -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#Image">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#Artefact"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#hasPhysicalLocation"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#hasProvenance"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#ImageSelection -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#ImageSelection">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#hasPoint"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/ann#Point"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#isVisuallyRepresentedIn"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/ann#Image"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#isVisuallyRepresentedIn"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/ann#ImageSelection"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <annotations:hidden rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:hidden>
+        <rdfs:comment>Image segment will include different shapes</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#LithostratigraphicChart -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#LithostratigraphicChart">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#GeologicalImage"/>
+        <rdfs:label>Lithostratigraphic chart</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#PDFDocument -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#PDFDocument">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#Document"/>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#PaleogeographicMap -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#PaleogeographicMap">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#GeologicalMap"/>
+        <rdfs:label>Paleogeographic map</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#Point -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#Point">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#hasOrder"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#hasX"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#hasY"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <annotations:hidden rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</annotations:hidden>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#Polygon -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#Polygon">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#ImageSelection"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#hasPoint"/>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">5</owl:minQualifiedCardinality>
+                <owl:onClass rdf:resource="http://no.sirius.ontology/ann#Point"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:comment>Other polygons not triangles or rectangles</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#Rectangle -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#Rectangle">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#ImageSelection"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#hasPoint"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">4</owl:qualifiedCardinality>
+                <owl:onClass rdf:resource="http://no.sirius.ontology/ann#Point"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://no.sirius.ontology/ann#Triangle -->
+
+    <owl:Class rdf:about="http://no.sirius.ontology/ann#Triangle">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#ImageSelection"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#hasPoint"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">3</owl:qualifiedCardinality>
+                <owl:onClass rdf:resource="http://no.sirius.ontology/ann#Point"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi -->
+

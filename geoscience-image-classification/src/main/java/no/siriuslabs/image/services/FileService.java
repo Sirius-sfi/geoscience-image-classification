@@ -13,6 +13,7 @@ import java.io.UncheckedIOException;
 import static no.siriuslabs.image.FrontendServlet.ANNOTATIONS_FILENAME_KEY;
 import static no.siriuslabs.image.FrontendServlet.ANNOTATIONS_PATH_KEY;
 import static no.siriuslabs.image.FrontendServlet.ONTOLOGY_FILENAME_KEY;
+import static no.siriuslabs.image.FrontendServlet.ONTOLOGY_ANNOTATIONS_FILENAME_KEY;
 import static no.siriuslabs.image.FrontendServlet.ONTOLOGY_PATH_KEY;
 
 /**
@@ -102,6 +103,8 @@ public class FileService {
 	private void synchronizeOntology() {
 		LOGGER.info("synchronizing ontology files to data directory if initial start-up");
 		synchronizeToDataDirectory(ONTOLOGY_PATH_KEY, ONTOLOGY_FILENAME_KEY);
+		LOGGER.info("synchronizing annotations ontology files to data directory if initial start-up");
+		synchronizeToDataDirectory(ONTOLOGY_PATH_KEY, ONTOLOGY_ANNOTATIONS_FILENAME_KEY);
 	}
 
 	private void synchronizeAnnotations() {
@@ -141,14 +144,15 @@ public class FileService {
 		File externalDirectory = new File(externalDirectoryPath);
 		if(!externalDirectory.exists()) {
 			createDirectory(externalDirectoryPath);
-
-			String serverLocalDataFilePath = getServerBasePath() + directoryPath + filename;
-			File serverLocalDataFile = new File(serverLocalDataFilePath);
-			String absoluteExternalPath = externalDirectoryPath + filename;
-			File externalFile = new File(absoluteExternalPath);
-
-			copyFile(serverLocalDataFile, externalFile);
 		}
+		
+		String serverLocalDataFilePath = getServerBasePath() + directoryPath + filename;
+		File serverLocalDataFile = new File(serverLocalDataFilePath);
+		String absoluteExternalPath = externalDirectoryPath + filename;
+		File externalFile = new File(absoluteExternalPath);
+
+		copyFile(serverLocalDataFile, externalFile);
+		//}
 	}
 
 	/**
