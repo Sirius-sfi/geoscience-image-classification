@@ -233,13 +233,13 @@ public class TripleWidget extends WContainerWidget {
 		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
 
 		final Instance subjectInstance = getSubjectInstanceFromLabel();
-		// TODO enable this, as soon as we get data from getPredicatesForSubject()
-//		availablePredicates = imageAnnotationAPI.getPredicatesForSubject(sessionID, subjectInstance.getIri());
-//
-//		predicatePopup.clearSuggestions();
-//		for(Property pred : availablePredicates) {
-//			predicatePopup.addSuggestion(pred.getVisualRepresentation());
-//		}
+		//TODO enable this, as soon as we get data from getPredicatesForSubject()
+		availablePredicates = imageAnnotationAPI.getAllowedPredicatesForSubject(sessionID, subjectInstance.getIri());
+
+		predicatePopup.clearSuggestions();
+		for(Property pred : availablePredicates) {
+			predicatePopup.addSuggestion(pred.getVisualRepresentation());
+		}
 	}
 
 	private void updateObjectSuggestions() {
@@ -249,13 +249,16 @@ public class TripleWidget extends WContainerWidget {
 		final Instance subjectInstance = getSubjectInstanceFromLabel();
 		final Property predicate = getPredicateInstanceFromLabel();
 		// TODO enable this, as soon as getObjectsForSubjectPredicate() is implemented and we get data
-//		availableObjects = imageAnnotationAPI.getObjectsForSubjectPredicate(sessionID, subjectInstance.getIri(), predicate.getIri());
-//
-//		objectPopup.clearSuggestions();
-//		for(Instance obj : availableObjects) {
-//			objectPopup.addSuggestion(obj.getVisualRepresentation());
-//		}
+		availableObjects = imageAnnotationAPI.getAllowedObjectValuesForSubjectPredicate(sessionID, subjectInstance.getIri(), predicate.getIri());
+
+		objectPopup.clearSuggestions();
+		for(Instance obj : availableObjects) {
+			objectPopup.addSuggestion(obj.getVisualRepresentation());
+		}
 	}
+	
+	//TODO updateObjectSuggestions for literal values? e.g. company names, true or false, etc.
+	
 
 	/**
 	 * Sets the current data object and updates the fields.

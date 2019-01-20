@@ -72,7 +72,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//2b1. Potential allowed values for facets: boolean, list of strings, etc. (slider?)
 		//2b2. Expected allowed objects uris
 		//3. Remove triples (OK)
-		//4. Namespace: filter by namespace in table and in autocompletion (1/2 ok)
+		//4. Namespace: filter by namespace in table (ok) and in autocompletion (necessary?)
 		//4a. Give to projection manager a set of ontologies or ontology URIs! (ok)
 		
 		
@@ -105,7 +105,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		List<Concept> imageTypes = new ArrayList<Concept>();
 		
 		//TODO Possible alternative: Query for concepts of given namespace?
-		//TODO Configure in annotations ontology
+		//Configure in annotations ontology
 		//Query for special annotation in ontology
 		Concept mainArtefact = sessionManager.getSession(session_id).getMainArtefactConcept();
 		imageTypes.add(mainArtefact);
@@ -324,10 +324,10 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			triples.addAll(getObjectsAndVisualRepresentationAnnotationsForImage(session_id, object_instance, image_uri));
 			
 			
-			//Realationships
+			//Triples: Relationships
 			triples.addAll(getObjectRelationships(session_id, object_instance));
 			
-			//Facets
+			//Triples: Facets
 			triples.addAll(getFacets(session_id, object_instance));
 			
 			
@@ -412,6 +412,12 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	}
 		
 
+	/**
+	 * Returns object property triples
+	 * @param session_id
+	 * @param instance_object
+	 * @return
+	 */
 	public Set<ObjectPropertyTriple> getObjectRelationships(String session_id, Instance instance_object){
 		
 		Set<ObjectPropertyTriple> triples = new HashSet<ObjectPropertyTriple>();
@@ -425,7 +431,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		for (String p : object_relationhips_map.keySet()){
 			
 			if (p.equals(GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED))
-				|| p.equals("http://www.w3.org/2002/07/owl#topObjectProperty"))
+				|| p.equals(URIUtils.OWLTopProperty))
 				continue;
 			
 			for (String o: object_relationhips_map.get(p)) {
@@ -443,11 +449,17 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	
+	/**
+	 * Returns data property triple
+	 * @param session_id
+	 * @param instance_object
+	 * @return
+	 */
 	public Set<DataPropertyTriple> getFacets(String session_id, Instance instance_object){
 		
 		Set<DataPropertyTriple> triples = new HashSet<DataPropertyTriple>();
 		
-		//TODO Retrieve triples where object is a literal (and/or predicate of type data property)x
+		//TODO Retrieve triples where object is a literal (and/or predicate of type data property)
 		
 		Map<String, Set<String>> data_relationhips_map = sessionManager.getSession(session_id).getDataRelationhipsForSubject(instance_object.getIri());
 		
@@ -530,7 +542,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	public TreeSet<Property> getPredicates(String session_id){
 		TreeSet<Property> predicates = new TreeSet<Property>();
 		
-		//TODO avoid null or return empty set
+		//Avoid null or return empty set
 		predicates.addAll(getDataPredicates(session_id));
 		predicates.addAll(getObjectPredicates(session_id));
 		
@@ -539,15 +551,15 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	}
 	
 	
-	public TreeSet<Property> getPredicatesForSubject(String session_id, String subject_iri){
+	public TreeSet<Property> getAllowedPredicatesForSubject(String session_id, String subject_iri){
 		TreeSet<Property> predicates = new TreeSet<Property>();
 
-		final TreeSet<DataProperty> dataPredicatesForSubject = getDataPredicatesForSubject(session_id, subject_iri);
+		final TreeSet<DataProperty> dataPredicatesForSubject = getAllowedDataPredicatesForSubject(session_id, subject_iri);
 		if(dataPredicatesForSubject != null) {
 			predicates.addAll(dataPredicatesForSubject);
 		}
 
-		final TreeSet<ObjectProperty> objectPredicatesForSubject = getObjectPredicatesForSubject(session_id, subject_iri);
+		final TreeSet<ObjectProperty> objectPredicatesForSubject = getAllowedObjectPredicatesForSubject(session_id, subject_iri);
 		if(objectPredicatesForSubject != null) {
 			predicates.addAll(objectPredicatesForSubject);
 		}
@@ -572,42 +584,65 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	}
 	
 	
-	public TreeSet<DataProperty> getDataPredicatesForSubject(String session_id, String subject_iri){
+	/**
+	 * Gets data properties that are expected to be used by subject
+	 * @param session_id
+	 * @param subject_iri
+	 * @return
+	 */
+	public TreeSet<DataProperty> getAllowedDataPredicatesForSubject(String session_id, String subject_iri){
 		
-		//TODO When storing objects and types, store rdf:type but also the direct type for convenience  (DONE?)
+		//Similar to getfacets for the type of subject
+		return sessionManager.getSession(session_id).getAllowedDataPredicatesForSubject(subject_iri);
 		
-		//TODO Get facet predicates for the type of subject
-		return null;
 	}
 	
 	
-	public TreeSet<ObjectProperty> getObjectPredicatesForSubject(String session_id, String subject_iri){
-		//TODO Get neighbours for the type of subject
-		return null;
+	/**
+	 * Gets object properties that are expected to be used by subject
+	 * @param session_id
+	 * @param subject_iri
+	 * @return
+	 */
+	public TreeSet<ObjectProperty> getAllowedObjectPredicatesForSubject(String session_id, String subject_iri){
+		//Similar to  getneighbours for the type of subject
+		return sessionManager.getSession(session_id).getAllowedObjectPredicatesForSubject(subject_iri);
 	}
 
 	
 	
 	
-	public TreeSet<Instance> getObjectsForSubjectPredicate(String session_id, String subject_iri, String predicate_iri){
-		//TODO
+	/**
+	 * Get values (instances or litearals) that are expected for the combination subject-predicate
+	 * @param session_id
+	 * @param subject_iri
+	 * @param predicate_iri
+	 * @return
+	 */
+	public TreeSet<Instance> getAllowedObjectValuesForSubjectPredicate(String session_id, String subject_iri, String predicate_iri){
 		//There is a method in session: getObjectsforSubjectPredicate
-	
-		//TODO subject may not play a role
 		
-		return null;
+		//TODO Include allowed literal values?
+		return sessionManager.getSession(session_id).getAllowedObjectInstancesForSubjectPredicate(subject_iri, predicate_iri);
+	
 	}
 	
 	
 	
 
-	//TODO return literals? Only if there is a range of possible values: e.g. boolean, list of companies, etc. Check projection
+	/**
+	 * Get allowed values (object) that are expected for the combination subject-predicate
+	 * @param session_id
+	 * @param subject_iri
+	 * @param predicate_iri
+	 * @return
+	 */
 	public TreeSet<String> getAllowedValues(String session_id, String subject_iri, String predicate_iri){
 		return null;
 		
-		//TODO Allow only if given predicate?  This will also serve for autocompletion!
+		//TODO return literals? Only if there is a range of possible values: e.g. boolean, list of companies, etc. Check projection
+		//Merged with previous method
 		
-		//TODO subject may not play a role
 		
 	}
 	

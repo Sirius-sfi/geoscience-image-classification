@@ -490,7 +490,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	}
 
 	private boolean hasSameSubject(Triple nodeTriple, Triple pathTriple) {
-		return nodeTriple.getSubject().equals(pathTriple.getSubject());
+		return nodeTriple.getSubject().equalsEntity(pathTriple.getSubject());
 	}
 
 	private boolean hasSamePredicate(Triple nodeTriple, Triple pathTriple) {
