@@ -37,9 +37,10 @@ public class GIC_URIUtils {
 	public static final String HASY= "hasY";
 	
 	public static final String HASPOINTORDER = "hasOrder";
-	
-	
-	
+
+	public static final String SHAPE_OBJECT_PREFIX = "shape";
+
+
 	//TODO URIS relevant to other domains
 	
 	

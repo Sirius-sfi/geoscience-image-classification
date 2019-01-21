@@ -783,7 +783,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	public String getNewSelectionShapeURI() {
 		
 		//Create URI for shape
-		return getNewResourceURI("shape");
+		return getNewResourceURI(GIC_URIUtils.SHAPE_OBJECT_PREFIX);
 		
 	}
 	
