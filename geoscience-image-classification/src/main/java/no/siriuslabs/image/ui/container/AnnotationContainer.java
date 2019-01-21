@@ -554,6 +554,12 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 				String sessionID = getSessionID();
 				final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
+
+				// delete the old triple if we are in edit-mode
+				if(TripleWidget.Mode.EDIT == annotationEditorWidget.getMode()) {
+					imageAnnotationAPI.removeAnnotations(sessionID, Collections.singleton(annotationEditorWidget.getOriginalData()));
+				}
+
 				imageAnnotationAPI.saveAnnotations(sessionID, Collections.singleton(triple));
 
 				LOGGER.info("save was successful");
