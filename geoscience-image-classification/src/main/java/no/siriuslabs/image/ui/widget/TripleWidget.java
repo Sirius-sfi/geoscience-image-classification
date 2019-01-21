@@ -233,7 +233,6 @@ public class TripleWidget extends WContainerWidget {
 		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
 
 		final Instance subjectInstance = getSubjectInstanceFromLabel();
-		//TODO enable this, as soon as we get data from getPredicatesForSubject()
 		availablePredicates = imageAnnotationAPI.getAllowedPredicatesForSubject(sessionID, subjectInstance.getIri());
 
 		predicatePopup.clearSuggestions();
@@ -248,7 +247,6 @@ public class TripleWidget extends WContainerWidget {
 
 		final Instance subjectInstance = getSubjectInstanceFromLabel();
 		final Property predicate = getPredicateInstanceFromLabel();
-		// TODO enable this, as soon as getObjectsForSubjectPredicate() is implemented and we get data
 		availableObjects = imageAnnotationAPI.getAllowedObjectValuesForSubjectPredicate(sessionID, subjectInstance.getIri(), predicate.getIri());
 
 		objectPopup.clearSuggestions();
