@@ -136,7 +136,7 @@ public class FileService {
 		}
 	}
 
-	private void synchronizeToDataDirectory(String resourcePathKey, String resourceFilenameKey, boolean updateFromServer) {
+	private void synchronizeToDataDirectory(String resourcePathKey, String resourceFilenameKey, boolean forceUpdateFromServer) {
 		String directoryPath = servletContext.getInitParameter(resourcePathKey);
 		String filename = servletContext.getInitParameter(resourceFilenameKey);
 
@@ -146,7 +146,6 @@ public class FileService {
 			createDirectory(externalDirectoryPath);
 		}
 		
-		//TODO Added by Ernesto: preserve annotations but always bring new version of ontologies 
 		String serverLocalDataFilePath = getServerBasePath() + directoryPath + filename;
 		File serverLocalDataFile = new File(serverLocalDataFilePath);
 		
@@ -154,7 +153,7 @@ public class FileService {
 		File externalFile = new File(absoluteExternalPath);
 
 		//TODO Added by Ernesto: preserve annotations but always bring new version of ontologies 
-		if (!externalFile.exists() || updateFromServer )
+		if (!externalFile.exists() || forceUpdateFromServer )
 			copyFile(serverLocalDataFile, externalFile);
 		//}
 	}
