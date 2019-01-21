@@ -61,6 +61,7 @@ public class TripleWidget extends WContainerWidget {
 	private WSuggestionPopup objectPopup;
 
 	private Triple data;
+	private Triple originalData;
 
 	private TreeSet<Instance> availableSubjects;
 	private TreeSet<Property> availablePredicates;
@@ -222,6 +223,13 @@ public class TripleWidget extends WContainerWidget {
 		return data;
 	}
 
+	/**
+	 * Returns the original, unchanged version of the current data object.
+	 */
+	public Triple getOriginalData() {
+		return originalData;
+	}
+
 	public void setSubject(Instance subject) {
 		subjectField.setText(subject.getVisualRepresentation());
 		updateSuggestions();
@@ -263,6 +271,10 @@ public class TripleWidget extends WContainerWidget {
 	 */
 	public void setData(Triple data) {
 		this.data = data;
+
+		originalData = data instanceof ObjectPropertyTriple
+				? new ObjectPropertyTriple(data.getSubject(), ((ObjectPropertyTriple) data).getPredicate(), ((ObjectPropertyTriple) data).getObject())
+				: new DataPropertyTriple(data.getSubject(), ((DataPropertyTriple) data).getPredicate(), ((DataPropertyTriple) data).getObject());
 
 		subjectField.setText(data.getSubject().getVisualRepresentation());
 		predicateField.setText(((Entity)data.getPredicate()).getVisualRepresentation());
