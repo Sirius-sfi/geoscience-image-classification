@@ -488,7 +488,8 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 */
 	public TreeSet<Concept> getOntologyConcepts(String session_id){
 		
-		return sessionManager.getSession(session_id).getCoreConcepts();
+		//TODO Filter by namespace: getNamespaceToHideInVisualization()
+		return sessionManager.getSession(session_id).getCoreConcepts(getNamespaceToHideInVisualization());
 	
 	}
 	
