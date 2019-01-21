@@ -102,14 +102,14 @@ public class FileService {
 
 	private void synchronizeOntology() {
 		LOGGER.info("synchronizing ontology files to data directory if initial start-up");
-		synchronizeToDataDirectory(ONTOLOGY_PATH_KEY, ONTOLOGY_FILENAME_KEY);
+		synchronizeToDataDirectory(ONTOLOGY_PATH_KEY, ONTOLOGY_FILENAME_KEY, true);
 		LOGGER.info("synchronizing annotations ontology files to data directory if initial start-up");
-		synchronizeToDataDirectory(ONTOLOGY_PATH_KEY, ONTOLOGY_ANNOTATIONS_FILENAME_KEY);
+		synchronizeToDataDirectory(ONTOLOGY_PATH_KEY, ONTOLOGY_ANNOTATIONS_FILENAME_KEY, true);
 	}
 
 	private void synchronizeAnnotations() {
 		LOGGER.info("synchronizing annotation files to data directory if initial start-up");
-		synchronizeToDataDirectory(ANNOTATIONS_PATH_KEY, ANNOTATIONS_FILENAME_KEY);
+		synchronizeToDataDirectory(ANNOTATIONS_PATH_KEY, ANNOTATIONS_FILENAME_KEY, false);
 	}
 
 	private void createDirectory(String path) {
@@ -136,7 +136,7 @@ public class FileService {
 		}
 	}
 
-	private void synchronizeToDataDirectory(String resourcePathKey, String resourceFilenameKey) {
+	private void synchronizeToDataDirectory(String resourcePathKey, String resourceFilenameKey, boolean updateFromServer) {
 		String directoryPath = servletContext.getInitParameter(resourcePathKey);
 		String filename = servletContext.getInitParameter(resourceFilenameKey);
 
@@ -146,12 +146,16 @@ public class FileService {
 			createDirectory(externalDirectoryPath);
 		}
 		
+		//TODO Added by Ernesto: preserve annotations but always bring new version of ontologies 
 		String serverLocalDataFilePath = getServerBasePath() + directoryPath + filename;
 		File serverLocalDataFile = new File(serverLocalDataFilePath);
+		
 		String absoluteExternalPath = externalDirectoryPath + filename;
 		File externalFile = new File(absoluteExternalPath);
 
-		copyFile(serverLocalDataFile, externalFile);
+		//TODO Added by Ernesto: preserve annotations but always bring new version of ontologies 
+		if (!externalFile.exists() || updateFromServer )
+			copyFile(serverLocalDataFile, externalFile);
 		//}
 	}
 
