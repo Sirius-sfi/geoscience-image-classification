@@ -95,12 +95,12 @@ public class FileService {
 	 */
 	public void synchronizeDatafilesToInitialDataDirectory() {
 		if(Boolean.TRUE.equals(servletContext.getAttribute(FrontendServlet.EXTERNAL_DIRECTORY_SET))) {
-			synchronizeOntology();
+			synchronizeOntologies();
 			synchronizeAnnotations();
 		}
 	}
 
-	private void synchronizeOntology() {
+	private void synchronizeOntologies() {
 		LOGGER.info("synchronizing ontology files to data directory if initial start-up");
 		synchronizeToDataDirectory(ONTOLOGY_PATH_KEY, ONTOLOGY_FILENAME_KEY, true);
 		LOGGER.info("synchronizing annotations ontology files to data directory if initial start-up");
@@ -145,17 +145,17 @@ public class FileService {
 		if(!externalDirectory.exists()) {
 			createDirectory(externalDirectoryPath);
 		}
-		
+
 		String serverLocalDataFilePath = getServerBasePath() + directoryPath + filename;
 		File serverLocalDataFile = new File(serverLocalDataFilePath);
-		
+
 		String absoluteExternalPath = externalDirectoryPath + filename;
 		File externalFile = new File(absoluteExternalPath);
 
-		//TODO Added by Ernesto: preserve annotations but always bring new version of ontologies 
-		if (!externalFile.exists() || forceUpdateFromServer )
+		// copy if not present; if existing preserve annotations but always bring new version of ontologies
+		if (!externalFile.exists() || forceUpdateFromServer) {
 			copyFile(serverLocalDataFile, externalFile);
-		//}
+		}
 	}
 
 	/**

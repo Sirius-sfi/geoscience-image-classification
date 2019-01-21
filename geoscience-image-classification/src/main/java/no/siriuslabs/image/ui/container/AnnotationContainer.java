@@ -246,15 +246,9 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 			}
 
 			//Ignore elements of give namespace
-			//if(getImageAnnotationAPI().getPredicatesToHideInVisualization().contains(((Entity)triple.getPredicate()).getVisualRepresentation())) {
-			//	continue;
-			//}			
 			if(getImageAnnotationAPI().getNamespaceToHideInVisualization().equals((((Entity)triple.getPredicate()).getNamespace()))) {
 				continue;
 			}
-			
-			
-			
 
 			// add annotation-level node
 			TripleTreeTableNode node = new TripleTreeTableNode("", null, currentShapeNode, triple);
@@ -317,14 +311,11 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	private void deleteConfirmationButtonAction(WMessageBox messageBox) {
 		if(messageBox.getButtonResult() == StandardButton.Yes) {
 			final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
-//			LOGGER.info("removing selected element: {}", selection.getRow());
-			// TODO remove from ontology when API method comes available
-			
-			//TODO test by Ernesto 
+			LOGGER.info("removing selected element: {}, {}", selection.getData().getSubject().getVisualRepresentation(), ((Entity)selection.getData().getPredicate()).getVisualRepresentation());
+
 			String sessionID = getSessionID();
 			final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
 			imageAnnotationAPI.removeAnnotations(sessionID, Collections.singleton(selection.getData()));
-			//--------------------------
 
 			saveSelection();
 			loadAnnotations();
