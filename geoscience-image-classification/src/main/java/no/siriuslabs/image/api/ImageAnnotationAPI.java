@@ -29,6 +29,7 @@ import uio.ifi.ontology.toolkit.constraint.utils.Utility;
 import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 import uio.ifi.ontology.toolkit.projection.model.entities.DataProperty;
+import uio.ifi.ontology.toolkit.projection.model.entities.GenericValue;
 import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 import uio.ifi.ontology.toolkit.projection.model.entities.LiteralValue;
 import uio.ifi.ontology.toolkit.projection.model.entities.ObjectProperty;
@@ -249,7 +250,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			//Get semantic type
 			String type = sessionManager.getSession(session_id).getMostConcreteTypeForInstance(uri_shape);
 			if (type.equals(""))
-				type = URIUtils.OWLTHING;
+				type = URIUtils.OWL_THING;
 			
 			//Get points
 			switch (URIUtils.getEntityLabelFromURI(type)) {
@@ -356,10 +357,10 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//Concept type_concept = sessionManager.getSession(session_id).createConcept(sem_type);
 			
 			
-		if (instance_object.getClassType().equals(URIUtils.OWLTHING))
+		if (instance_object.getClassType().equals(URIUtils.OWL_THING))
 			triples.add(new TypeDefinitionTriple(
 					instance_object,
-					new Concept(URIUtils.OWLTHING)));
+					new Concept(URIUtils.OWL_THING)));
 		
 		else
 			triples.add(new TypeDefinitionTriple(
@@ -431,7 +432,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		for (String p : object_relationhips_map.keySet()){
 			
 			if (p.equals(GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED))
-				|| p.equals(URIUtils.OWLTopProperty))
+				|| p.equals(URIUtils.OWLTopObjectProperty))
 				continue;
 			
 			for (String o: object_relationhips_map.get(p)) {
@@ -686,7 +687,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		removeTriplesForAnnotations(data_model, triples);
 		
-		//Save new triples
+		//Update model and rdfox model
 		saveDataModel(data_model, session_id, UpdateType.ScheduleForDeletion);
 		
 		
@@ -1007,6 +1008,165 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 	}
 	
+	
+	
+	private Set<String> visited_uris = new HashSet<String>();
+	
+	
+	/**
+	 * Removed objects in image. Recursion level 1 as we do not remove referred/referring objects 
+	 * @param session_id
+	 * @param object_uri
+	 */
+	public void removeObjectInImage(String session_id, String object_uri) {
+		removeElement(session_id, object_uri, 1);
+	}
+
+	
+	/**
+	 * We remove a shape and the elements related to shape till level 2
+	 * e.g. for points and for objects in shape, but we do not remove other objects in other shapes (just the link/triple)
+	 * @param session_id
+	 * @param shape_uri
+	 */
+	public void removeShape(String session_id, String shape_uri) {
+		removeElement(session_id, shape_uri, 2);
+	}
+
+	/**
+	 * Removes an element, its types, the triples pointing to that elements and the triples with that element as subject
+	 * @param session_id
+	 * @param element_uri
+	 * @param recursion_level How many levels of referencing objets we want to remove
+	 */
+	public void removeElement(String session_id, String element_uri, int recursion_level) {
+		
+		visited_uris.clear();
+						
+		//Load model to change
+		AnnotationGraphModel data_model = new AnnotationGraphModel();
+		String data_file_path = sessionManager.getSession(session_id).getDataFilePath();
+		data_model.loadModelFromFile(data_file_path);
+		
+		//Removes directly from datamodel		
+		removeRelatedTriplesForElement(session_id, data_model, element_uri, recursion_level); 
+		
+		//Save updated models: physically and on RDFox
+		saveDataModel(data_model, session_id, UpdateType.ScheduleForDeletion);
+				
+		
+		
+	}
+	
+	
+	
+	/**
+	 * Removes from datamodel the set of related triples
+	 * @param session_id
+	 * @param data_model
+	 * @param element_uri
+	 * @param recursion_level
+	 */
+	protected void removeRelatedTriplesForElement(String session_id, AnnotationGraphModel data_model, String element_uri, int recursion_level) {
+		
+		visited_uris.add(element_uri);
+		
+				
+		if (recursion_level==0)
+			return;
+				
+		
+		//ELEMENT AS SUBJECT		
+		//System.out.println("1: "+ sessionManager.getSession(session_id).getAllRelationhipsForSubject(element_uri));
+		Map<String, Set<GenericValue>> pred2object = sessionManager.getSession(session_id).getAllRelationhipsForSubject(element_uri);
+		
+		for (String predicate : pred2object.keySet()) {
+			
+			if (predicate.equals(URIUtils.OWL_SAMEAS) || predicate.equals(URIUtils.OWLTopDataProperty) || predicate.equals(URIUtils.OWLTopObjectProperty))
+				continue;
+			
+			//For object properties and others we only get the value from GenericValue
+			
+			//One level of recursion: e.g. for points and for objects in shape, but we do not remove other objects in other shapes (just the link/triple)
+			if (sessionManager.getSession(session_id).isPredicateAnObjectProperty(predicate)) {
+				
+				for (GenericValue value_uri : pred2object.get(predicate)) {
+					data_model.removeObjectTriple(element_uri, predicate, value_uri.getValue());
+					
+					//exception for recursion (case of shapes, we do not want to remove the image)
+					if (predicate.equals(GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_SELECTION_OF)))  //http://no.sirius.ontology/ann#isSelectionOf
+						continue;
+					
+					//Recursion if new element
+					if (!visited_uris.contains(value_uri.getValue())) {						
+						removeRelatedTriplesForElement(session_id, data_model, value_uri.getValue(), recursion_level-1);
+					}
+					
+				}
+				
+				
+				
+			}
+			//Types are special, we do not want to remove the concept with recursion
+			else if (predicate.equals(URIUtils.RDF_TYPE) || predicate.equals(URIUtils.DIRECT_TYPE)) {
+				
+				for (GenericValue value_type : pred2object.get(predicate)) {
+					data_model.removeObjectTriple(element_uri, predicate, value_type.getValue());
+				}
+				
+			}
+			else { //Check if dataproperty to avoid top property and sameas
+							
+				
+				for (GenericValue value : pred2object.get(predicate)) {		
+					//System.out.println("Removing: " + predicate + " " + value.getValue() +" " + value.getType());
+					data_model.removeLiteralTriple(element_uri, predicate, value.getValue(), value.getType()); 
+				}
+			
+				
+			}
+			
+		
+			
+		}
+		
+		
+		//ELEMENT AS OBJECT
+		//System.out.println("2: "+ sessionManager.getSession(session_id).getAllRelationhipsForObject(element_uri));
+		Map<String, Set<String>> pred2subject = sessionManager.getSession(session_id).getAllRelationhipsForObject(element_uri);
+		
+		for (String predicate : pred2subject.keySet()) {
+			
+			//One level of recursion: e.g. for points and for objects in shape, but we do not remove other objects in other shapes (just the link/triple)
+			if (sessionManager.getSession(session_id).isPredicateAnObjectProperty(predicate)) { //safety check, other cases does not apply as now the element is in the object position
+				
+				for (String value_uri : pred2subject.get(predicate)) {
+					data_model.removeObjectTriple(value_uri, predicate, element_uri);
+					
+					//exception for recursion (case of shapes, we do not want to remove the image)
+					if (predicate.equals(GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HAS_SELECTION)))  //http://no.sirius.ontology/ann#hasSelection
+						continue;
+					
+					//Recursion if new element
+					if (!visited_uris.contains(value_uri)) {						
+						removeRelatedTriplesForElement(session_id, data_model, value_uri, recursion_level-1);
+					}
+					
+				}
+				
+				
+				
+			}
+			
+			
+		}
+		
+		
+		
+		
+		
+		
+	}
 	
 	
 	

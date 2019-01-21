@@ -231,6 +231,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	}
 
 	private void populateTreeTable() {
+				
 		WTreeTableNode root = new WTreeTableNode(image.getLabel());
 		annotationsTable.setTreeRoot(root, "Shape");
 
