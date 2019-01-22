@@ -335,9 +335,10 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 			final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
 			if(selection.isShapeNode()) {
-				final String shapeID = ((Instance) selection.getData().getObject()).getVisualRepresentation();
+				final Instance shapeObject = (Instance) selection.getData().getObject();
+				final String shapeID = shapeObject.getVisualRepresentation();
 				LOGGER.info("removing selected shape '{}' and {} annotations", shapeID, selection.getChildNodes().size());
-				imageAnnotationAPI.removeShape(sessionID, shapeID);
+				imageAnnotationAPI.removeShape(sessionID, shapeObject.getIri());
 			}
 			else {
 				LOGGER.info("removing selected annotation: {}, {}", selection.getData().getSubject().getVisualRepresentation(), ((Entity)selection.getData().getPredicate()).getVisualRepresentation());
