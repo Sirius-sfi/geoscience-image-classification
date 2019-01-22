@@ -151,7 +151,7 @@ public class TripleWidget extends WContainerWidget {
 				}
 			}
 		}
-		else {
+		else {			
 			String objectLabel = objectField.getValueText().trim();
 			objectLabel = removeAutoCompleteComma(objectLabel);
 			objectValue = new LiteralValue(objectLabel);

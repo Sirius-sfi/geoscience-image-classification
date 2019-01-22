@@ -233,7 +233,7 @@ public class AnnotationGraphModel {
 	
 	public void removeLiteralTriple(Resource subject, IRI predicate, Value object){
 		model.remove(subject, predicate, object);
-		model_updates.add(subject, predicate, object); //keeps delted triples
+		model_updates.add(subject, predicate, object); //keeps deleted triples
 	}
 	
 	
