@@ -4,6 +4,7 @@ import eu.webtoolkit.jwt.*;
 import no.siriuslabs.image.FrontendApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
+import no.siriuslabs.image.model.GIC_URIUtils;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.ui.widget.CreateShapeDialog;
 import no.siriuslabs.image.ui.widget.ShapeWidget;
@@ -13,7 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 import uio.ifi.ontology.toolkit.projection.model.entities.Entity;
+import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 import uio.ifi.ontology.toolkit.projection.model.entities.LiteralValue;
+import uio.ifi.ontology.toolkit.projection.model.entities.ObjectProperty;
 import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
 
 import java.beans.PropertyChangeEvent;
@@ -235,13 +238,14 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		annotationsTable.setTreeRoot(root, "Shape");
 
 		String lastSubjectLabel = null;
-		WTreeTableNode currentShapeNode = null;
+		TripleTreeTableNode currentShapeNode = null;
 
 		for(Triple triple : annotationTriples) {
 			// did the subject change since last triple?
 			if(!triple.getSubject().getVisualRepresentation().equals(lastSubjectLabel)) {
 				// ...add new shape-level node
-				currentShapeNode = new WTreeTableNode(triple.getSubject().getVisualRepresentation(), null, root);
+				currentShapeNode = new TripleTreeTableNode(triple.getSubject().getVisualRepresentation(), null, root, triple);
+				currentShapeNode.setShapeNode(true);
 				lastSubjectLabel = triple.getSubject().getVisualRepresentation();
 			}
 
@@ -277,8 +281,14 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		// enable edit and delete buttons only if data is present and node is an annotation-level node
 		if(annotationsTable.getTree().getSelectedNodes().size() == 1 && isTripleTreeTableNode(annotationsTable.getTree().getSelectedNodes().iterator().next())) {
 			addAnnotationButton.enable();
-			editAnnotationButton.enable();
 			deleteAnnotationButton.enable();
+			final TripleTreeTableNode selectedNode = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
+			if(selectedNode.isShapeNode()) {
+				editAnnotationButton.disable();
+			}
+			else {
+				editAnnotationButton.enable();
+			}
 		}
 		else {
 			addAnnotationButton.disable();
@@ -303,19 +313,35 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	}
 
 	private void deleteAnnotationButtonClickedAction() {
-		WMessageBox messageBox = new WMessageBox("Confirmation", "Do you want to delete this Annotation now?", Icon.Question, EnumSet.of(StandardButton.Yes, StandardButton.No));
+		WMessageBox messageBox;
+		final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
+
+		if(selection.isShapeNode()) {
+			messageBox = new WMessageBox("Confirmation", "Do you want to delete this shape and " + selection.getChildNodes().size() + " annotations belonging to it now?", Icon.Question, EnumSet.of(StandardButton.Yes, StandardButton.No));
+		}
+		else {
+			messageBox = new WMessageBox("Confirmation", "Do you want to delete this annotation now?", Icon.Question, EnumSet.of(StandardButton.Yes, StandardButton.No));
+		}
+
 		messageBox.buttonClicked().addListener(this, () -> 	deleteConfirmationButtonAction(messageBox));
 		messageBox.show();
 	}
 
 	private void deleteConfirmationButtonAction(WMessageBox messageBox) {
 		if(messageBox.getButtonResult() == StandardButton.Yes) {
-			final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
-			LOGGER.info("removing selected element: {}, {}", selection.getData().getSubject().getVisualRepresentation(), ((Entity)selection.getData().getPredicate()).getVisualRepresentation());
-
 			String sessionID = getSessionID();
 			final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
-			imageAnnotationAPI.removeAnnotations(sessionID, Collections.singleton(selection.getData()));
+
+			final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
+			if(selection.isShapeNode()) {
+				final String shapeID = ((Instance) selection.getData().getObject()).getVisualRepresentation();
+				LOGGER.info("removing selected shape '{}' and {} annotations", shapeID, selection.getChildNodes().size());
+				// TODO insert deletion
+			}
+			else {
+				LOGGER.info("removing selected annotation: {}, {}", selection.getData().getSubject().getVisualRepresentation(), ((Entity)selection.getData().getPredicate()).getVisualRepresentation());
+				imageAnnotationAPI.removeAnnotations(sessionID, Collections.singleton(selection.getData()));
+			}
 
 			saveSelection();
 			loadAnnotations();
@@ -623,8 +649,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		Set<Triple> result = imageAnnotationAPI.getAllImageAnnotations(sessionID, image.getIri());
 
 		annotationTriples = new ArrayList<>(result);
-		annotationTriples.sort(
-				Comparator.comparing((Triple o) -> o.getSubject().getVisualRepresentation()).thenComparing((Triple o) -> ((Entity)o.getPredicate()).getVisualRepresentation()));
+		annotationTriples.sort(new TripleComparator());
 	}
 
 	private String getSessionID() {
@@ -633,5 +658,66 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 	private ImageAnnotationAPI getImageAnnotationAPI() {
 		return (ImageAnnotationAPI) application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY);
+	}
+
+	/**
+	 * Comparator to sort Triples (and indirectly TripleTreeNodes) for display in the tree table.
+	 * Sorting is done by:
+	 * - subject label (so that all nodes of one subject are grouped together)
+	 * - shape reference (so that the node carrying IS_VISUALLY_REPRESENTED and the shape reference is on top to be used as shape-node)
+	 * - predicate label
+	 */
+	private static class TripleComparator implements Comparator<Triple> {
+
+		private static final String SHAPE_PREFIX_FOR_SEARCH = GIC_URIUtils.SHAPE_OBJECT_PREFIX + '-';
+
+		@Override
+		public int compare(Triple o1, Triple o2) {
+			final String o1Predicate = ((Entity) o1.getPredicate()).getVisualRepresentation();
+			final String o2Predicate = ((Entity) o2.getPredicate()).getVisualRepresentation();
+
+			// compare by subject
+			int result = o1.getSubject().getVisualRepresentation().compareTo(o2.getSubject().getVisualRepresentation());
+
+			if(result == 0) {
+				if(o1.getPredicate().equals(o2Predicate) && isPredicateVisuallyRepresented(o1Predicate)) {
+					// same predicates and predicate == IS_VISUALLY_REPRESENTED --> check for shape reference
+					boolean o1IsShape = doesObjectReferToShape(o1);
+					boolean o2IsShape = doesObjectReferToShape(o2);
+
+					if(o1IsShape && !o2IsShape) {
+						// o1 has shape reference, o2 not --> sort o1 up
+						return -1;
+					}
+					if(o2IsShape && !o1IsShape) {
+						// o2 has shape reference, o1 not --> sort o2 up
+						return 1;
+					}
+					// both or none have shape reference --> fall back to default sorting below...
+				}
+				else if(isPredicateVisuallyRepresented(o1Predicate)) {
+					// only o1 == IS_VISUALLY_REPRESENTED --> sort o1 up
+					return -1;
+				}
+				else if(isPredicateVisuallyRepresented(o2Predicate)) {
+					// only o2 == IS_VISUALLY_REPRESENTED --> sort o2 up
+					return 1;
+				}
+
+				// no predicate == IS_VISUALLY_REPRESENTED or all checks equal --> sort by predicate
+				return o1Predicate.compareTo(o2Predicate);
+			}
+
+			// subjects different --> return compare result
+			return result;
+		}
+
+		private boolean isPredicateVisuallyRepresented(String o1Predicate) {
+			return GIC_URIUtils.IS_VISUALLY_REPRESENTED.equals(o1Predicate);
+		}
+
+		private boolean doesObjectReferToShape(Triple triple) {
+			return triple.getObject() instanceof ObjectProperty && ((Entity) triple.getObject()).getVisualRepresentation().startsWith(SHAPE_PREFIX_FOR_SEARCH);
+		}
 	}
 }

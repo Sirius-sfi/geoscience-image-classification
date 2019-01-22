@@ -11,6 +11,8 @@ public class TripleTreeTableNode extends WTreeTableNode {
 
 	private final Triple data;
 
+	private boolean shapeNode = false;
+
 	/**
 	 * TreeTableNode constructor with an added parameter for a Triplet holding data.
 	 */
@@ -40,5 +42,19 @@ public class TripleTreeTableNode extends WTreeTableNode {
 	 */
 	public Triple getData() {
 		return data;
+	}
+
+	/**
+	 * Returns if this node represents a shape (which implies it can have child nodes and is treated special in navigation).
+	 */
+	public boolean isShapeNode() {
+		return shapeNode;
+	}
+
+	/**
+	 * Sets if this node represents a shape (which implies it can have child nodes and is treated special in navigation).
+	 */
+	public void setShapeNode(boolean shapeNode) {
+		this.shapeNode = shapeNode;
 	}
 }
