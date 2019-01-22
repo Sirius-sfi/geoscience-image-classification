@@ -337,7 +337,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 			if(selection.isShapeNode()) {
 				final String shapeID = ((Instance) selection.getData().getObject()).getVisualRepresentation();
 				LOGGER.info("removing selected shape '{}' and {} annotations", shapeID, selection.getChildNodes().size());
-				// TODO insert deletion
+				imageAnnotationAPI.removeShape(sessionID, shapeID);
 			}
 			else {
 				LOGGER.info("removing selected annotation: {}, {}", selection.getData().getSubject().getVisualRepresentation(), ((Entity)selection.getData().getPredicate()).getVisualRepresentation());
