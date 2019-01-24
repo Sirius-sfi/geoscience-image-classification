@@ -1,28 +1,36 @@
 package no.siriuslabs.image.ui.container;
 
-import eu.webtoolkit.jwt.*;
+import eu.webtoolkit.jwt.KeyboardModifier;
+import eu.webtoolkit.jwt.Side;
+import eu.webtoolkit.jwt.WBorderLayout;
+import eu.webtoolkit.jwt.WContainerWidget;
+import eu.webtoolkit.jwt.WDialog;
+import eu.webtoolkit.jwt.WHBoxLayout;
+import eu.webtoolkit.jwt.WLength;
+import eu.webtoolkit.jwt.WMouseEvent;
+import eu.webtoolkit.jwt.WPushButton;
+import eu.webtoolkit.jwt.WScrollArea;
+import eu.webtoolkit.jwt.WText;
+import eu.webtoolkit.jwt.WToolBar;
+import eu.webtoolkit.jwt.WVBoxLayout;
 import no.siriuslabs.image.FrontendApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GIC_URIUtils;
 import no.siriuslabs.image.model.GeologicalImage;
+import no.siriuslabs.image.ui.widget.AnnotationTableWidget;
 import no.siriuslabs.image.ui.widget.CreateShapeDialog;
 import no.siriuslabs.image.ui.widget.ShapeWidget;
-import no.siriuslabs.image.ui.widget.TripleTreeTableNode;
-import no.siriuslabs.image.ui.widget.TripleWidget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 import uio.ifi.ontology.toolkit.projection.model.entities.Entity;
-import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
-import uio.ifi.ontology.toolkit.projection.model.entities.LiteralValue;
 import uio.ifi.ontology.toolkit.projection.model.entities.ObjectProperty;
 import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -46,25 +54,12 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	private WPushButton cancelShapeButton;
 	private WPushButton saveAnnotationButton;
 
-	private WVBoxLayout annotationLayout;
-	private WTreeTable annotationsTable;
-	private TripleWidget annotationEditorWidget;
+	private AnnotationTableWidget annotationTableWidget;
 
 	private WContainerWidget topPanel;
-	private WContainerWidget annotationPanel;
 	private WContainerWidget buttonPanel;
-	private WPushButton addAnnotationButton;
-	private WPushButton editAnnotationButton;
-	private WPushButton deleteAnnotationButton;
 
 	private WText messageText;
-
-	private List<Triple> annotationTriples;
-
-	/**
-	 * List of tree nodes that describe the path to the last selected node as seen from the root.
-	 */
-	private List<WTreeNode> selectedPath = Collections.emptyList();
 
 	/**
 	 * Constructor taking the application, parent container and the GeologicalImage that is to be annotated.
@@ -179,182 +174,16 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	}
 
 	private void initializeAnnotationPanel() {
-		annotationPanel = new WContainerWidget();
-		annotationPanel.setMinimumSize(new WLength(300), WLength.Auto);
-		annotationLayout = new WVBoxLayout();
-
-		annotationsTable = new WTreeTable();
-		annotationsTable.getTree().setSelectionMode(SelectionMode.SingleSelection);
-		annotationsTable.getTree().itemSelectionChanged().addListener(this, () -> tableSelectionChangedAction());
-
-		annotationsTable.addColumn("Predicate", new WLength(150));
-		annotationsTable.addColumn("Object", new WLength(150));
-
-		annotationLayout.addWidget(annotationsTable, 1);
-
-		WContainerWidget tableControlPanel = new WContainerWidget();
-		WHBoxLayout tableControlLayout = new WHBoxLayout();
-		tableControlPanel.setLayout(tableControlLayout);
-
-		addAnnotationButton = new WPushButton("Add");
-		addAnnotationButton.enable();
-		addAnnotationButton.clicked().addListener(this, arg -> addAnnotationButtonClickedAction());
-		tableControlLayout.addWidget(addAnnotationButton);
-
-		editAnnotationButton = new WPushButton("Edit");
-		editAnnotationButton.disable();
-		editAnnotationButton.clicked().addListener(this, arg -> editAnnotationButtonClickedAction());
-		tableControlLayout.addWidget(editAnnotationButton);
-
-		deleteAnnotationButton = new WPushButton("Delete");
-		deleteAnnotationButton.disable();
-		deleteAnnotationButton.clicked().addListener(this, arg -> deleteAnnotationButtonClickedAction());
-		tableControlLayout.addWidget(deleteAnnotationButton);
-
-		annotationLayout.addWidget(tableControlPanel);
-
-		annotationEditorWidget = new TripleWidget(application);
-		annotationEditorWidget.hide();
-		annotationEditorWidget.setMinimumSize(WLength.Auto, new WLength(30));
-		annotationEditorWidget.addPropertyChangeListener(this);
-		annotationLayout.addWidget(annotationEditorWidget);
-
-		annotationPanel.setLayout(annotationLayout);
-
-		populateTreeTable();
+		annotationTableWidget = new AnnotationTableWidget(application, this, image);
 	}
 
 	private void initializeLayout() {
 		WBorderLayout layout = new WBorderLayout();
 		layout.addWidget(topPanel, WBorderLayout.Position.North);
 		layout.addWidget(shapeContainer, WBorderLayout.Position.Center);
-		layout.addWidget(annotationPanel, WBorderLayout.Position.East);
+		layout.addWidget(annotationTableWidget, WBorderLayout.Position.East);
 
 		setLayout(layout);
-	}
-
-	private void populateTreeTable() {
-				
-		WTreeTableNode root = new WTreeTableNode(image.getLabel());
-		annotationsTable.setTreeRoot(root, "Shape");
-
-		String lastSubjectLabel = null;
-		TripleTreeTableNode currentShapeNode = null;
-
-		for(Triple triple : annotationTriples) {
-			// did the subject change since last triple?
-			if(!triple.getSubject().getVisualRepresentation().equals(lastSubjectLabel)) {
-				// ...add new shape-level node
-				currentShapeNode = new TripleTreeTableNode(triple.getSubject().getVisualRepresentation(), null, root, triple);
-				currentShapeNode.setShapeNode(true);
-				lastSubjectLabel = triple.getSubject().getVisualRepresentation();
-			}
-
-			//Ignore elements of give namespace
-			if(getImageAnnotationAPI().getNamespaceToHideInVisualization().equals((((Entity)triple.getPredicate()).getNamespace()))) {
-				continue;
-			}
-
-			// add annotation-level node
-			TripleTreeTableNode node = new TripleTreeTableNode("", null, currentShapeNode, triple);
-
-			node.setColumnWidget(1, new WText(((Entity)triple.getPredicate()).getVisualRepresentation()));
-
-			final Object object = triple.getObject();
-			String objectText = "";
-			if(object instanceof LiteralValue) {
-				objectText = ((LiteralValue)object).getVisualRepresentation();
-			}
-			else if(object instanceof Entity) {
-				objectText = ((Entity)object).getVisualRepresentation();
-			}
-			else {
-				objectText = triple.getObject().toString();
-			}
-			node.setColumnWidget(2, new WText(objectText));
-		}
-
-		annotationsTable.getTree().select(annotationsTable.getTreeRoot());
-		annotationsTable.getTreeRoot().expand();
-	}
-
-	private void tableSelectionChangedAction() {
-		// enable edit and delete buttons only if data is present and node is an annotation-level node
-		if(annotationsTable.getTree().getSelectedNodes().size() == 1 && isTripleTreeTableNode(annotationsTable.getTree().getSelectedNodes().iterator().next())) {
-			addAnnotationButton.enable();
-			deleteAnnotationButton.enable();
-			final TripleTreeTableNode selectedNode = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
-			if(selectedNode.isShapeNode()) {
-				editAnnotationButton.disable();
-			}
-			else {
-				editAnnotationButton.enable();
-			}
-		}
-		else {
-			addAnnotationButton.disable();
-			editAnnotationButton.disable();
-			deleteAnnotationButton.disable();
-		}
-	}
-
-	private void addAnnotationButtonClickedAction() {
-		annotationEditorWidget.resetData();
-		annotationEditorWidget.setMode(TripleWidget.Mode.ADD);
-		final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
-		annotationEditorWidget.setSubject(selection.getData().getSubject());
-		annotationEditorWidget.show();
-	}
-
-	private void editAnnotationButtonClickedAction() {
-		annotationEditorWidget.setMode(TripleWidget.Mode.EDIT);
-		final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
-		annotationEditorWidget.setData(selection.getData());
-		annotationEditorWidget.show();
-	}
-
-	private void deleteAnnotationButtonClickedAction() {
-		WMessageBox messageBox;
-		final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
-
-		if(selection.isShapeNode()) {
-			messageBox = new WMessageBox("Confirmation", "Do you want to delete this shape and " + selection.getChildNodes().size() + " annotations belonging to it now?", Icon.Question, EnumSet.of(StandardButton.Yes, StandardButton.No));
-		}
-		else {
-			messageBox = new WMessageBox("Confirmation", "Do you want to delete this annotation now?", Icon.Question, EnumSet.of(StandardButton.Yes, StandardButton.No));
-		}
-
-		messageBox.buttonClicked().addListener(this, () -> 	deleteConfirmationButtonAction(messageBox));
-		messageBox.show();
-	}
-
-	private void deleteConfirmationButtonAction(WMessageBox messageBox) {
-		if(messageBox.getButtonResult() == StandardButton.Yes) {
-			String sessionID = getSessionID();
-			final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
-
-			final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
-			if(selection.isShapeNode()) {
-				final Instance shapeObject = (Instance) selection.getData().getObject();
-				final String shapeID = shapeObject.getVisualRepresentation();
-				LOGGER.info("removing selected shape '{}' and {} annotations", shapeID, selection.getChildNodes().size());
-				imageAnnotationAPI.removeShape(sessionID, shapeObject.getIri());
-			}
-			else {
-				LOGGER.info("removing selected annotation: {}, {}", selection.getData().getSubject().getVisualRepresentation(), ((Entity)selection.getData().getPredicate()).getVisualRepresentation());
-				imageAnnotationAPI.removeAnnotations(sessionID, Collections.singleton(selection.getData()));
-			}
-
-			saveSelection();
-			loadAnnotations();
-			populateTreeTable();
-			restoreSelection();
-
-			editAnnotationButton.disable();
-			deleteAnnotationButton.disable();
-		}
-
-		messageBox.remove();
 	}
 
 	private void mouseClickedOnImageAction(WMouseEvent arg) {
@@ -430,120 +259,9 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 		shapeWidget.handleShapeSaved();
 
-		saveSelection();
-		loadAnnotations();
-		populateTreeTable();
-		restoreSelection();
+		annotationTableWidget.refreshData();
 
 		LOGGER.info("initial save was successful");
-	}
-
-	private void saveSelection() {
-		// we allow only single selection, so we only take the first element
-		WTreeNode selectedNode = annotationsTable.getTree().getSelectedNodes().iterator().next();
-		selectedPath = new ArrayList<>();
-
-		addNodeToSelectedPath(selectedNode);
-		Collections.reverse(selectedPath);
-	}
-
-	private void addNodeToSelectedPath(WTreeNode node) {
-		if(!annotationsTable.getTreeRoot().equals(node)) {
-			// if we haven't reached the tree root yet, we remember the current node go further up
-			selectedPath.add(node);
-			addNodeToSelectedPath(node.getParentNode());
-		}
-	}
-
-	private void restoreSelection() {
-		if(!selectedPath.isEmpty()) {
-			findNextStepInSelectedPath(annotationsTable.getTreeRoot());
-		}
-	}
-
-	private void findNextStepInSelectedPath(WTreeNode baseNode) {
-		baseNode.expand();
-
-		WTreeNode nodeInTree = null;
-		WTreeNode nodeInPath = null;
-		// node instances change because of reloading, so we have to identify the nodes to be selected/expanded by contents
-		for(WTreeNode node : baseNode.getChildNodes()) {
-			// we check if one of the children of baseNode matches the first element in the saved path to the selected node (the path is sorted from POV of the root, so the sequence fits)
-			if(!selectedPath.isEmpty()) {
-				WTreeNode pathNode = selectedPath.get(0);
-				if(isTripleTreeTableNode(node) && isTripleTreeTableNode(pathNode)) {
-					// for TripleTreeTableNodes we check the subject + predicate combination
-					Triple nodeTriple = ((TripleTreeTableNode)node).getData();
-					Triple pathTriple = ((TripleTreeTableNode)pathNode).getData();
-					if(hasSameSubject(nodeTriple, pathTriple) && hasSamePredicate(nodeTriple, pathTriple)) {
-						nodeInTree = node;
-						nodeInPath = pathNode;
-						break;
-					}
-				}
-				else {
-					// for standard nodes we check the node's label
-					if(hasSameLabel(node, pathNode)) {
-						nodeInTree = node;
-						nodeInPath = pathNode;
-						break;
-					}
-				}
-			}
-		}
-
-		if(nodeInTree != null) {
-			// if the next node towards the selected one was found, we remove it from the saved path
-			selectedPath.remove(nodeInPath);
-
-			annotationsTable.getTree().select(nodeInTree);
-			// if there are more layers to do in the saved path, we do the same again for the next layer
-			if(!selectedPath.isEmpty()) {
-				findNextStepInSelectedPath(nodeInTree);
-			}
-		}
-	}
-
-	private boolean isTripleTreeTableNode(WTreeNode node) {
-		return node instanceof TripleTreeTableNode;
-	}
-
-	private boolean hasSameSubject(Triple nodeTriple, Triple pathTriple) {
-		return nodeTriple.getSubject().equalsEntity(pathTriple.getSubject());
-	}
-
-	private boolean hasSamePredicate(Triple nodeTriple, Triple pathTriple) {
-		return nodeTriple.getPredicate().equals(pathTriple.getPredicate());
-	}
-
-	private boolean hasSameLabel(WTreeNode node, WTreeNode pathNode) {
-		return node.getLabel().getText().equals(pathNode.getLabel().getText());
-	}
-
-	private boolean isTripletValid() {
-		List<WValidator.State> validationResults = annotationEditorWidget.validate();
-		boolean entriesValid = true;
-		for(WValidator.State state : validationResults) {
-			if(state != WValidator.State.Valid) {
-				entriesValid = false;
-			}
-		}
-		if(!entriesValid) {
-			String message = "Validation failed: ";
-			int index = 0;
-			for(WValidator.State state : validationResults) {
-				index++;
-				if(state != WValidator.State.Valid) {
-					message += " field " + index + " ==> " + state + "     ";
-				}
-			}
-
-			LOGGER.info(message);
-			showErrorMessage(message);
-			return false;
-		}
-		LOGGER.info("Validation successful");
-		return true;
 	}
 
 	/**
@@ -569,38 +287,6 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 				newShapeButton.enable();
 				cancelShapeButton.disable();
 				saveAnnotationButton.disable();
-			}
-		}
-		else if(TripleWidget.CANCELLED_PROPERTY_NAME.equals(evt.getPropertyName())) {
-			annotationEditorWidget.hide();
-		}
-		else if(TripleWidget.SAVED_PROPERTY_NAME.equals(evt.getPropertyName())) {
-			if(isTripletValid()) {
-				LOGGER.info(TripleWidget.SAVED_PROPERTY_NAME + " was triggered and triple is valid --> saving to ontology");
-				Triple triple = annotationEditorWidget.getData();
-
-				String sessionID = getSessionID();
-				final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
-
-				// delete the old triple if we are in edit-mode
-				if(TripleWidget.Mode.EDIT == annotationEditorWidget.getMode()) {
-					imageAnnotationAPI.removeAnnotations(sessionID, Collections.singleton(annotationEditorWidget.getOriginalData()));
-				}
-
-				imageAnnotationAPI.saveAnnotations(sessionID, Collections.singleton(triple));
-
-				LOGGER.info("save was successful");
-
-				saveSelection();
-				loadAnnotations();
-				populateTreeTable();
-				restoreSelection();
-
-				editAnnotationButton.disable();
-				deleteAnnotationButton.disable();
-
-				annotationEditorWidget.hide();
-				annotationEditorWidget.resetData();
 			}
 		}
 	}
@@ -629,12 +315,18 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		return ShapeWidget.AnnotationWidgetMode.UNSAVED_SHAPE == shapeWidget.getWidgetMode();
 	}
 
-	private void showErrorMessage(String message) {
+	/**
+	 * Shows the given message in the message area.
+	 */
+	public void showErrorMessage(String message) {
 		messageText.setText(message);
 		messageText.setStyleClass("alert alert-danger");
 	}
 
-	private void showInfoMessage(String message) {
+	/**
+	 * Shows the given message in the message area.
+	 */
+	public void showInfoMessage(String message) {
 		resetMessageField();
 		messageText.setText(message);
 		messageText.setStyleClass("alert alert-info");
@@ -645,13 +337,18 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		messageText.setStyleClass("");
 	}
 
-	private void loadAnnotations() {
+	/**
+	 * Loads all annotations for this image from the ontology.
+	 */
+	public List<Triple> loadAnnotations() {
 		String sessionID = getSessionID();
 		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
 		Set<Triple> result = imageAnnotationAPI.getAllImageAnnotations(sessionID, image.getIri());
 
-		annotationTriples = new ArrayList<>(result);
+		List<Triple> annotationTriples = new ArrayList<>(result);
 		annotationTriples.sort(new TripleComparator());
+
+		return annotationTriples;
 	}
 
 	private String getSessionID() {
