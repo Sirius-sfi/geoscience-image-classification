@@ -15,7 +15,7 @@ import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WText;
 import eu.webtoolkit.jwt.WTextArea;
 import eu.webtoolkit.jwt.WValidator;
-import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.AbstractAnnotationApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
@@ -34,7 +34,7 @@ public class UploadContainer extends WContainerWidget {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(UploadContainer.class);
 
-	private final FrontendApplication application;
+	private final AbstractAnnotationApplication application;
 
 	private WFileUpload fileUpload;
 	private WPushButton uploadButton;
@@ -51,7 +51,7 @@ public class UploadContainer extends WContainerWidget {
 
 	private List<Concept> image_types;
 
-	public UploadContainer(FrontendApplication application, WContainerWidget parent) {
+	public UploadContainer(AbstractAnnotationApplication application, WContainerWidget parent) {
 		super(parent);
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 

@@ -1,6 +1,5 @@
 package no.siriuslabs.image;
 
-import eu.webtoolkit.jwt.WApplication;
 import eu.webtoolkit.jwt.WBorderLayout;
 import eu.webtoolkit.jwt.WContainerWidget;
 import eu.webtoolkit.jwt.WEnvironment;
@@ -15,14 +14,13 @@ import no.siriuslabs.image.ui.container.UploadContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletContext;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
  * The main frontend application.
  */
-public class FrontendApplication extends WApplication implements PropertyChangeListener {
+public class FrontendApplication extends AbstractAnnotationApplication implements PropertyChangeListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FrontendApplication.class);
 
@@ -30,8 +28,6 @@ public class FrontendApplication extends WApplication implements PropertyChangeL
 	private static final String HOME_LABEL = "Home";
 	private static final String UPLOAD_LABEL = "Upload Image";
 	private static final String ANNOTATE_LABEL = "Annotate Image";
-
-	private final ServletContext context;
 
 	private WContainerWidget centerContainer;
 	private WBorderLayout layout;
@@ -41,10 +37,6 @@ public class FrontendApplication extends WApplication implements PropertyChangeL
 	public FrontendApplication(WEnvironment env) {
 		super(env);
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
-
-		context = getEnvironment().getServer().getServletContext();
-
-		setTitle(APPLICATION_TITLE);
 
 		initializeCenterContainer();
 		initializeMenu();
@@ -93,6 +85,11 @@ public class FrontendApplication extends WApplication implements PropertyChangeL
 		menu.select(0);
 	}
 
+	@Override
+	public String getApplicationTitle() {
+		return APPLICATION_TITLE;
+	}
+
 	private void performMenuSelectionChangedAction(WMenu menu) {
 		final String currentSelection = menu.getCurrentItem().getText().getValue();
 		if(HOME_LABEL.equals(currentSelection)) {
@@ -139,10 +136,6 @@ public class FrontendApplication extends WApplication implements PropertyChangeL
 	private AnnotationContainer createAannotationContainer(GeologicalImage image) {
 		LOGGER.info("Creating new AnnotationContainer for image {}", image.getLabel());
 		return new AnnotationContainer(this, centerContainer, image);
-	}
-
-	public ServletContext getServletContext() {
-		return context;
 	}
 
 	@Override

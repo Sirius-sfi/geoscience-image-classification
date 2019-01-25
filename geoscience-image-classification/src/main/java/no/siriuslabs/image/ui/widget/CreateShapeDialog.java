@@ -10,7 +10,7 @@ import eu.webtoolkit.jwt.WLineEdit;
 import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WSuggestionPopup;
 import eu.webtoolkit.jwt.WValidator;
-import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.AbstractAnnotationApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import org.slf4j.Logger;
@@ -27,7 +27,7 @@ public class CreateShapeDialog extends WDialog {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CreateShapeDialog.class);
 
-	private final FrontendApplication application;
+	private final AbstractAnnotationApplication application;
 
 	private WLabel typeLabel;
 	private WLineEdit typeLineEdit;
@@ -41,7 +41,7 @@ public class CreateShapeDialog extends WDialog {
 	/**
 	 * Default constructor.
 	 */
-	public CreateShapeDialog(FrontendApplication application) {
+	public CreateShapeDialog(AbstractAnnotationApplication application) {
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 
 		this.application = application;

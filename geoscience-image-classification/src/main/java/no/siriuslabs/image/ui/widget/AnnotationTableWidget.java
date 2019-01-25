@@ -14,7 +14,7 @@ import eu.webtoolkit.jwt.WTreeTable;
 import eu.webtoolkit.jwt.WTreeTableNode;
 import eu.webtoolkit.jwt.WVBoxLayout;
 import eu.webtoolkit.jwt.WValidator;
-import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.AbstractAnnotationApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
@@ -40,7 +40,7 @@ public class AnnotationTableWidget extends WContainerWidget implements PropertyC
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnnotationTableWidget.class);
 
-	private final FrontendApplication application;
+	private final AbstractAnnotationApplication application;
 	private final AnnotationContainer parentContainer;
 	private final GeologicalImage image;
 
@@ -62,7 +62,7 @@ public class AnnotationTableWidget extends WContainerWidget implements PropertyC
 	/**
 	 * Constructor taking the application, parent container and the GeologicalImage that is to be annotated.
 	 */
-	public AnnotationTableWidget(FrontendApplication application, AnnotationContainer parent, GeologicalImage image) {
+	public AnnotationTableWidget(AbstractAnnotationApplication application, AnnotationContainer parent, GeologicalImage image) {
 		super(parent);
 		this.application = application;
 		parentContainer = parent;

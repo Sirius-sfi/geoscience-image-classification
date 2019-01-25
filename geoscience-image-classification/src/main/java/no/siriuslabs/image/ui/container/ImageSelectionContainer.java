@@ -5,7 +5,7 @@ import eu.webtoolkit.jwt.WContainerWidget;
 import eu.webtoolkit.jwt.WGroupBox;
 import eu.webtoolkit.jwt.WLength;
 import eu.webtoolkit.jwt.WVBoxLayout;
-import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.AbstractAnnotationApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
@@ -29,14 +29,14 @@ public class ImageSelectionContainer extends WContainerWidget implements Propert
 
 	public static final String START_ANNOTATING_PROPERTY_NAME = "imageSelectionContainer.startAnnotating";
 
-	private final FrontendApplication application;
+	private final AbstractAnnotationApplication application;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	/**
 	 * Constructor taking the application and the parent container.
 	 */
-	public ImageSelectionContainer(FrontendApplication application, WContainerWidget parent) {
+	public ImageSelectionContainer(AbstractAnnotationApplication application, WContainerWidget parent) {
 		super(parent);
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 

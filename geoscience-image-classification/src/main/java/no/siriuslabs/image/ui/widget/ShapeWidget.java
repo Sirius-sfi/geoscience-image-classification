@@ -12,7 +12,7 @@ import eu.webtoolkit.jwt.WPainter;
 import eu.webtoolkit.jwt.WPainterPath;
 import eu.webtoolkit.jwt.WPen;
 import eu.webtoolkit.jwt.WPointF;
-import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.AbstractAnnotationApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
@@ -120,7 +120,7 @@ public class ShapeWidget extends WPaintedWidget {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ShapeWidget.class);
 
-	private final FrontendApplication application;
+	private final AbstractAnnotationApplication application;
 	private final GeologicalImage image;
 
 	private final PropertyChangeSupport propertyChangeSupport;
@@ -149,7 +149,7 @@ public class ShapeWidget extends WPaintedWidget {
 	/**
 	 * Constructor taking the application and the GeologicalImage to be displayed.
 	 */
-	public ShapeWidget(FrontendApplication application, GeologicalImage image) {
+	public ShapeWidget(AbstractAnnotationApplication application, GeologicalImage image) {
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 
 		this.application = application;

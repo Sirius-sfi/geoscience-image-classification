@@ -13,7 +13,7 @@ import eu.webtoolkit.jwt.WScrollArea;
 import eu.webtoolkit.jwt.WText;
 import eu.webtoolkit.jwt.WToolBar;
 import eu.webtoolkit.jwt.WVBoxLayout;
-import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.AbstractAnnotationApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GIC_URIUtils;
@@ -43,7 +43,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnnotationContainer.class);
 
-	private final FrontendApplication application;
+	private final AbstractAnnotationApplication application;
 	private final GeologicalImage image;
 
 	private WContainerWidget shapeContainer;
@@ -64,7 +64,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	/**
 	 * Constructor taking the application, parent container and the GeologicalImage that is to be annotated.
 	 */
-	public AnnotationContainer(FrontendApplication application, WContainerWidget parent, GeologicalImage image) {
+	public AnnotationContainer(AbstractAnnotationApplication application, WContainerWidget parent, GeologicalImage image) {
 		super(parent);
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 

@@ -8,10 +8,9 @@ import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WSuggestionPopup;
 import eu.webtoolkit.jwt.WVBoxLayout;
 import eu.webtoolkit.jwt.WValidator;
-import no.siriuslabs.image.FrontendApplication;
+import no.siriuslabs.image.AbstractAnnotationApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.model.entities.DataProperty;
@@ -45,7 +44,7 @@ public class TripleWidget extends WContainerWidget {
 	public static final String SAVED_PROPERTY_NAME = "tripleWidget.saved";
 	public static final String CANCELLED_PROPERTY_NAME = "tripleWidget.cancelled";
 
-	private final FrontendApplication application;
+	private final AbstractAnnotationApplication application;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
@@ -70,7 +69,7 @@ public class TripleWidget extends WContainerWidget {
 	/**
 	 * Default constructor.
 	 */
-	public TripleWidget(FrontendApplication application) {
+	public TripleWidget(AbstractAnnotationApplication application) {
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 		this.application = application;
 
