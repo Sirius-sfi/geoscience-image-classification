@@ -16,10 +16,8 @@ import eu.webtoolkit.jwt.WText;
 import eu.webtoolkit.jwt.WTextArea;
 import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.AbstractAnnotationApplication;
-import no.siriuslabs.image.FrontendServlet;
-import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
-import no.siriuslabs.image.services.FileService;
+import no.siriuslabs.image.services.ImageFileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
@@ -30,11 +28,9 @@ import java.util.List;
 /**
  * Container class representing the upload page accessed from the main menu.
  */
-public class UploadContainer extends WContainerWidget {
+public class UploadContainer extends AbstractAnnotationContainer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(UploadContainer.class);
-
-	private final AbstractAnnotationApplication application;
 
 	private WFileUpload fileUpload;
 	private WPushButton uploadButton;
@@ -52,10 +48,8 @@ public class UploadContainer extends WContainerWidget {
 	private List<Concept> image_types;
 
 	public UploadContainer(AbstractAnnotationApplication application, WContainerWidget parent) {
-		super(parent);
+		super(application, parent);
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
-
-		this.application = application;
 
 		WContainerWidget uploadContainer = initializeUploadContainer();
 		initializeNameField();
@@ -181,8 +175,8 @@ public class UploadContainer extends WContainerWidget {
 	}
 
 	private void readTypeData() {
-		String sessionID = (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
-		image_types = ((ImageAnnotationAPI)application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).getImageTypes(sessionID);
+		String sessionID = getSessionID();
+		image_types = getImageAnnotationAPI().getImageTypes(sessionID);
 
 		for (Concept type : image_types) {
 			typeComboBox.addItem(type.getLabel());
@@ -248,20 +242,17 @@ public class UploadContainer extends WContainerWidget {
 		String tempServerPath = fileUpload.getSpoolFileName();
 		String originalFilename = fileUpload.getClientFileName();
 
-		FileService fileService = (FileService) application.getServletContext().getAttribute(FrontendServlet.FILE_SERVICE_KEY);
-		
-		fileService.storeImageFile(tempServerPath, originalFilename);
+		((ImageFileService)getFileService()).storeImageFile(tempServerPath, originalFilename);
 
 		LOGGER.info("saving data");
 		
-		String sessionID = (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
+		String sessionID = getSessionID();
 		GeologicalImage gimg = new GeologicalImage();
 		gimg.setDescription(descriptionTextArea.getValueText());
 		gimg.setLocation(originalFilename);
 		gimg.setLabel(nameEdit.getValueText());
 		gimg.setClassType(typeComboBox.getValueText());		
-		((ImageAnnotationAPI)application.getServletContext().
-				getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY)).saveGeologicalImage(sessionID, gimg);
+		getImageAnnotationAPI().saveGeologicalImage(sessionID, gimg);
 		
 		LOGGER.info("save successful --> resetting UI");
 		resetUI();

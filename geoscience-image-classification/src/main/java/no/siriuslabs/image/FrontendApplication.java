@@ -116,7 +116,7 @@ public class FrontendApplication extends AbstractAnnotationApplication implement
 
 	private HomeContainer createHomeContainer() {
 		LOGGER.info("Creating new HomeContainer");
-		return new HomeContainer(centerContainer);
+		return new HomeContainer(this, centerContainer);
 	}
 
 	private UploadContainer createUploadContainer() {

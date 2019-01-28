@@ -8,14 +8,13 @@ import eu.webtoolkit.jwt.WLink;
 import eu.webtoolkit.jwt.WtServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.context.RDFoxSessionContextListener;
-import no.siriuslabs.image.services.FileService;
-
-import java.util.HashSet;
-import java.util.Set;
-
+import no.siriuslabs.image.services.ImageFileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.controller.triplestore.RDFoxSessionManager;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Servlet hosting the application.
@@ -72,7 +71,7 @@ public class FrontendServlet extends WtServlet {
 		String workDirectoryPath = externalDirectorySet ? workDirectory : getServletContext().getRealPath("/");
 		getServletContext().setAttribute(WORK_DIRECTORY, workDirectoryPath);
 
-		FileService fileService = new FileService(getServletContext());
+		ImageFileService fileService = new ImageFileService(getServletContext());
 		getServletContext().setAttribute(FILE_SERVICE_KEY, fileService);
 		// if an external directory was set, copy all images from there to the server's local image directory
 		if(externalDirectorySet) {

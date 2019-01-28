@@ -9,7 +9,7 @@ import no.siriuslabs.image.AbstractAnnotationApplication;
 import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
-import no.siriuslabs.image.services.FileService;
+import no.siriuslabs.image.services.ImageFileService;
 import no.siriuslabs.image.ui.widget.PreviewSelectionWidget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,13 +23,11 @@ import java.util.List;
 /**
  * Container class representing the image selection page.
  */
-public class ImageSelectionContainer extends WContainerWidget implements PropertyChangeListener {
+public class ImageSelectionContainer extends AbstractAnnotationContainer implements PropertyChangeListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImageSelectionContainer.class);
 
 	public static final String START_ANNOTATING_PROPERTY_NAME = "imageSelectionContainer.startAnnotating";
-
-	private final AbstractAnnotationApplication application;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
@@ -37,16 +35,14 @@ public class ImageSelectionContainer extends WContainerWidget implements Propert
 	 * Constructor taking the application and the parent container.
 	 */
 	public ImageSelectionContainer(AbstractAnnotationApplication application, WContainerWidget parent) {
-		super(parent);
+		super(application, parent);
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
-
-		this.application = application;
 
 		propertyChangeSupport = new PropertyChangeSupport(this);
 
 		WVBoxLayout layout = new WVBoxLayout();
 
-		FileService fileService = (FileService) application.getServletContext().getAttribute(FrontendServlet.FILE_SERVICE_KEY);
+		ImageFileService fileService = (ImageFileService) getFileService();
 
 		String sessionID = (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
 		String type = "Geological image";

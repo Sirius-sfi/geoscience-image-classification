@@ -34,60 +34,8 @@ public class FileService {
 		this.servletContext = servletContext;
 	}
 
-	/**
-	 * Stores an image file permanently from a temporary location.
-	 * @param tempServerPath  Path to the temporary uploaded file
-	 * @param originalFilename  Original filename of the file uploaded by the client
-	 */
-	public void storeImageFile(String tempServerPath, String originalFilename) {
-		try {
-			String imagePath = getImagePathInEnvironment();
-			createDirectory(imagePath);
-
-			File destFile = new File(getAbsolutePathForFile(originalFilename));
-
-			if(destFile.exists()) {
-				LOGGER.warn("image named {} exists - overwriting", destFile);
-			}
-
-			LOGGER.info("copying image from {} to {}", tempServerPath, destFile);
-			File tempfile = new File(tempServerPath);
-			FileUtils.copyFile(tempfile, destFile);
-
-			// if an external directory was set, also save the image to the server's image directory
-			if(Boolean.TRUE.equals(servletContext.getAttribute(FrontendServlet.EXTERNAL_DIRECTORY_SET))) {
-				String serverLocalImagePath = getAbsoluteImageDirectoryPath();
-				createDirectory(serverLocalImagePath);
-				File serverFile = new File(getAbsoluteImageDirectoryPath() + '/' + originalFilename);
-				FileUtils.copyFile(tempfile, serverFile);
-			}
-		}
-		catch(IOException e) {
-			LOGGER.error(e.getMessage(), e);
-			throw new UncheckedIOException(e);
-		}
-	}
-
-	/**
-	 * Synchronizes all images in the external image directory to the server's local image directory.
-	 */
-	public void synchronizeImageDirectories() {
-		if(Boolean.TRUE.equals(servletContext.getAttribute(FrontendServlet.EXTERNAL_DIRECTORY_SET))) {
-			String serverLocalImagePath = getAbsoluteImageDirectoryPath();
-			createDirectory(serverLocalImagePath);
-
-			String imagePath = getImagePathInEnvironment();
-			File imageDirectory = new File(imagePath);
-			if(!imageDirectory.exists()) {
-				LOGGER.info("image directory " + imageDirectory.getAbsolutePath() + " does not exist - nothing to synchronize");
-				return;
-			}
-
-			for(File file : imageDirectory.listFiles()) {
-				File serverFile = new File(getAbsoluteImageDirectoryPath() + '/' + file.getName());
-				copyFile(file, serverFile);
-			}
-		}
+	protected ServletContext getServletContext() {
+		return servletContext;
 	}
 
 	/**
@@ -112,26 +60,34 @@ public class FileService {
 		synchronizeToDataDirectory(ANNOTATIONS_PATH_KEY, ANNOTATIONS_FILENAME_KEY, false);
 	}
 
-	private void createDirectory(String path) {
+	/**
+	 * Tries to create a directory in the given path. If the directory already exists, the method quietly does nothing.
+	 * I case of an error on creating the directory, an (unchecked) exception is thrown.
+	 */
+	public void createDirectory(String path) {
 		File imageDir = new File(path);
 		if(!imageDir.exists()) {
 			LOGGER.info("directory {} does not exist - creating", path);
 			boolean success = imageDir.mkdir();
+			LOGGER.info("directory creation at {} {}", path, success ? "successful" : "failed");
 			if(!success) {
-				LOGGER.info("directory creation at {} {}", path, success ? "successful" : "failed");
 				throw new UncheckedIOException(new IOException("Creation of image directory failed."));
 			}
 		}
 	}
 
-	private boolean copyFile(File sourceFile, File serverFile) {
+	/**
+	 * Copies the given sourceFile to destinationFile.
+	 * Returns true if the operation was successful.
+	 */
+	public boolean copyFile(File sourceFile, File destinationFile) {
 		try {
-			FileUtils.copyFile(sourceFile, serverFile);
-			LOGGER.info("synchronizing file: {} to {}", sourceFile.getAbsolutePath(), serverFile.getAbsolutePath());
+			FileUtils.copyFile(sourceFile, destinationFile);
+			LOGGER.info("synchronizing file: {} to {}", sourceFile.getAbsolutePath(), destinationFile.getAbsolutePath());
 			return true;
 		}
 		catch(IOException e) {
-			LOGGER.error("error while trying to copy {} to {}", new Object[]{sourceFile.getAbsolutePath(), serverFile.getAbsolutePath(), e});
+			LOGGER.error("error while trying to copy {} to {}", new Object[]{sourceFile.getAbsolutePath(), destinationFile.getAbsolutePath(), e});
 			return false;
 		}
 	}
@@ -159,49 +115,17 @@ public class FileService {
 	}
 
 	/**
-	 * Returns the application's "real" path.
+	 * Returns the application's working directory (which depending on configuration might be set to the "real" path).
 	 */
 	public String getBasePath() {
 		return (String) servletContext.getAttribute(FrontendServlet.WORK_DIRECTORY);
 	}
 
 	/**
-	 * Returns the application's image path (real + image path).
+	 * Returns the application's "real" path.
 	 */
-	public String getImagePathInEnvironment() {
-		return getBasePath() + IMAGE_DIRECTORY_NAME;
-	}
-
-	/**
-	 * Returns the name of the image directory.
-	 */
-	public String getImageDirectoryName() {
-		return IMAGE_DIRECTORY_NAME;
-	}
-
-	/**
-	 * Returns the absolute path for the given filename.
-	 */
-	public String getAbsolutePathForFile(String filename) {
-		return getImagePathInEnvironment() + '/' + filename;
-	}
-
-	/**
-	 * Returns the absolute path of the image directory.
-	 */
-	public String getAbsoluteImageDirectoryPath() {
-		return getServerBasePath() + getImageDirectoryName();
-	}
-
-	private String getServerBasePath() {
+	public String getServerBasePath() {
 		return servletContext.getRealPath("./");
-	}
-
-	/**
-	 * Returns the relative image path for the given filename (image directory + filename).
-	 */
-	public String getRelativeImagePathForFile(String filename) {
-		return getImageDirectoryName() + '/' + filename;
 	}
 
 }

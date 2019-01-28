@@ -14,7 +14,6 @@ import eu.webtoolkit.jwt.WText;
 import eu.webtoolkit.jwt.WToolBar;
 import eu.webtoolkit.jwt.WVBoxLayout;
 import no.siriuslabs.image.AbstractAnnotationApplication;
-import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GIC_URIUtils;
 import no.siriuslabs.image.model.GeologicalImage;
@@ -39,11 +38,10 @@ import java.util.Set;
 /**
  * Container class representing the annotation page accessed from the main menu.
  */
-public class AnnotationContainer extends WContainerWidget implements PropertyChangeListener {
+public class AnnotationContainer extends AbstractAnnotationContainer implements PropertyChangeListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnnotationContainer.class);
 
-	private final AbstractAnnotationApplication application;
 	private final GeologicalImage image;
 
 	private WContainerWidget shapeContainer;
@@ -65,10 +63,9 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	 * Constructor taking the application, parent container and the GeologicalImage that is to be annotated.
 	 */
 	public AnnotationContainer(AbstractAnnotationApplication application, WContainerWidget parent, GeologicalImage image) {
-		super(parent);
+		super(application, parent);
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 
-		this.application = application;
 		this.image = image;
 
 		loadAnnotations();
@@ -129,7 +126,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	}
 
 	private void initializeShapeWidget() {
-		shapeWidget = new ShapeWidget(application, image);
+		shapeWidget = new ShapeWidget(getApplication(), image);
 		shapeWidget.setMinimumSize(new WLength(image.getWidth(), WLength.Unit.Pixel), new WLength(image.getHeight(), WLength.Unit.Pixel));
 		shapeWidget.resize(image.getWidth(), image.getHeight()); // without this resize the widget seems to collapse to 0-size when put into the ScrollArea
 		shapeWidget.addPropertyChangeListener(this);
@@ -174,7 +171,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 	}
 
 	private void initializeAnnotationPanel() {
-		annotationTableWidget = new AnnotationTableWidget(application, this, image);
+		annotationTableWidget = new AnnotationTableWidget(getApplication(), this, image);
 	}
 
 	private void initializeLayout() {
@@ -233,7 +230,7 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 			shapeWidget.confirmShape();
 		}
 
-		CreateShapeDialog dialog = new CreateShapeDialog(application);
+		CreateShapeDialog dialog = new CreateShapeDialog(getApplication());
 		dialog.finished().addListener(this, () -> {
 			if(dialog.getResult() == WDialog.DialogCode.Accepted) {
 				saveShapeAndInitialTriplets(dialog);
@@ -349,14 +346,6 @@ public class AnnotationContainer extends WContainerWidget implements PropertyCha
 		annotationTriples.sort(new TripleComparator());
 
 		return annotationTriples;
-	}
-
-	private String getSessionID() {
-		return (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
-	}
-
-	private ImageAnnotationAPI getImageAnnotationAPI() {
-		return (ImageAnnotationAPI) application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY);
 	}
 
 	/**
