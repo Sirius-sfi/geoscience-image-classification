@@ -27,7 +27,7 @@ public abstract class AbstractAnnotationContainer extends WContainerWidget {
 	/**
 	 * Returns the ontology session ID.
 	 */
-	protected String getSessionID() {
+	public String getSessionID() {
 		return (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
 	}
 
@@ -35,7 +35,7 @@ public abstract class AbstractAnnotationContainer extends WContainerWidget {
 	/**
 	 * Returns the sessions's API service instance.
 	 */
-	protected ImageAnnotationAPI getImageAnnotationAPI() {
+	public ImageAnnotationAPI getImageAnnotationAPI() {
 		return (ImageAnnotationAPI) application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY);
 	}
 
@@ -46,8 +46,4 @@ public abstract class AbstractAnnotationContainer extends WContainerWidget {
 		return (FileService) application.getServletContext().getAttribute(FrontendServlet.FILE_SERVICE_KEY);
 	}
 
-	// TODO remove ASAP
-	public AbstractAnnotationApplication getApplication() {
-		return application;
-	}
 }

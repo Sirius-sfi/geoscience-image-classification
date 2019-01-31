@@ -1,16 +1,14 @@
 package no.siriuslabs.image.ui.widget;
 
 import eu.webtoolkit.jwt.WBoxLayout;
-import eu.webtoolkit.jwt.WContainerWidget;
 import eu.webtoolkit.jwt.WHBoxLayout;
 import eu.webtoolkit.jwt.WLineEdit;
 import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WSuggestionPopup;
 import eu.webtoolkit.jwt.WVBoxLayout;
 import eu.webtoolkit.jwt.WValidator;
-import no.siriuslabs.image.AbstractAnnotationApplication;
-import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
+import no.siriuslabs.image.ui.container.AbstractAnnotationContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.model.entities.DataProperty;
@@ -33,7 +31,7 @@ import java.util.TreeSet;
 /**
  * Widget representing an annotation triple of three fields (subject, predicate, object).
  */
-public class TripleWidget extends WContainerWidget {
+public class TripleWidget extends AbstractAnnotationWidget {
 
 	public enum Mode {
 		ADD, EDIT;
@@ -43,8 +41,6 @@ public class TripleWidget extends WContainerWidget {
 
 	public static final String SAVED_PROPERTY_NAME = "tripleWidget.saved";
 	public static final String CANCELLED_PROPERTY_NAME = "tripleWidget.cancelled";
-
-	private final AbstractAnnotationApplication application;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
@@ -67,11 +63,11 @@ public class TripleWidget extends WContainerWidget {
 	private TreeSet<Instance> availableObjects;
 
 	/**
-	 * Default constructor.
+	 * Constructor taking the parent container.
 	 */
-	public TripleWidget(AbstractAnnotationApplication application) {
+	public TripleWidget(AbstractAnnotationContainer parent) {
+		super(parent);
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
-		this.application = application;
 
 		initialize();
 
@@ -347,14 +343,6 @@ public class TripleWidget extends WContainerWidget {
 
 	public void setMode(Mode mode) {
 		this.mode = mode;
-	}
-
-	private String getSessionID() {
-		return (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
-	}
-
-	private ImageAnnotationAPI getImageAnnotationAPI() {
-		return (ImageAnnotationAPI) application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY);
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {

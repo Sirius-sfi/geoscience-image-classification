@@ -12,8 +12,6 @@ import eu.webtoolkit.jwt.WPainter;
 import eu.webtoolkit.jwt.WPainterPath;
 import eu.webtoolkit.jwt.WPen;
 import eu.webtoolkit.jwt.WPointF;
-import no.siriuslabs.image.AbstractAnnotationApplication;
-import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.model.shape.AbstractShape;
@@ -21,6 +19,7 @@ import no.siriuslabs.image.model.shape.Circle;
 import no.siriuslabs.image.model.shape.Polygon;
 import no.siriuslabs.image.model.shape.Rectangle;
 import no.siriuslabs.image.model.shape.Triangle;
+import no.siriuslabs.image.ui.container.AnnotationContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,7 +119,7 @@ public class ShapeWidget extends WPaintedWidget {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ShapeWidget.class);
 
-	private final AbstractAnnotationApplication application;
+	private final AnnotationContainer parentContainer;
 	private final GeologicalImage image;
 
 	private final PropertyChangeSupport propertyChangeSupport;
@@ -147,12 +146,12 @@ public class ShapeWidget extends WPaintedWidget {
 	private AnnotationWidgetMode widgetMode = AnnotationWidgetMode.SAVED_SHAPE;
 
 	/**
-	 * Constructor taking the application and the GeologicalImage to be displayed.
+	 * Constructor taking the parent container and the GeologicalImage to be displayed.
 	 */
-	public ShapeWidget(AbstractAnnotationApplication application, GeologicalImage image) {
+	public ShapeWidget(AnnotationContainer parent, GeologicalImage image) {
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 
-		this.application = application;
+		parentContainer = parent;
 		this.image = image;
 
 		path = new WPainterPath();
@@ -265,8 +264,8 @@ public class ShapeWidget extends WPaintedWidget {
 	 * Loads existing shapes for this image from the ontology.
 	 */
 	private void loadShapes() {
-		String sessionID = getSessionID();
-		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
+		String sessionID = parentContainer.getSessionID();
+		final ImageAnnotationAPI imageAnnotationAPI = parentContainer.getImageAnnotationAPI();
 		Set<AbstractShape> shapeSet = imageAnnotationAPI.getSelectionShapesForImage(sessionID, image.getIri());
 
 		shapes.clear();
@@ -317,14 +316,6 @@ public class ShapeWidget extends WPaintedWidget {
 		pen.setCapStyle(PenCapStyle.RoundCap);
 		pen.setJoinStyle(PenJoinStyle.BevelJoin);
 		return pen;
-	}
-
-	private String getSessionID() {
-		return (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
-	}
-
-	private ImageAnnotationAPI getImageAnnotationAPI() {
-		return (ImageAnnotationAPI) application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY);
 	}
 
 	public void setWidgetMode(AnnotationWidgetMode mode) {

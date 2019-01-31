@@ -10,9 +10,9 @@ import eu.webtoolkit.jwt.WLineEdit;
 import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WSuggestionPopup;
 import eu.webtoolkit.jwt.WValidator;
-import no.siriuslabs.image.AbstractAnnotationApplication;
-import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
+import no.siriuslabs.image.ui.container.AbstractAnnotationContainer;
+import no.siriuslabs.image.ui.container.AnnotationContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
@@ -27,7 +27,7 @@ public class CreateShapeDialog extends WDialog {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CreateShapeDialog.class);
 
-	private final AbstractAnnotationApplication application;
+	private final AbstractAnnotationContainer parentContainer;
 
 	private WLabel typeLabel;
 	private WLineEdit typeLineEdit;
@@ -39,12 +39,12 @@ public class CreateShapeDialog extends WDialog {
 	private TreeSet<Concept> availableTypes;
 
 	/**
-	 * Default constructor.
+	 * Constructor taking the parent container.
 	 */
-	public CreateShapeDialog(AbstractAnnotationApplication application) {
+	public CreateShapeDialog(AnnotationContainer parent) {
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 
-		this.application = application;
+		parentContainer = parent;
 
 		setWindowTitle("Save shape");
 		rejectWhenEscapePressed();
@@ -124,10 +124,9 @@ public class CreateShapeDialog extends WDialog {
 	}
 
 	private void initializeAutoComplete() {
-		String sessionID = getSessionID();
-		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
+		String sessionID = parentContainer.getSessionID();
+		final ImageAnnotationAPI imageAnnotationAPI = parentContainer.getImageAnnotationAPI();
 
-		// TODO we want only types here...
 		availableTypes = imageAnnotationAPI.getOntologyConcepts(sessionID);
 
 		for(Concept concept : availableTypes) {
@@ -161,11 +160,4 @@ public class CreateShapeDialog extends WDialog {
 		return nameLineEdit.getValueText().trim();
 	}
 
-	private String getSessionID() {
-		return (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
-	}
-
-	private ImageAnnotationAPI getImageAnnotationAPI() {
-		return (ImageAnnotationAPI) application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY);
-	}
 }

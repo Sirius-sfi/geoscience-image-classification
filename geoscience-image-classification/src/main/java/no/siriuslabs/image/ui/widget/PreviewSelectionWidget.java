@@ -2,7 +2,6 @@ package no.siriuslabs.image.ui.widget;
 
 import eu.webtoolkit.jwt.AnchorTarget;
 import eu.webtoolkit.jwt.WAnchor;
-import eu.webtoolkit.jwt.WContainerWidget;
 import eu.webtoolkit.jwt.WLength;
 import eu.webtoolkit.jwt.WLink;
 import eu.webtoolkit.jwt.WPushButton;
@@ -18,7 +17,7 @@ import java.beans.PropertyChangeSupport;
 /**
  * Widget combining an image preview, a link to the full size image and a selection button.
  */
-public class PreviewSelectionWidget extends WContainerWidget {
+public class PreviewSelectionWidget extends AbstractAnnotationWidget {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PreviewSelectionWidget.class);
 

@@ -14,8 +14,6 @@ import eu.webtoolkit.jwt.WTreeTable;
 import eu.webtoolkit.jwt.WTreeTableNode;
 import eu.webtoolkit.jwt.WVBoxLayout;
 import eu.webtoolkit.jwt.WValidator;
-import no.siriuslabs.image.AbstractAnnotationApplication;
-import no.siriuslabs.image.FrontendServlet;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.ui.container.AnnotationContainer;
@@ -36,12 +34,10 @@ import java.util.List;
 /**
  * Widget consisting of a tree-table to display annotations and controls and a TripleWidget to add, update and delete these annotations.
  */
-public class AnnotationTableWidget extends WContainerWidget implements PropertyChangeListener {
+public class AnnotationTableWidget extends AbstractAnnotationWidget implements PropertyChangeListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnnotationTableWidget.class);
 
-	private final AbstractAnnotationApplication application;
-	private final AnnotationContainer parentContainer;
 	private final GeologicalImage image;
 
 	private WTreeTable annotationsTable;
@@ -60,12 +56,10 @@ public class AnnotationTableWidget extends WContainerWidget implements PropertyC
 	private List<Triple> annotationTriples;
 
 	/**
-	 * Constructor taking the application, parent container and the GeologicalImage that is to be annotated.
+	 * Constructor taking the parent container and the GeologicalImage that is to be annotated.
 	 */
-	public AnnotationTableWidget(AbstractAnnotationApplication application, AnnotationContainer parent, GeologicalImage image) {
+	public AnnotationTableWidget(AnnotationContainer parent, GeologicalImage image) {
 		super(parent);
-		this.application = application;
-		parentContainer = parent;
 		this.image = image;
 
 		setMinimumSize(new WLength(300), WLength.Auto);
@@ -110,7 +104,7 @@ public class AnnotationTableWidget extends WContainerWidget implements PropertyC
 	}
 
 	private void initializeEditorWidget() {
-		annotationEditorWidget = new TripleWidget(application);
+		annotationEditorWidget = new TripleWidget(getParentContainer());
 		annotationEditorWidget.hide();
 		annotationEditorWidget.setMinimumSize(WLength.Auto, new WLength(30));
 		annotationEditorWidget.addPropertyChangeListener(this);
@@ -367,7 +361,7 @@ public class AnnotationTableWidget extends WContainerWidget implements PropertyC
 	 */
 	public void refreshData() {
 		saveSelection();
-		annotationTriples = parentContainer.loadAnnotations();
+		annotationTriples = ((AnnotationContainer)getParentContainer()).loadAnnotations();
 		populateTreeTable();
 		restoreSelection();
 	}
@@ -391,18 +385,10 @@ public class AnnotationTableWidget extends WContainerWidget implements PropertyC
 			}
 
 			LOGGER.info(message);
-			parentContainer.showErrorMessage(message);
+			((AnnotationContainer)getParentContainer()).showErrorMessage(message);
 			return false;
 		}
 		LOGGER.info("Validation successful");
 		return true;
-	}
-
-	private String getSessionID() {
-		return (String) application.getServletContext().getAttribute(FrontendServlet.SESSION_ID_KEY);
-	}
-
-	private ImageAnnotationAPI getImageAnnotationAPI() {
-		return (ImageAnnotationAPI) application.getServletContext().getAttribute(FrontendServlet.IMAGE_ANNOTATION_API_KEY);
 	}
 }

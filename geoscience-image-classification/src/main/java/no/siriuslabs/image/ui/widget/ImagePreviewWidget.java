@@ -5,6 +5,9 @@ import eu.webtoolkit.jwt.WPaintedWidget;
 import eu.webtoolkit.jwt.WPainter;
 import eu.webtoolkit.jwt.WRectF;
 
+/**
+ * Widget class to show a preview image of one image file.
+ */
 public class ImagePreviewWidget extends WPaintedWidget {
 
 	protected static final int IMAGE_WIDTH = 600;
@@ -16,6 +19,9 @@ public class ImagePreviewWidget extends WPaintedWidget {
 	private int originalImageWidth = -1;
 	private int originalImageHeight = -1;
 
+	/**
+	 * Constructor expecting the relative and absolute paths to the image to be idsplayed.
+	 */
 	public ImagePreviewWidget(String path, String absoluteFilePath) {
 		this.path = path;
 		this.absoluteFilePath = absoluteFilePath;

@@ -126,7 +126,7 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 	}
 
 	private void initializeShapeWidget() {
-		shapeWidget = new ShapeWidget(getApplication(), image);
+		shapeWidget = new ShapeWidget(this, image);
 		shapeWidget.setMinimumSize(new WLength(image.getWidth(), WLength.Unit.Pixel), new WLength(image.getHeight(), WLength.Unit.Pixel));
 		shapeWidget.resize(image.getWidth(), image.getHeight()); // without this resize the widget seems to collapse to 0-size when put into the ScrollArea
 		shapeWidget.addPropertyChangeListener(this);
@@ -171,7 +171,7 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 	}
 
 	private void initializeAnnotationPanel() {
-		annotationTableWidget = new AnnotationTableWidget(getApplication(), this, image);
+		annotationTableWidget = new AnnotationTableWidget(this, image);
 	}
 
 	private void initializeLayout() {
@@ -230,7 +230,7 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 			shapeWidget.confirmShape();
 		}
 
-		CreateShapeDialog dialog = new CreateShapeDialog(getApplication());
+		CreateShapeDialog dialog = new CreateShapeDialog(this);
 		dialog.finished().addListener(this, () -> {
 			if(dialog.getResult() == WDialog.DialogCode.Accepted) {
 				saveShapeAndInitialTriplets(dialog);
