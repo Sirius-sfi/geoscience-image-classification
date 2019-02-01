@@ -26,6 +26,7 @@ import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -37,6 +38,11 @@ import java.util.List;
 public class AnnotationTableWidget extends AbstractAnnotationWidget implements PropertyChangeListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnnotationTableWidget.class);
+
+	public static final String SELECTED_SHAPE_PROPERTY_NAME = "AnnotationTableWidget.currentSelectedShape";
+	public static final String SHAPE_DATA_CHANGED_PROPERTY_NAME = "AnnotationTableWidget.shapesChanged";
+
+	private final PropertyChangeSupport propertyChangeSupport;
 
 	private final GeologicalImage image;
 
@@ -61,6 +67,8 @@ public class AnnotationTableWidget extends AbstractAnnotationWidget implements P
 	public AnnotationTableWidget(AnnotationContainer parent, GeologicalImage image) {
 		super(parent);
 		this.image = image;
+
+		propertyChangeSupport = new PropertyChangeSupport(this);
 
 		setMinimumSize(new WLength(300), WLength.Auto);
 
@@ -170,15 +178,18 @@ public class AnnotationTableWidget extends AbstractAnnotationWidget implements P
 			final TripleTreeTableNode selectedNode = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
 			if(selectedNode.isShapeNode()) {
 				editAnnotationButton.disable();
+				propertyChangeSupport.firePropertyChange(SELECTED_SHAPE_PROPERTY_NAME, null, (Instance) selectedNode.getData().getObject());
 			}
 			else {
 				editAnnotationButton.enable();
+				propertyChangeSupport.firePropertyChange(SELECTED_SHAPE_PROPERTY_NAME, null, null);
 			}
 		}
 		else {
 			addAnnotationButton.disable();
 			editAnnotationButton.disable();
 			deleteAnnotationButton.disable();
+			propertyChangeSupport.firePropertyChange(SELECTED_SHAPE_PROPERTY_NAME, null, null);
 		}
 	}
 
@@ -223,6 +234,7 @@ public class AnnotationTableWidget extends AbstractAnnotationWidget implements P
 				final String shapeID = shapeObject.getVisualRepresentation();
 				LOGGER.info("removing selected shape '{}' and {} annotations", shapeID, selection.getChildNodes().size());
 				imageAnnotationAPI.removeShape(sessionID, shapeObject.getIri());
+				propertyChangeSupport.firePropertyChange(SHAPE_DATA_CHANGED_PROPERTY_NAME, null, null);
 			}
 			else {
 				LOGGER.info("removing selected annotation: {}, {}", selection.getData().getSubject().getVisualRepresentation(), ((Entity)selection.getData().getPredicate()).getVisualRepresentation());
@@ -390,5 +402,13 @@ public class AnnotationTableWidget extends AbstractAnnotationWidget implements P
 		}
 		LOGGER.info("Validation successful");
 		return true;
+	}
+
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		propertyChangeSupport.addPropertyChangeListener(listener);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		propertyChangeSupport.removePropertyChangeListener(listener);
 	}
 }

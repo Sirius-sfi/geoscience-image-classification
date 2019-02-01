@@ -22,7 +22,9 @@ import no.siriuslabs.image.model.shape.Triangle;
 import no.siriuslabs.image.ui.container.AnnotationContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -33,7 +35,7 @@ import java.util.Set;
 /**
  * Widget that displays and image and allows shapes to be drawn on the image.
  */
-public class ShapeWidget extends WPaintedWidget {
+public class ShapeWidget extends WPaintedWidget implements PropertyChangeListener {
 
 	public static final String WIDGET_MODE_PROPERTY_NAME = "shapeWidget.widgetMode";
 
@@ -126,6 +128,8 @@ public class ShapeWidget extends WPaintedWidget {
 
 	private WPainterPath path;
 
+	private Instance currentlySelectedShape;
+
 	private ZoomLevel currentZoomLevel = ZoomLevel.X1_0;
 
 	/**
@@ -171,6 +175,7 @@ public class ShapeWidget extends WPaintedWidget {
 		setWidgetMode(AnnotationWidgetMode.SAVED_SHAPE);
 		points.clear();
 		path = new WPainterPath();
+		unsavedShape = null;
 		update();
 	}
 
@@ -252,11 +257,11 @@ public class ShapeWidget extends WPaintedWidget {
 	public void handleShapeSaved() {
 		LOGGER.info("saving shape");
 
-		shapes.add(unsavedShape);
-
 		setWidgetMode(AnnotationWidgetMode.SAVED_SHAPE);
 		unsavedShape = null;
 		path = new WPainterPath();
+
+		loadShapes();
 		update();
 	}
 
@@ -282,22 +287,31 @@ public class ShapeWidget extends WPaintedWidget {
 
 		painter.drawImage(new WPointF(0, 0), paintedImage);
 
+		// set color etc. for the normal shapes
+		WPen permanentPen = createPermanentPen();
+		painter.setPen(permanentPen);
 
-		// TODO how to change painters back and forth?
-//		WPen tempPen = createPlaceholderPen();
-//		painter.setPen(tempPen);
-//		painter.drawPath(path);
-//
-//
-//		if(!shapes.isEmpty()) {
-			WPen permanentPen = createPermanentPen();
-			painter.setPen(permanentPen);
-
-			for(AbstractShape shape : shapes) {
+		AbstractShape selectedShape = null;
+		for(AbstractShape shape : shapes) {
+			// we put the selected shape aside and queue all others to be drawn
+			if(currentlySelectedShape != null && shape.getIri().equals(currentlySelectedShape.getIri())) {
+				selectedShape = shape;
+			}
+			else {
 				shape.drawYourself(path);
 			}
+		}
+		// draw everything collected so far
+		painter.drawPath(path);
+
+		if(selectedShape != null) {
+			// if there is a selected shape, we start a new path at the starting point of that shape and draw it with the pen/style for the selected shape
+			path.assign(new WPainterPath(selectedShape.getPoints().get(0)));
+			painter.setPen(createSelectedPen());
+
+			selectedShape.drawYourself(path);
 			painter.drawPath(path);
-//		}
+		}
 	}
 
 	private WPen createPermanentPen() {
@@ -309,10 +323,10 @@ public class ShapeWidget extends WPaintedWidget {
 		return pen;
 	}
 
-	private WPen createPlaceholderPen() {
+	private WPen createSelectedPen() {
 		WPen pen = new WPen();
-		pen.setWidth(new WLength(2));
-		pen.setColor(WColor.cyan);
+		pen.setWidth(new WLength(4));
+		pen.setColor(WColor.green);
 		pen.setCapStyle(PenCapStyle.RoundCap);
 		pen.setJoinStyle(PenJoinStyle.BevelJoin);
 		return pen;
@@ -358,6 +372,19 @@ public class ShapeWidget extends WPaintedWidget {
 	public void resetZoomLevel() {
 		currentZoomLevel = ZoomLevel.X1_0;
 		resize(new WLength(image.getWidth() * currentZoomLevel.getMagnification()), new WLength(image.getHeight() * currentZoomLevel.getMagnification()));
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if(AnnotationTableWidget.SELECTED_SHAPE_PROPERTY_NAME.equals(evt.getPropertyName())) {
+			currentlySelectedShape = (Instance) evt.getNewValue();
+			update();
+		}
+		else if(AnnotationTableWidget.SHAPE_DATA_CHANGED_PROPERTY_NAME.equals(evt.getPropertyName())) {
+			loadShapes();
+			path = new WPainterPath();
+			update();
+		}
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {

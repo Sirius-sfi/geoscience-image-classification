@@ -172,6 +172,7 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 
 	private void initializeAnnotationPanel() {
 		annotationTableWidget = new AnnotationTableWidget(this, image);
+		annotationTableWidget.addPropertyChangeListener(shapeWidget);
 	}
 
 	private void initializeLayout() {
