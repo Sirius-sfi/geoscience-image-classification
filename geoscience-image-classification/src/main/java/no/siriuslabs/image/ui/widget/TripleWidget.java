@@ -20,6 +20,7 @@ import uio.ifi.ontology.toolkit.projection.model.entities.Property;
 import uio.ifi.ontology.toolkit.projection.model.triples.DataPropertyTriple;
 import uio.ifi.ontology.toolkit.projection.model.triples.ObjectPropertyTriple;
 import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
+import uio.ifi.ontology.toolkit.projection.model.triples.TypeDefinitionTriple;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -267,9 +268,7 @@ public class TripleWidget extends AbstractAnnotationWidget {
 	public void setData(Triple data) {
 		this.data = data;
 
-		originalData = data instanceof ObjectPropertyTriple
-				? new ObjectPropertyTriple(data.getSubject(), ((ObjectPropertyTriple) data).getPredicate(), ((ObjectPropertyTriple) data).getObject())
-				: new DataPropertyTriple(data.getSubject(), ((DataPropertyTriple) data).getPredicate(), ((DataPropertyTriple) data).getObject());
+		originalData = createTripleInstance(data);
 
 		subjectField.setText(data.getSubject().getVisualRepresentation());
 		predicateField.setText(((Entity)data.getPredicate()).getVisualRepresentation());
@@ -287,6 +286,18 @@ public class TripleWidget extends AbstractAnnotationWidget {
 
 		updateSuggestions();
 		LOGGER.info("triple data set (S,P,O): {}, {}, {}", new Object[]{data.getSubject(), data.getPredicate(), data.getObject()});
+	}
+
+	private Triple createTripleInstance(Triple data) {
+		if(data instanceof ObjectPropertyTriple) {
+			return new ObjectPropertyTriple(data.getSubject(), ((ObjectPropertyTriple) data).getPredicate(), ((ObjectPropertyTriple) data).getObject());
+		}
+		else if(data instanceof TypeDefinitionTriple) {
+			return new TypeDefinitionTriple(data.getSubject(), ((TypeDefinitionTriple) data).getPredicate(), ((TypeDefinitionTriple) data).getObject());
+		}
+		else {
+			return new DataPropertyTriple(data.getSubject(), ((DataPropertyTriple) data).getPredicate(), ((DataPropertyTriple) data).getObject());
+		}
 	}
 
 	/**

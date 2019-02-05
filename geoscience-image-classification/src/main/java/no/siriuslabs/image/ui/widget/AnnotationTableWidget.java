@@ -180,6 +180,10 @@ public class AnnotationTableWidget extends AbstractAnnotationWidget implements P
 				editAnnotationButton.disable();
 				propertyChangeSupport.firePropertyChange(SELECTED_SHAPE_PROPERTY_NAME, null, (Instance) selectedNode.getData().getObject());
 			}
+			else if(selectedNode.isTypeNode()) {
+				editAnnotationButton.disable();
+				propertyChangeSupport.firePropertyChange(SELECTED_SHAPE_PROPERTY_NAME, null, null);
+			}
 			else {
 				editAnnotationButton.enable();
 				propertyChangeSupport.firePropertyChange(SELECTED_SHAPE_PROPERTY_NAME, null, null);

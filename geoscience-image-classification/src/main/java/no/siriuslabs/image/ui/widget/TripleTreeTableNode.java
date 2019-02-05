@@ -3,6 +3,7 @@ package no.siriuslabs.image.ui.widget;
 import eu.webtoolkit.jwt.WIconPair;
 import eu.webtoolkit.jwt.WTreeTableNode;
 import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
+import uio.ifi.ontology.toolkit.projection.model.triples.TypeDefinitionTriple;
 
 /**
  * Specialized TreeTableNode to hold Triple data in the node instead of Strings only.
@@ -42,6 +43,13 @@ public class TripleTreeTableNode extends WTreeTableNode {
 	 */
 	public Triple getData() {
 		return data;
+	}
+
+	/**
+	 * Returns true if this node represents a TypeDefinitionTriple.
+	 */
+	public boolean isTypeNode() {
+		return data instanceof TypeDefinitionTriple;
 	}
 
 	/**
