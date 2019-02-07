@@ -347,6 +347,13 @@ public class ShapeWidget extends WPaintedWidget implements PropertyChangeListene
 	}
 
 	/**
+	 * Returns true if at least one point was set.
+	 */
+	public boolean hasPointsSet() {
+		return !points.isEmpty();
+	}
+
+	/**
 	 * Increases the image's zoom level by one if possible.
 	 */
 	public void increaseZoomLevel() {

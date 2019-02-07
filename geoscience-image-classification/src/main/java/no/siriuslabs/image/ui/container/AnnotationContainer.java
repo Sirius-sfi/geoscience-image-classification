@@ -227,20 +227,22 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 	}
 
 	private void saveButtonClickedAction() {
-		if(isWidgetModeSetPoints()) {
-			shapeWidget.confirmShape();
-		}
-
-		CreateShapeDialog dialog = new CreateShapeDialog(this);
-		dialog.finished().addListener(this, () -> {
-			if(dialog.getResult() == WDialog.DialogCode.Accepted) {
-				saveShapeAndInitialTriplets(dialog);
+		if(shapeWidget.hasPointsSet()) {
+			if(isWidgetModeSetPoints()) {
+				shapeWidget.confirmShape();
 			}
 
-			dialog.remove();
-		});
+			CreateShapeDialog dialog = new CreateShapeDialog(this);
+			dialog.finished().addListener(this, () -> {
+				if(dialog.getResult() == WDialog.DialogCode.Accepted) {
+					saveShapeAndInitialTriplets(dialog);
+				}
 
-		dialog.show();
+				dialog.remove();
+			});
+
+			dialog.show();
+		}
 	}
 
 	private void saveShapeAndInitialTriplets(CreateShapeDialog dialog) {
