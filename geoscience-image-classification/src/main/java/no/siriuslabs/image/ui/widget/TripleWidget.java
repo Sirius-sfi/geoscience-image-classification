@@ -8,6 +8,7 @@ import eu.webtoolkit.jwt.WSuggestionPopup;
 import eu.webtoolkit.jwt.WVBoxLayout;
 import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
+import no.siriuslabs.image.model.EntityComparator;
 import no.siriuslabs.image.ui.container.AbstractAnnotationContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,8 +61,8 @@ public class TripleWidget extends AbstractAnnotationWidget {
 	private Triple originalData;
 
 	private TreeSet<Instance> availableSubjects;
-	private TreeSet<Property> availablePredicates;
-	private TreeSet<Instance> availableObjects;
+	private List<Property> availablePredicates;
+	private List<Instance> availableObjects;
 
 	/**
 	 * Constructor taking the parent container.
@@ -237,7 +238,8 @@ public class TripleWidget extends AbstractAnnotationWidget {
 		final ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
 
 		final Instance subjectInstance = getSubjectInstanceFromLabel();
-		availablePredicates = imageAnnotationAPI.getAllowedPredicatesForSubject(sessionID, subjectInstance.getIri());
+		availablePredicates = new ArrayList<>(imageAnnotationAPI.getAllowedPredicatesForSubject(sessionID, subjectInstance.getIri()));
+		availablePredicates.sort(new EntityComparator());
 
 		predicatePopup.clearSuggestions();
 		for(Property pred : availablePredicates) {
@@ -258,7 +260,8 @@ public class TripleWidget extends AbstractAnnotationWidget {
 			return;
 		}
 
-		availableObjects = imageAnnotationAPI.getAllowedObjectValuesForSubjectPredicate(sessionID, subjectInstance.getIri(), predicate.getIri());
+		availableObjects = new ArrayList<>(imageAnnotationAPI.getAllowedObjectValuesForSubjectPredicate(sessionID, subjectInstance.getIri(), predicate.getIri()));
+		availableObjects.sort(new EntityComparator());
 
 		objectPopup.clearSuggestions();
 		for(Instance obj : availableObjects) {
@@ -319,12 +322,16 @@ public class TripleWidget extends AbstractAnnotationWidget {
 			subjectPopup.addSuggestion(sub.getVisualRepresentation());
 		}
 
-		availablePredicates = imageAnnotationAPI.getPredicates(sessionID);
+		availablePredicates = new ArrayList<>(imageAnnotationAPI.getPredicates(sessionID));
+		availablePredicates.sort(new EntityComparator());
+
 		for(Property pred : availablePredicates) {
 			predicatePopup.addSuggestion(pred.getVisualRepresentation());
 		}
 
-		availableObjects = imageAnnotationAPI.getObjectResources(sessionID);
+		availableObjects = new ArrayList<>(imageAnnotationAPI.getObjectResources(sessionID));
+		availableObjects.sort(new EntityComparator());
+
 		for(Instance obj : availableObjects) {
 			objectPopup.addSuggestion(obj.getVisualRepresentation());
 		}

@@ -11,14 +11,16 @@ import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WSuggestionPopup;
 import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
+import no.siriuslabs.image.model.EntityComparator;
 import no.siriuslabs.image.ui.container.AbstractAnnotationContainer;
 import no.siriuslabs.image.ui.container.AnnotationContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.TreeSet;
+import java.util.List;
 
 /**
  * Widget for a dialog that queries type and name of a new shape.
@@ -36,7 +38,7 @@ public class CreateShapeDialog extends WDialog {
 	private WLineEdit nameLineEdit;
 	private WPushButton saveButton;
 
-	private TreeSet<Concept> availableTypes;
+	private List<Concept> availableTypes;
 
 	/**
 	 * Constructor taking the parent container.
@@ -127,11 +129,8 @@ public class CreateShapeDialog extends WDialog {
 		String sessionID = parentContainer.getSessionID();
 		final ImageAnnotationAPI imageAnnotationAPI = parentContainer.getImageAnnotationAPI();
 
-		availableTypes = imageAnnotationAPI.getOntologyConcepts(sessionID);
-
-		for(Concept concept : availableTypes) {
-			typePopup.addSuggestion(concept.getVisualRepresentation());
-		}
+		availableTypes = new ArrayList<>(imageAnnotationAPI.getOntologyConcepts(sessionID));
+		availableTypes.sort(new EntityComparator());
 	}
 
 	/**
