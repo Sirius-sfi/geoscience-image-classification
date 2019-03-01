@@ -864,7 +864,7 @@
     <!-- http://no.sirius.ontology/geological-ontology#BarentsSea -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#BarentsSea">
-        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Basin"/>
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#locatedIn"/>
@@ -983,14 +983,6 @@
                 </owl:allValuesFrom>
             </owl:Restriction>
         </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
-    <!-- http://no.sirius.ontology/geological-ontology#Basin -->
-
-    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Basin">
-        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
     </owl:Class>
     
 
@@ -2683,7 +2675,9 @@
 
     <!-- http://no.sirius.ontology/geological-ontology#Footwall -->
 
-    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Footwall"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Footwall">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicObject"/>
+    </owl:Class>
     
 
 
@@ -3428,7 +3422,9 @@
 
     <!-- http://no.sirius.ontology/geological-ontology#Hangingwall -->
 
-    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Hangingwall"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Hangingwall">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicObject"/>
+    </owl:Class>
     
 
 
@@ -3849,7 +3845,9 @@
 
     <!-- http://no.sirius.ontology/geological-ontology#IslandArc -->
 
-    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#IslandArc"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#IslandArc">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicObject"/>
+    </owl:Class>
     
 
 
@@ -4247,7 +4245,9 @@
 
     <!-- http://no.sirius.ontology/geological-ontology#Landmass -->
 
-    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Landmass"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Landmass">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicObject"/>
+    </owl:Class>
     
 
 
@@ -5196,7 +5196,9 @@
 
     <!-- http://no.sirius.ontology/geological-ontology#MidOceanRidge -->
 
-    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#MidOceanRidge"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#MidOceanRidge">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicObject"/>
+    </owl:Class>
     
 
 
@@ -5588,7 +5590,9 @@
 
     <!-- http://no.sirius.ontology/geological-ontology#Mountain -->
 
-    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Mountain"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Mountain">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicObject"/>
+    </owl:Class>
     
 
 
@@ -5895,7 +5899,7 @@
     <!-- http://no.sirius.ontology/geological-ontology#NorthSea -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#NorthSea">
-        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Basin"/>
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#locatedIn"/>
@@ -5971,7 +5975,7 @@
     <!-- http://no.sirius.ontology/geological-ontology#NorwegianSea -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#NorwegianSea">
-        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Basin"/>
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#locatedIn"/>
@@ -6016,7 +6020,9 @@
 
     <!-- http://no.sirius.ontology/geological-ontology#Ocean -->
 
-    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Ocean"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Ocean">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicObject"/>
+    </owl:Class>
     
 
 
@@ -6031,7 +6037,7 @@
     <!-- http://no.sirius.ontology/geological-ontology#OffshoreEasternAustralia -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#OffshoreEasternAustralia">
-        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Basin"/>
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#locatedIn"/>
@@ -6045,7 +6051,7 @@
     <!-- http://no.sirius.ontology/geological-ontology#OffshoreNorthwestAustralia -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#OffshoreNorthwestAustralia">
-        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Basin"/>
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#locatedIn"/>
@@ -6059,7 +6065,7 @@
     <!-- http://no.sirius.ontology/geological-ontology#OffshoreSouthernAustralia -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#OffshoreSouthernAustralia">
-        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Basin"/>
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#locatedIn"/>
@@ -6073,7 +6079,7 @@
     <!-- http://no.sirius.ontology/geological-ontology#OffshoreSouthwestAustralia -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#OffshoreSouthwestAustralia">
-        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Basin"/>
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#locatedIn"/>
@@ -6199,7 +6205,7 @@
     <!-- http://no.sirius.ontology/geological-ontology#OnshoreAustralia -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#OnshoreAustralia">
-        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Basin"/>
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#locatedIn"/>
@@ -6213,7 +6219,7 @@
     <!-- http://no.sirius.ontology/geological-ontology#OnshoreRomania -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#OnshoreRomania">
-        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Basin"/>
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
     </owl:Class>
     
 
@@ -7678,7 +7684,9 @@
 
     <!-- http://no.sirius.ontology/geological-ontology#Sea -->
 
-    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Sea"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#Sea">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicObject"/>
+    </owl:Class>
     
 
 
@@ -8419,7 +8427,9 @@
 
     <!-- http://no.sirius.ontology/geological-ontology#SubductionZone -->
 
-    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#SubductionZone"/>
+    <owl:Class rdf:about="http://no.sirius.ontology/geological-ontology#SubductionZone">
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicObject"/>
+    </owl:Class>
     
 
 
