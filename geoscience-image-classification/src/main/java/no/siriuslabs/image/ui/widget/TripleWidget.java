@@ -251,6 +251,13 @@ public class TripleWidget extends AbstractAnnotationWidget {
 
 		final Instance subjectInstance = getSubjectInstanceFromLabel();
 		final Property predicate = getPredicateInstanceFromLabel();
+		if(subjectInstance == null || predicate == null) {
+			// do not update if subject or predicate are missing but clear entries
+			availableObjects.clear();
+			objectPopup.clearSuggestions();
+			return;
+		}
+
 		availableObjects = imageAnnotationAPI.getAllowedObjectValuesForSubjectPredicate(sessionID, subjectInstance.getIri(), predicate.getIri());
 
 		objectPopup.clearSuggestions();
