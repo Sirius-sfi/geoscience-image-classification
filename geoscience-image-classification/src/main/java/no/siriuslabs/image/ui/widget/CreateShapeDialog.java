@@ -131,6 +131,10 @@ public class CreateShapeDialog extends WDialog {
 
 		availableTypes = new ArrayList<>(imageAnnotationAPI.getOntologyConcepts(sessionID));
 		availableTypes.sort(new EntityComparator());
+
+		for(Concept concept : availableTypes) {
+			typePopup.addSuggestion(concept.getVisualRepresentation());
+		}
 	}
 
 	/**
