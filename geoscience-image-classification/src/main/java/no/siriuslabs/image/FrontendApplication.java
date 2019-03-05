@@ -7,6 +7,7 @@ import eu.webtoolkit.jwt.WLength;
 import eu.webtoolkit.jwt.WMenu;
 import eu.webtoolkit.jwt.WWidget;
 import no.siriuslabs.image.model.GeologicalImage;
+import no.siriuslabs.image.ui.container.AbstractAnnotationContainer;
 import no.siriuslabs.image.ui.container.AnnotationContainer;
 import no.siriuslabs.image.ui.container.HomeContainer;
 import no.siriuslabs.image.ui.container.ImageSelectionContainer;
@@ -108,6 +109,9 @@ public class FrontendApplication extends AbstractAnnotationApplication implement
 		if(toRemove != null) {
 			LOGGER.info("Removing container of type {}", toRemove.getClass().getSimpleName());
 			layout.removeWidget(toRemove);
+			if(toRemove instanceof AbstractAnnotationContainer) {
+				((AbstractAnnotationContainer)toRemove).cleanupOnLeave();
+			}
 		}
 
 		LOGGER.info("Placing new center element of type {}", container.getClass().getSimpleName());

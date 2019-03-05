@@ -46,4 +46,18 @@ public abstract class AbstractAnnotationContainer extends WContainerWidget {
 		return (FileService) application.getServletContext().getAttribute(FrontendServlet.FILE_SERVICE_KEY);
 	}
 
+	/**
+	 * Returns the application instance.
+	 */
+	protected AbstractAnnotationApplication getApplication() {
+		return application;
+	}
+
+	/**
+	 * Method for cleanup work to be done when the container page is left (which does not mean the container will be destroyed).
+	 * Implementing containers can override this to remove event listeners etc.
+	 */
+	public void cleanupOnLeave() {
+		// no default cleanup to do
+	}
 }
