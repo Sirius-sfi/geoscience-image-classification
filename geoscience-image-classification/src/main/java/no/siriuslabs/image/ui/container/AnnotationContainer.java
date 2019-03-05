@@ -2,10 +2,12 @@ package no.siriuslabs.image.ui.container;
 
 import eu.webtoolkit.jwt.KeyboardModifier;
 import eu.webtoolkit.jwt.Side;
+import eu.webtoolkit.jwt.Signal1;
 import eu.webtoolkit.jwt.WBorderLayout;
 import eu.webtoolkit.jwt.WContainerWidget;
 import eu.webtoolkit.jwt.WDialog;
 import eu.webtoolkit.jwt.WHBoxLayout;
+import eu.webtoolkit.jwt.WKeyEvent;
 import eu.webtoolkit.jwt.WLength;
 import eu.webtoolkit.jwt.WMouseEvent;
 import eu.webtoolkit.jwt.WPushButton;
@@ -30,6 +32,8 @@ import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -41,6 +45,10 @@ import java.util.Set;
 public class AnnotationContainer extends AbstractAnnotationContainer implements PropertyChangeListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnnotationContainer.class);
+
+	private static final String ZOOM_IN_BUTTON_LABEL = "+";
+	private static final String ZOOM_OUT_BUTTON_LABEL = "-";
+	private static final Collection<KeyboardModifier> ACTIVE_MODIFIER_KEYS = Arrays.asList(KeyboardModifier.AltModifier, KeyboardModifier.ShiftModifier);
 
 	private final GeologicalImage image;
 
@@ -59,6 +67,9 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 
 	private WText messageText;
 
+	private Signal1.Listener<WKeyEvent> keyPressedlistener;
+	private Signal1.Listener<WKeyEvent> keyUplistener;
+
 	/**
 	 * Constructor taking the application, parent container and the GeologicalImage that is to be annotated.
 	 */
@@ -75,6 +86,8 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 		initializeAnnotationPanel();
 
 		initializeLayout();
+
+		initializeKeyListeners();
 
 		LOGGER.info("{} constructor - end", getClass().getSimpleName());
 	}
@@ -131,14 +144,16 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 		shapeWidget.resize(image.getWidth(), image.getHeight()); // without this resize the widget seems to collapse to 0-size when put into the ScrollArea
 		shapeWidget.addPropertyChangeListener(this);
 		shapeWidget.mouseWentDown().addListener(this, arg -> mouseClickedOnImageAction(arg));
-		shapeWidget.mouseWheel().addListener(this, (WMouseEvent arg) -> {
-			if(arg.getWheelDelta() < 0) {
-				decreaseImageZoomAction();
-			}
-			else if(arg.getWheelDelta() > 0) {
-				increaseImageZoomAction();
-			}
-		});
+
+		// mouse wheel zoom interferes with moving of the scroll area, which cannot be deactivated as it seems?
+//		shapeWidget.mouseWheel().addListener(this, (WMouseEvent arg) -> {
+//			if(arg.getWheelDelta() < 0) {
+//				decreaseImageZoomAction();
+//			}
+//			else if(arg.getWheelDelta() > 0) {
+//				increaseImageZoomAction();
+//			}
+//		});
 	}
 
 	private void initializeShapeScrollArea() {
@@ -152,12 +167,12 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 	private void initializeShapeToolbar() {
 		shapeToolBar = new WToolBar();
 
-		WPushButton zoomInButton = new WPushButton("+");
+		WPushButton zoomInButton = new WPushButton(ZOOM_IN_BUTTON_LABEL);
 		zoomInButton.setToolTip("Zoom in");
 		zoomInButton.clicked().addListener(this, (WMouseEvent arg) -> increaseImageZoomAction());
 		shapeToolBar.addButton(zoomInButton);
 
-		WPushButton zoomOutButton = new WPushButton("-");
+		WPushButton zoomOutButton = new WPushButton(ZOOM_OUT_BUTTON_LABEL);
 		zoomOutButton.setToolTip("Zoom out");
 		zoomOutButton.clicked().addListener(this, (WMouseEvent arg) -> decreaseImageZoomAction());
 		shapeToolBar.addButton(zoomOutButton);
@@ -182,6 +197,23 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 		layout.addWidget(annotationTableWidget, WBorderLayout.Position.East);
 
 		setLayout(layout);
+	}
+
+	private void initializeKeyListeners() {
+		keyPressedlistener = new KeyPressedListener();
+		getApplication().globalKeyPressed().addListener(this, keyPressedlistener);
+
+		keyUplistener = new KeyUpListener();
+		getApplication().globalKeyWentUp().addListener(this, keyUplistener);
+	}
+
+	@Override
+	public void cleanupOnLeave() {
+		// remove key listeners to avoid them reacting in other containers or stacking up and triggering n-times
+		getApplication().globalKeyPressed().removeListener(keyPressedlistener);
+		getApplication().globalKeyWentUp().removeListener(keyUplistener);
+
+		super.cleanupOnLeave();
 	}
 
 	private void mouseClickedOnImageAction(WMouseEvent arg) {
@@ -217,7 +249,7 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 		shapeWidget.resetZoomLevel();
 		shapeWidget.update();
 	}
-	
+
 	private void newButtonClickedAction() {
 		shapeWidget.setWidgetMode(ShapeWidget.AnnotationWidgetMode.SET_POINTS);
 	}
@@ -301,10 +333,6 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 
 	private boolean isShiftKeyPressed(WMouseEvent arg) {
 		return arg.getModifiers().contains(KeyboardModifier.ShiftModifier);
-	}
-
-	private boolean isControlKeyPressed(WMouseEvent arg) {
-		return arg.getModifiers().contains(KeyboardModifier.ControlModifier);
 	}
 
 	private boolean isWidgetModeSetPoints() {
@@ -409,6 +437,58 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 
 		private boolean doesObjectReferToShape(Triple triple) {
 			return triple.getObject() instanceof ObjectProperty && ((Entity) triple.getObject()).getVisualRepresentation().startsWith(SHAPE_PREFIX_FOR_SEARCH);
+		}
+	}
+
+	/**
+	 * Key listener class for key pressed events to deal with "functional" keys.
+	 */
+	private class KeyPressedListener implements Signal1.Listener<WKeyEvent> {
+		@Override
+		public void trigger(WKeyEvent arg) {
+			if(ZOOM_IN_BUTTON_LABEL.equals(arg.getText())) {		// + (zoom-in) button
+				increaseImageZoomAction();
+			}
+			else if(ZOOM_OUT_BUTTON_LABEL.equals(arg.getText())) {	// - (zoom-out) button
+				decreaseImageZoomAction();
+			}
+		}
+	}
+
+	/**
+	 * Key listener class for key up events to deal with "character" keys.
+	 */
+	private class KeyUpListener implements Signal1.Listener<WKeyEvent> {
+		@Override
+		public void trigger(WKeyEvent arg) {
+			if(arg.getModifiers().containsAll(ACTIVE_MODIFIER_KEYS)) {
+				switch(arg.getKey()) {
+					case Key_N: // New Shape button
+						newButtonClickedAction();
+						break;
+					case Key_S:	// Save Shape button
+						saveButtonClickedAction();
+						break;
+					case Key_C:	// Cancel Shape button
+						cancelButtonClickedAction();
+						break;
+					case Key_R:	// Reset (zoom) button
+						resetZoomLevelAction();
+						break;
+					case Key_A:	// Add (annotation) button
+						annotationTableWidget.addAnnotationButtonClickedAction();
+						break;
+					case Key_E:	// Edit (annotation) button
+						annotationTableWidget.editAnnotationButtonClickedAction();
+						break;
+					case Key_D:	// Delete (annotation) button
+						annotationTableWidget.deleteAnnotationButtonClickedAction();
+						break;
+					default:
+						// none of the combinations we are interested in - do nothing
+						break;
+				}
+			}
 		}
 	}
 }

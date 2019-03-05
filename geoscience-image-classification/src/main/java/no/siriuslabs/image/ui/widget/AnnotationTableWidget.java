@@ -197,34 +197,40 @@ public class AnnotationTableWidget extends AbstractAnnotationWidget implements P
 		}
 	}
 
-	private void addAnnotationButtonClickedAction() {
-		annotationEditorWidget.resetData();
-		annotationEditorWidget.setMode(TripleWidget.Mode.ADD);
-		final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
-		annotationEditorWidget.setSubject(selection.getData().getSubject());
-		annotationEditorWidget.show();
+	public void addAnnotationButtonClickedAction() {
+		if(addAnnotationButton.isEnabled()) {
+			annotationEditorWidget.resetData();
+			annotationEditorWidget.setMode(TripleWidget.Mode.ADD);
+			final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
+			annotationEditorWidget.setSubject(selection.getData().getSubject());
+			annotationEditorWidget.show();
+		}
 	}
 
-	private void editAnnotationButtonClickedAction() {
-		annotationEditorWidget.setMode(TripleWidget.Mode.EDIT);
-		final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
-		annotationEditorWidget.setData(selection.getData());
-		annotationEditorWidget.show();
+	public void editAnnotationButtonClickedAction() {
+		if(editAnnotationButton.isEnabled()) {
+			annotationEditorWidget.setMode(TripleWidget.Mode.EDIT);
+			final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
+			annotationEditorWidget.setData(selection.getData());
+			annotationEditorWidget.show();
+		}
 	}
 
-	private void deleteAnnotationButtonClickedAction() {
-		WMessageBox messageBox;
-		final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
+	public void deleteAnnotationButtonClickedAction() {
+		if(deleteAnnotationButton.isEnabled()) {
+			WMessageBox messageBox;
+			final TripleTreeTableNode selection = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
 
-		if(selection.isShapeNode()) {
-			messageBox = new WMessageBox("Confirmation", "Do you want to delete this shape and " + selection.getChildNodes().size() + " annotations belonging to it now?", Icon.Question, EnumSet.of(StandardButton.Yes, StandardButton.No));
-		}
-		else {
-			messageBox = new WMessageBox("Confirmation", "Do you want to delete this annotation now?", Icon.Question, EnumSet.of(StandardButton.Yes, StandardButton.No));
-		}
+			if(selection.isShapeNode()) {
+				messageBox = new WMessageBox("Confirmation", "Do you want to delete this shape and " + selection.getChildNodes().size() + " annotations belonging to it now?", Icon.Question, EnumSet.of(StandardButton.Yes, StandardButton.No));
+			}
+			else {
+				messageBox = new WMessageBox("Confirmation", "Do you want to delete this annotation now?", Icon.Question, EnumSet.of(StandardButton.Yes, StandardButton.No));
+			}
 
-		messageBox.buttonClicked().addListener(this, () -> 	deleteConfirmationButtonAction(messageBox));
-		messageBox.show();
+			messageBox.buttonClicked().addListener(this, () -> 	deleteConfirmationButtonAction(messageBox));
+			messageBox.show();
+		}
 	}
 
 	private void deleteConfirmationButtonAction(WMessageBox messageBox) {
