@@ -7,8 +7,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static no.siriuslabs.image.FrontendServlet.ANNOTATIONS_FILENAME_KEY;
 import static no.siriuslabs.image.FrontendServlet.ANNOTATIONS_PATH_KEY;
@@ -126,6 +130,100 @@ public class FileService {
 	 */
 	public String getServerBasePath() {
 		return servletContext.getRealPath("./");
+	}
+
+	/**
+	 * Dumps all contents of the external data directory into a ZIP archive.
+	 */
+	public String dumpDataDirectoryToZipArchive() {
+		String zipFilename = "data.zip";
+
+		deleteFile(zipFilename);
+		createZipFileFromDirectory(getBasePath(), zipFilename);
+
+		return zipFilename;
+	}
+
+	/**
+	 * Deletes the given file if present.
+	 */
+	public void deleteFile(String filename) {
+		LOGGER.info("checking for existing file {}", filename);
+		File fileToDelete = new File(filename);
+
+		if(fileToDelete.exists()) {
+			boolean result = fileToDelete.delete();
+			LOGGER.info("deleting file {} - {}", filename, result ? "successful" : "failed");
+		}
+	}
+
+	/**
+	 * Creates a ZIP archive with the given zipFilename from the contents of the given directoryPath and its subdirectories.
+	 */
+	public void createZipFileFromDirectory(String directoryPath, String zipFilename) {
+		try {
+			LOGGER.info("starting compression of directory {} into archive {}", directoryPath, zipFilename);
+
+			FileOutputStream fos = new FileOutputStream(zipFilename);
+			ZipOutputStream zos = new ZipOutputStream(fos);
+
+			File dir = new File(directoryPath);
+
+			String archiveRootPath = directoryPath.endsWith("/") ? directoryPath.substring(0, directoryPath.length()-1) : directoryPath;
+
+			compressDirectory(dir, zos, archiveRootPath);
+
+			zos.close();
+			fos.close();
+
+			LOGGER.info("archive {} complete", zipFilename);
+		}
+		catch(IOException e) {
+			LOGGER.error(e.getMessage(), e);
+		}
+	}
+
+	private void compressDirectory(File parentDirectory, ZipOutputStream zos, String archiveRootPath) throws IOException {
+		LOGGER.info("compressing files in directory {}", parentDirectory.getAbsolutePath());
+
+		File[] files = parentDirectory.listFiles();
+		if(files != null) {
+			byte[] buffer = new byte[1024];
+
+			for(final File currentFile : files) {
+				if(currentFile.isDirectory()) {
+					LOGGER.info("{} is a directory - will compress contents", currentFile.getAbsolutePath());
+					compressDirectory(currentFile, zos, archiveRootPath);
+				}
+				else {
+					LOGGER.info("{} is a file - compressing into archive", currentFile.getAbsolutePath());
+
+					try(FileInputStream fis = new FileInputStream(currentFile)) {
+						String destinationPath = buildInArchivePath(currentFile, parentDirectory, archiveRootPath);
+
+						zos.putNextEntry(new ZipEntry(destinationPath));
+						copyFileToArchive(fis, zos, buffer);
+						zos.closeEntry();
+					}
+					LOGGER.info("file {} done", currentFile.getAbsolutePath());
+				}
+			}
+		}
+	}
+
+	private String buildInArchivePath(File currentFile, File directory, String archiveRootPath) {
+		// cut archiveRootPath from parent directory's path to get the relative path inside the archive
+		String inArchivePath = directory.getAbsolutePath().replace(archiveRootPath, "");
+		// add filename to get the file's destination path inside the archive
+		inArchivePath = inArchivePath + '/' + currentFile.getName();
+		return inArchivePath;
+	}
+
+	private void copyFileToArchive(FileInputStream fis, ZipOutputStream zos, byte[] buffer) throws IOException {
+		int length;
+		while((length = fis.read(buffer)) > 0) {
+			zos.write(buffer, 0, length);
+		}
 	}
 
 }
