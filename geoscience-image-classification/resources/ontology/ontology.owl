@@ -123,6 +123,14 @@
     
 
 
+    <!-- http://no.sirius.ontology/geological-ontology#controledBy -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/geological-ontology#controledBy">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://no.sirius.ontology/geological-ontology#creates -->
 
     <owl:ObjectProperty rdf:about="http://no.sirius.ontology/geological-ontology#creates">
@@ -161,6 +169,14 @@
     
 
 
+    <!-- http://no.sirius.ontology/geological-ontology#erodedOver -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/geological-ontology#erodedOver">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://no.sirius.ontology/geological-ontology#from -->
 
     <owl:ObjectProperty rdf:about="http://no.sirius.ontology/geological-ontology#from">
@@ -188,6 +204,14 @@
     <!-- http://no.sirius.ontology/geological-ontology#generates -->
 
     <owl:ObjectProperty rdf:about="http://no.sirius.ontology/geological-ontology#generates">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/geological-ontology#has -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/geological-ontology#has">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
     </owl:ObjectProperty>
     
@@ -363,6 +387,14 @@
     
 
 
+    <!-- http://no.sirius.ontology/geological-ontology#hcGeneratedFrom -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/geological-ontology#hcGeneratedFrom">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://no.sirius.ontology/geological-ontology#includes -->
 
     <owl:ObjectProperty rdf:about="http://no.sirius.ontology/geological-ontology#includes">
@@ -479,6 +511,22 @@
     <!-- http://no.sirius.ontology/geological-ontology#separatedFrom -->
 
     <owl:ObjectProperty rdf:about="http://no.sirius.ontology/geological-ontology#separatedFrom">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/geological-ontology#separatedIn -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/geological-ontology#separatedIn">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://no.sirius.ontology/geological-ontology#sourcedFrom -->
+
+    <owl:ObjectProperty rdf:about="http://no.sirius.ontology/geological-ontology#sourcedFrom">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
     </owl:ObjectProperty>
     
@@ -2580,6 +2628,18 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#hcGeneratedFrom"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#SourceRock"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#locatedIn"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#producesHc"/>
                 <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#Hydrocarbon"/>
             </owl:Restriction>
@@ -2974,6 +3034,12 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#controledBy"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicalProcesses"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#hasAge"/>
                 <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#GeochronologicTime"/>
             </owl:Restriction>
@@ -3012,6 +3078,12 @@
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#separatedFrom"/>
                 <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicObject"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#separatedIn"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#GeochronologicTime"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -3109,6 +3181,18 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#distributedOver"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#erodedOver"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#hasAge"/>
                 <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#GeochronologicTime"/>
             </owl:Restriction>
@@ -3167,6 +3251,12 @@
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#resultOf"/>
                 <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#SedimentaryProcesses"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#sourcedFrom"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#Orientation"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -9390,6 +9480,12 @@
                 <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#Location"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://no.sirius.ontology/geological-ontology#hcGeneratedFrom"/>
+                <owl:someValuesFrom rdf:resource="http://no.sirius.ontology/geological-ontology#SourceRock"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
     
 
@@ -9810,6 +9906,7 @@
 
     <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#Basement">
         <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#Basement"/>
+        <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#GeochronologicUnit"/>
     </owl:NamedIndividual>
     
 
@@ -10233,6 +10330,14 @@
     
 
 
+    <!-- http://no.sirius.ontology/geological-ontology#E -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#E">
+        <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#Orientation"/>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://no.sirius.ontology/geological-ontology#E-W -->
 
     <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#E-W">
@@ -10463,6 +10568,7 @@
     <!-- http://no.sirius.ontology/geological-ontology#GeologicalProcesses -->
 
     <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#GeologicalProcesses">
+        <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicalEvents"/>
         <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicalProcesses"/>
     </owl:NamedIndividual>
     
@@ -11144,11 +11250,25 @@
     
 
 
+    <!-- http://no.sirius.ontology/geological-ontology#N -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#N">
+        <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#Orientation"/>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://no.sirius.ontology/geological-ontology#N-S -->
 
     <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#N-S">
         <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#Orientation"/>
     </owl:NamedIndividual>
+    
+
+
+    <!-- http://no.sirius.ontology/geological-ontology#NE -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#NE"/>
     
 
 
@@ -11173,6 +11293,12 @@
     <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#NNW-SSE">
         <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#Orientation"/>
     </owl:NamedIndividual>
+    
+
+
+    <!-- http://no.sirius.ontology/geological-ontology#NW -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#NW"/>
     
 
 
@@ -11245,6 +11371,14 @@
 
     <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#NordkappBasin">
         <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#BarentsSea"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://no.sirius.ontology/geological-ontology#NordlandRidge -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#NordlandRidge">
+        <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#NorwegianSea"/>
     </owl:NamedIndividual>
     
 
@@ -11774,9 +11908,25 @@
     
 
 
+    <!-- http://no.sirius.ontology/geological-ontology#S -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#S">
+        <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#Orientation"/>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://no.sirius.ontology/geological-ontology#S-N -->
 
     <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#S-N">
+        <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#Orientation"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://no.sirius.ontology/geological-ontology#SE -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#SE">
         <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#Orientation"/>
     </owl:NamedIndividual>
     
@@ -11795,6 +11945,12 @@
     <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#SSW-NNE">
         <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#Orientation"/>
     </owl:NamedIndividual>
+    
+
+
+    <!-- http://no.sirius.ontology/geological-ontology#SW -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#SW"/>
     
 
 
@@ -12077,6 +12233,7 @@
     <!-- http://no.sirius.ontology/geological-ontology#TectonicEvents -->
 
     <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#TectonicEvents">
+        <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#GeologicalEvents"/>
         <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#TectonicEvents"/>
     </owl:NamedIndividual>
     
@@ -12188,6 +12345,14 @@
     
 
 
+    <!-- http://no.sirius.ontology/geological-ontology#TrænaBasin -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#TrænaBasin">
+        <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#NorwegianSea"/>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://no.sirius.ontology/geological-ontology#TrøndelagPlatform -->
 
     <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#TrøndelagPlatform">
@@ -12208,6 +12373,14 @@
 
     <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#Turbidites">
         <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#GeomorphologicalFeatures"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://no.sirius.ontology/geological-ontology#TurbidityCurrent -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#TurbidityCurrent">
+        <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#Deposition"/>
     </owl:NamedIndividual>
     
 
@@ -12399,8 +12572,14 @@
 
     <!-- http://no.sirius.ontology/geological-ontology#VøringBasin -->
 
-    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#VøringBasin">
-        <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#NorwegianSea"/>
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#VøringBasin"/>
+    
+
+
+    <!-- http://no.sirius.ontology/geological-ontology#W -->
+
+    <owl:NamedIndividual rdf:about="http://no.sirius.ontology/geological-ontology#W">
+        <rdf:type rdf:resource="http://no.sirius.ontology/geological-ontology#Orientation"/>
     </owl:NamedIndividual>
     
 
