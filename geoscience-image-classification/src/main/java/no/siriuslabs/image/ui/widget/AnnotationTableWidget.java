@@ -347,8 +347,28 @@ public class AnnotationTableWidget extends AbstractAnnotationWidget implements P
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
+		LOGGER.info("Handling event: {}", evt.getPropertyName());
+
 		if(TripleWidget.CANCELLED_PROPERTY_NAME.equals(evt.getPropertyName())) {
+			((AnnotationContainer)getParentContainer()).clearMessageField();
 			annotationEditorWidget.hide();
+		}
+		else if(TripleWidget.VALIDATE_PROPERTY_NAME.equals(evt.getPropertyName())) {
+			List<WValidator.State> validationResults = annotationEditorWidget.validate();
+			String message = "";
+			for(WValidator.State state : validationResults) {
+				if(state == WValidator.State.Invalid) {
+					message = "Only one element is allowed";
+				}
+			}
+
+			if(message.isEmpty()) {
+				((AnnotationContainer)getParentContainer()).clearMessageField();
+			}
+			else {
+				LOGGER.info(message);
+				((AnnotationContainer)getParentContainer()).showErrorMessage(message);
+			}
 		}
 		else if(TripleWidget.SAVED_PROPERTY_NAME.equals(evt.getPropertyName())) {
 			if(isTripleValid()) {

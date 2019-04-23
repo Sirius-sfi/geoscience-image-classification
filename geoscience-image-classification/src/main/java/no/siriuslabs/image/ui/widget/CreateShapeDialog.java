@@ -1,6 +1,7 @@
 package no.siriuslabs.image.ui.widget;
 
 import eu.webtoolkit.jwt.AlignmentFlag;
+import eu.webtoolkit.jwt.Side;
 import eu.webtoolkit.jwt.WApplication;
 import eu.webtoolkit.jwt.WDialog;
 import eu.webtoolkit.jwt.WGridLayout;
@@ -9,6 +10,7 @@ import eu.webtoolkit.jwt.WLength;
 import eu.webtoolkit.jwt.WLineEdit;
 import eu.webtoolkit.jwt.WPushButton;
 import eu.webtoolkit.jwt.WSuggestionPopup;
+import eu.webtoolkit.jwt.WText;
 import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.EntityComparator;
@@ -31,6 +33,8 @@ public class CreateShapeDialog extends WDialog {
 
 	private final AbstractAnnotationContainer parentContainer;
 
+	private WText messageLine;
+
 	private WLabel typeLabel;
 	private WLineEdit typeLineEdit;
 	private WSuggestionPopup typePopup;
@@ -51,6 +55,8 @@ public class CreateShapeDialog extends WDialog {
 		setWindowTitle("Save shape");
 		rejectWhenEscapePressed();
 
+		initializeMessageLine();
+
 		initializeTypeControls();
 		initializeNameControls();
 
@@ -63,6 +69,12 @@ public class CreateShapeDialog extends WDialog {
 		initializeAutoComplete();
 
 		LOGGER.info("{} constructor - end", getClass().getSimpleName());
+	}
+
+	private void initializeMessageLine() {
+		messageLine = new WText();
+		messageLine.setMaximumSize(new WLength(300), WLength.Auto);
+		messageLine.setPadding(new WLength(20), EnumSet.of(Side.Bottom));
 	}
 
 	private void initializeTypeControls() {
@@ -79,7 +91,7 @@ public class CreateShapeDialog extends WDialog {
 		typeLineEdit = new WLineEdit();
 		typePopup = new WSuggestionPopup(options);
 		typePopup.forEdit(typeLineEdit, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
-		typeLineEdit.setValidator(new WValidator(true));
+		typeLineEdit.setValidator(new AutocompleteValidator(true));
 		typeLineEdit.setMaximumSize(new WLength(300), WLength.Auto);
 
 		typeLabel.setBuddy(typeLineEdit);
@@ -108,20 +120,29 @@ public class CreateShapeDialog extends WDialog {
 	}
 
 	private boolean areFieldsValid() {
-		return typeLineEdit.validate() == WValidator.State.Valid && nameLineEdit.validate() == WValidator.State.Valid;
+		final WValidator.State typeState = typeLineEdit.validate();
+		if(WValidator.State.Invalid == typeState) {
+			messageLine.setText("<h4>Only one 'type' element is allowed</h4>");
+		}
+		else {
+			messageLine.setText("");
+		}
+
+		return typeState == WValidator.State.Valid && nameLineEdit.validate() == WValidator.State.Valid;
 	}
 
 	private void initializeLayout() {
 		WGridLayout layout = new WGridLayout();
-		layout.addWidget(typeLabel, 1, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
-		layout.addWidget(typeLineEdit, 1, 1, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
-		layout.addWidget(nameLabel, 2, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
-		layout.addWidget(nameLineEdit, 2, 1, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
+		layout.addWidget(messageLine, 1, 0, 1, 3, AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle);
+		layout.addWidget(typeLabel, 2, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
+		layout.addWidget(typeLineEdit, 2, 1, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
+		layout.addWidget(nameLabel, 3, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
+		layout.addWidget(nameLineEdit, 3, 1, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
 		getContents().setLayout(layout);
 	}
 
 	private void setupValidation() {
-		typeLineEdit.keyWentUp().addListener(this, () -> saveButton.setEnabled(areFieldsValid()));
+		typeLineEdit.changed().addListener(this, () -> saveButton.setEnabled(areFieldsValid()));
 		nameLineEdit.keyWentUp().addListener(this, () -> saveButton.setEnabled(areFieldsValid()));
 	}
 
@@ -152,7 +173,7 @@ public class CreateShapeDialog extends WDialog {
 			}
 		}
 
-		LOGGER.warn("Selected type " + typeLabel + " not found in conepts list.");
+		LOGGER.warn("Selected type {} not found in concepts list.", typeLabel);
 		return null;
 	}
 

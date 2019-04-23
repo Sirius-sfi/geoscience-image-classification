@@ -355,12 +355,15 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 	 * Shows the given message in the message area.
 	 */
 	public void showInfoMessage(String message) {
-		resetMessageField();
+		clearMessageField();
 		messageText.setText(message);
 		messageText.setStyleClass("alert alert-info");
 	}
 
-	private void resetMessageField() {
+	/**
+	 * Clears the message field.
+	 */
+	public void clearMessageField() {
 		messageText.setText("");
 		messageText.setStyleClass("");
 	}

@@ -42,6 +42,7 @@ public class TripleWidget extends AbstractAnnotationWidget {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TripleWidget.class);
 
 	public static final String SAVED_PROPERTY_NAME = "tripleWidget.saved";
+	public static final String VALIDATE_PROPERTY_NAME = "tripleWidget.validationResult";
 	public static final String CANCELLED_PROPERTY_NAME = "tripleWidget.cancelled";
 
 	private final PropertyChangeSupport propertyChangeSupport;
@@ -95,21 +96,24 @@ public class TripleWidget extends AbstractAnnotationWidget {
 		subjectField.setEmptyText("Subject");
 		subjectPopup = new WSuggestionPopup(options);
 		subjectPopup.forEdit(subjectField, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
-		subjectField.setValidator(new WValidator(true));
+		subjectField.setValidator(new AutocompleteValidator(true));
+		subjectField.setDisabled(true);	// we disable the subject field here, as it makes no sense to be able to change the subject atm
 		fieldsLayout.addWidget(subjectField);
 
 		predicateField = new WLineEdit();
 		predicateField.setEmptyText("Predicate");
 		predicatePopup = new WSuggestionPopup(options);
 		predicatePopup.forEdit(predicateField, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
-		predicateField.setValidator(new WValidator(true));
+		predicateField.setValidator(new AutocompleteValidator(true));
+		predicateField.changed().addListener(this, () -> propertyChangeSupport.firePropertyChange(VALIDATE_PROPERTY_NAME, false, true));
 		fieldsLayout.addWidget(predicateField);
 
 		objectField = new WLineEdit();
 		objectField.setEmptyText("Object");
 		objectPopup = new WSuggestionPopup(options);
 		objectPopup.forEdit(objectField, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
-		objectField.setValidator(new WValidator(true));
+		objectField.setValidator(new AutocompleteValidator(true));
+		objectField.changed().addListener(this, () -> propertyChangeSupport.firePropertyChange(VALIDATE_PROPERTY_NAME, false, true));
 		objectField.focussed().addListener(this, () -> updateObjectSuggestions()); // TODO possible performance issue?
 		fieldsLayout.addWidget(objectField);
 
@@ -131,8 +135,14 @@ public class TripleWidget extends AbstractAnnotationWidget {
 	}
 
 	private void saveButtonClickedAction() {
-		// find the data representations for the texts/labels entered or selected
+		List<WValidator.State> results = validate();
+		if(!results.isEmpty()) {
+			LOGGER.info("Triggering " + VALIDATE_PROPERTY_NAME);
+			propertyChangeSupport.firePropertyChange(VALIDATE_PROPERTY_NAME, false, true);
+			return;
+		}
 
+		// find the data representations for the texts/labels entered or selected
 		Instance subject = getSubjectInstanceFromLabel();
 		Property predicate = getPredicateInstanceFromLabel();
 
