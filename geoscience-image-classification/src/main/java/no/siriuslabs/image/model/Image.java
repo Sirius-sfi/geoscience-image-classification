@@ -138,9 +138,13 @@ public abstract class Image extends Instance{
 
 
 	public String getContributor() {
+		if (contributor==null || contributor.isEmpty())
+			return "sirius";
+		
 		return contributor;
 	}
 
+	
 
 	public void setContributor(String contributor) {
 		this.contributor = contributor;
@@ -148,6 +152,8 @@ public abstract class Image extends Instance{
 
 
 	public String getDateSubmission() {
+		if (dateSubmission==null || dateSubmission.isEmpty())
+			return "2019-01-01 00:00:00";
 		return dateSubmission;
 	}
 
@@ -155,6 +161,7 @@ public abstract class Image extends Instance{
 	public void setDateSubmission(String dateSubmission) {
 		this.dateSubmission = dateSubmission;
 	}
-	
+
+
 	
 }
