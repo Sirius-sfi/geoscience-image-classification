@@ -9,6 +9,10 @@ import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 
 public abstract class Image extends Instance{
 
+	
+	private String contributor;
+	private String dateSubmission;
+	
 	private String relativeImagePath = null;
 	private String absoluteImagePath = null;
 	
@@ -131,6 +135,26 @@ public abstract class Image extends Instance{
 		this.height = height;
 	}
 //public abstract void covertToTriples();
+
+
+	public String getContributor() {
+		return contributor;
+	}
+
+
+	public void setContributor(String contributor) {
+		this.contributor = contributor;
+	}
+
+
+	public String getDateSubmission() {
+		return dateSubmission;
+	}
+
+
+	public void setDateSubmission(String dateSubmission) {
+		this.dateSubmission = dateSubmission;
+	}
 	
 	
 }

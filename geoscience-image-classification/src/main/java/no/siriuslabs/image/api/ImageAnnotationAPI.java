@@ -152,6 +152,24 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			for(String type_label: labels) {
 				geoImage.setTypeLabel(type_label);
 			}
+			
+			
+			//Query for creator
+			//We keep only one if many
+			Set<String> creators = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(geoImage.getClassType(), URIUtils.DC_CONTRIBUTOR);
+			for(String creator: creators) {
+				geoImage.setContributor(creator);
+			}
+			
+			
+			//Query for datesubmitted
+			//We keep only one if many
+			Set<String> dates = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(geoImage.getClassType(), URIUtils.DC_DATESUBMITTED);
+			for(String date: dates) {
+				geoImage.setDateSubmission(date);
+			}
+			
+			
 						
 			images.add(geoImage);
 			
@@ -770,6 +788,18 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 				gimg.getIri(), 
 				GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HAS_PHYISICAL_LOCATION), 
 				gimg.getLocation());
+		
+		
+		data_model.addLiteralTriple(
+				gimg.getIri(), 
+				URIUtils.DC_CONTRIBUTOR, 
+				gimg.getContributor());
+		
+		
+		data_model.addLiteralTriple(
+				gimg.getIri(), 
+				URIUtils.DC_DATESUBMITTED, 
+				gimg.getDateSubmission());
 		
 		
 		
