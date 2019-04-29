@@ -100,6 +100,20 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	}
 	
 	
+	
+	
+	/**
+	 * Convenience method to retrieve available contributors
+	 * @return
+	 */
+	public Set<String> getAvailableContributors(String session_id){
+		
+		return sessionManager.getSession(session_id).getObjectsForPredicate(URIUtils.DC_CONTRIBUTOR);
+		
+	}
+	
+	
+	
 	//First element top class
 	public List<Concept> getImageTypes(String session_id){
 			
@@ -1043,8 +1057,21 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	private Set<String> visited_uris = new HashSet<String>();
 	
 	
+	
+	
 	/**
-	 * Removed objects in image. Recursion level 1 as we do not remove referred/referring objects 
+	 * Removes image and all the objects contained in it. Recursion level 3 
+	 * @param session_id
+	 * @param object_uri
+	 */
+	public void removeImage(String session_id, String image_uri) {
+		removeElement(session_id, image_uri, 3);
+	}
+	
+	
+	
+	/**
+	 * Removes objects in image. Recursion level 1 as we do not remove referred/referring objects 
 	 * @param session_id
 	 * @param object_uri
 	 */
@@ -1123,7 +1150,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 				for (GenericValue value_uri : pred2object.get(predicate)) {
 					data_model.removeObjectTriple(element_uri, predicate, value_uri.getValue());
 					
-					//exception for recursion (case of shapes, we do not want to remove the image)
+					//exception for recursion (case of shapes, we do not want to remove the image) 
 					if (predicate.equals(GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_SELECTION_OF)))  //http://no.sirius.ontology/ann#isSelectionOf
 						continue;
 					
