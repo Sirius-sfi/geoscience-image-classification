@@ -170,7 +170,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			
 			//Query for creator
 			//We keep only one if many
-			Set<String> creators = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(geoImage.getClassType(), URIUtils.DC_CONTRIBUTOR);
+			Set<String> creators = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance.getIri(), URIUtils.DC_CONTRIBUTOR);
 			for(String creator: creators) {
 				geoImage.setContributor(creator);
 			}
@@ -178,7 +178,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			
 			//Query for datesubmitted
 			//We keep only one if many
-			Set<String> dates = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(geoImage.getClassType(), URIUtils.DC_DATESUBMITTED);
+			Set<String> dates = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance.getIri(), URIUtils.DC_DATESUBMITTED);
 			for(String date: dates) {
 				geoImage.setDateSubmission(date);
 			}
