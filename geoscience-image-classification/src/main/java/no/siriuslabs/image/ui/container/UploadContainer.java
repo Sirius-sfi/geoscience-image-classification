@@ -20,6 +20,7 @@ import no.siriuslabs.image.AbstractAnnotationApplication;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.model.Image;
 import no.siriuslabs.image.services.ImageFileService;
+import no.siriuslabs.image.ui.AutocompleteHelper;
 import no.siriuslabs.image.ui.widget.AutocompleteValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,15 +151,7 @@ public class UploadContainer extends AbstractAnnotationContainer {
 
 		ownerEdit.setValidator(new AutocompleteValidator(true));
 
-		WSuggestionPopup.Options options = new WSuggestionPopup.Options();
-		options.highlightBeginTag = "<span class=\"highlight\">";
-		options.highlightEndTag = "</span>";
-		options.listSeparator = ',';
-		options.whitespace = " \\n";
-		options.wordSeparators = "-., \"@\\n;";
-		options.appendReplacedText = ", ";
-
-		ownerPopup = new WSuggestionPopup(options);
+		ownerPopup = new WSuggestionPopup(AutocompleteHelper.createOptions());
 		ownerPopup.forEdit(ownerEdit, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
 
 		initializeOwnerSuggestions();
@@ -321,19 +314,13 @@ public class UploadContainer extends AbstractAnnotationContainer {
 		gimg.setLabel(nameEdit.getValueText());
 		gimg.setClassType(typeComboBox.getValueText());
 		gimg.setDateSubmission(dateFormat.format(new Date()));
-		gimg.setContributor(removeAutoCompleteComma(ownerEdit.getText().trim()));
+		gimg.setContributor(AutocompleteHelper.removeAutoCompleteComma(ownerEdit.getText().trim()));
 
 		getImageAnnotationAPI().saveGeologicalImage(sessionID, gimg);
 
 		LOGGER.info("save successful --> resetting UI");
 		resetUI();
 		showInfoMessage("Save successful.");
-	}
-
-	private String removeAutoCompleteComma(String label) {
-		label = label.replace(',', ' ');
-		label = label.trim();
-		return label;
 	}
 
 	private void showErrorMessage(String message) {

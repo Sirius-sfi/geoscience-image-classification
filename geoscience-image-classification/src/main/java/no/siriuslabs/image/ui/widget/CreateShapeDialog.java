@@ -14,6 +14,7 @@ import eu.webtoolkit.jwt.WText;
 import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.EntityComparator;
+import no.siriuslabs.image.ui.AutocompleteHelper;
 import no.siriuslabs.image.ui.container.AbstractAnnotationContainer;
 import no.siriuslabs.image.ui.container.AnnotationContainer;
 import org.slf4j.Logger;
@@ -80,16 +81,8 @@ public class CreateShapeDialog extends WDialog {
 	private void initializeTypeControls() {
 		typeLabel = new WLabel("What type of feature did you mark with the shape?");
 
-		WSuggestionPopup.Options options = new WSuggestionPopup.Options();
-		options.highlightBeginTag = "<span class=\"highlight\">";
-		options.highlightEndTag = "</span>";
-		options.listSeparator = ',';
-		options.whitespace = " \\n";
-		options.wordSeparators = "-., \"@\\n;";
-		options.appendReplacedText = ", ";
-
 		typeLineEdit = new WLineEdit();
-		typePopup = new WSuggestionPopup(options);
+		typePopup = new WSuggestionPopup(AutocompleteHelper.createOptions());
 		typePopup.forEdit(typeLineEdit, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
 		typeLineEdit.setValidator(new AutocompleteValidator(true));
 		typeLineEdit.setMaximumSize(new WLength(300), WLength.Auto);

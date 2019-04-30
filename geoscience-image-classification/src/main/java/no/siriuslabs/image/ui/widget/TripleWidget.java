@@ -9,6 +9,7 @@ import eu.webtoolkit.jwt.WVBoxLayout;
 import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.EntityComparator;
+import no.siriuslabs.image.ui.AutocompleteHelper;
 import no.siriuslabs.image.ui.container.AbstractAnnotationContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,13 +85,7 @@ public class TripleWidget extends AbstractAnnotationWidget {
 
 		WHBoxLayout fieldsLayout = new WHBoxLayout();
 
-		WSuggestionPopup.Options options = new WSuggestionPopup.Options();
-		options.highlightBeginTag = "<span class=\"highlight\">";
-		options.highlightEndTag = "</span>";
-		options.listSeparator = ',';
-		options.whitespace = " \\n";
-		options.wordSeparators = "-., \"@\\n;";
-		options.appendReplacedText = ", ";
+		WSuggestionPopup.Options options = AutocompleteHelper.createOptions();
 
 		subjectField = new WLineEdit();
 		subjectField.setEmptyText("Subject");
@@ -151,7 +146,7 @@ public class TripleWidget extends AbstractAnnotationWidget {
 		if(predicate.isObjectProperty()) {
 			for(Instance instance : availableObjects) {
 				String objectLabel = objectField.getValueText().trim();
-				objectLabel = removeAutoCompleteComma(objectLabel);
+				objectLabel = AutocompleteHelper.removeAutoCompleteComma(objectLabel);
 				if(instance.getVisualRepresentation().equals(objectLabel)) {
 					objectInstance = instance;
 					break;
@@ -160,7 +155,7 @@ public class TripleWidget extends AbstractAnnotationWidget {
 		}
 		else {			
 			String objectLabel = objectField.getValueText().trim();
-			objectLabel = removeAutoCompleteComma(objectLabel);
+			objectLabel = AutocompleteHelper.removeAutoCompleteComma(objectLabel);
 			objectValue = new LiteralValue(objectLabel);
 		}
 
@@ -189,7 +184,7 @@ public class TripleWidget extends AbstractAnnotationWidget {
 		String subjectLabel = "";
 		for(Instance instance : availableSubjects) {
 			subjectLabel = subjectField.getValueText().trim();
-			subjectLabel = removeAutoCompleteComma(subjectLabel);
+			subjectLabel = AutocompleteHelper.removeAutoCompleteComma(subjectLabel);
 			if(instance.getVisualRepresentation().equals(subjectLabel)) {
 				return instance;
 			}
@@ -202,19 +197,13 @@ public class TripleWidget extends AbstractAnnotationWidget {
 		String predicateLabel = "";
 		for(Property property : availablePredicates) {
 			predicateLabel = predicateField.getValueText().trim();
-			predicateLabel = removeAutoCompleteComma(predicateLabel);
+			predicateLabel = AutocompleteHelper.removeAutoCompleteComma(predicateLabel);
 			if(property.getVisualRepresentation().equals(predicateLabel)) {
 				return property;
 			}
 		}
 		LOGGER.warn("No predicate instance found for field-value {}", predicateLabel);
 		return null; // this should never happen for predicates
-	}
-
-	private String removeAutoCompleteComma(String label) {
-		label = label.replace(',', ' ');
-		label = label.trim();
-		return label;
 	}
 
 	private void cancelButtonClickedAction() {
