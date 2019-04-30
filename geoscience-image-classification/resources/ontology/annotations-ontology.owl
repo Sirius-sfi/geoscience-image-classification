@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#"
-     xml:base="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38"
+<rdf:RDF xmlns="http://no.sirius.ontology/ann#"
+     xml:base="http://no.sirius.ontology/ann"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:terms="http://purl.org/dc/terms/"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
@@ -340,7 +340,7 @@
     <!-- http://no.sirius.ontology/ann#PaleogeographicMap -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/ann#PaleogeographicMap">
-        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#GeologicalMap"/>
+        <rdfs:subClassOf rdf:resource="http://no.sirius.ontology/ann#GeologicalImage"/>
         <rdfs:label>Paleogeographic map</rdfs:label>
     </owl:Class>
     
