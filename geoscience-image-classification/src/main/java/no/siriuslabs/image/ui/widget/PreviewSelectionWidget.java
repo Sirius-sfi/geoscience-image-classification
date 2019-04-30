@@ -5,6 +5,7 @@ import eu.webtoolkit.jwt.WAnchor;
 import eu.webtoolkit.jwt.WLength;
 import eu.webtoolkit.jwt.WLink;
 import eu.webtoolkit.jwt.WPushButton;
+import eu.webtoolkit.jwt.WText;
 import eu.webtoolkit.jwt.WVBoxLayout;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.ui.container.ImageSelectionContainer;
@@ -30,6 +31,7 @@ public class PreviewSelectionWidget extends AbstractAnnotationWidget {
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	private ImagePreviewWidget imagePreviewWidget;
+	private WText imageInformation;
 	private WAnchor anchor;
 	private WPushButton annotateButton;
 
@@ -46,6 +48,7 @@ public class PreviewSelectionWidget extends AbstractAnnotationWidget {
 
 		initializePreviewWidget();
 
+		initializeImageInfo(image);
 		initializeLink(image.getRelativeImagePath());
 		initializeAnnotateButton();
 
@@ -57,6 +60,11 @@ public class PreviewSelectionWidget extends AbstractAnnotationWidget {
 
 	private void initializePreviewWidget() {
 		imagePreviewWidget = new ImagePreviewWidget(image.getRelativeImagePath(), image.getAbsoluteImagePath());
+	}
+
+	private void initializeImageInfo(GeologicalImage image) {
+		imageInformation = new WText();
+		imageInformation.setText("Owned by <i><b>" + image.getContributor() + "</b></i>. Uploaded " + image.getDateSubmission());
 	}
 
 	private void initializeLink(String path) {
@@ -77,6 +85,7 @@ public class PreviewSelectionWidget extends AbstractAnnotationWidget {
 		setLayout(layout);
 
 		layout.addWidget(imagePreviewWidget);
+		layout.addWidget(imageInformation);
 		layout.addWidget(anchor);
 		layout.addWidget(annotateButton);
 	}

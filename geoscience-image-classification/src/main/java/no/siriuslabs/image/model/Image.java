@@ -9,7 +9,10 @@ import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 
 public abstract class Image extends Instance{
 
-	
+
+	public static final String DEFAULT_CONTRIBUTOR = "sirius";
+	public static final String DEFAULT_SUBMISSION = "2019-01-01 00:00:00";
+
 	private String contributor;
 	private String dateSubmission;
 	
@@ -139,7 +142,7 @@ public abstract class Image extends Instance{
 
 	public String getContributor() {
 		if (contributor==null || contributor.isEmpty())
-			return "sirius";
+			return DEFAULT_CONTRIBUTOR;
 		
 		return contributor;
 	}
@@ -153,7 +156,7 @@ public abstract class Image extends Instance{
 
 	public String getDateSubmission() {
 		if (dateSubmission==null || dateSubmission.isEmpty())
-			return "2019-01-01 00:00:00";
+			return DEFAULT_SUBMISSION;
 		return dateSubmission;
 	}
 

@@ -12,18 +12,24 @@ import eu.webtoolkit.jwt.WLength;
 import eu.webtoolkit.jwt.WLineEdit;
 import eu.webtoolkit.jwt.WProgressBar;
 import eu.webtoolkit.jwt.WPushButton;
+import eu.webtoolkit.jwt.WSuggestionPopup;
 import eu.webtoolkit.jwt.WText;
 import eu.webtoolkit.jwt.WTextArea;
 import eu.webtoolkit.jwt.WValidator;
 import no.siriuslabs.image.AbstractAnnotationApplication;
 import no.siriuslabs.image.model.GeologicalImage;
+import no.siriuslabs.image.model.Image;
 import no.siriuslabs.image.services.ImageFileService;
+import no.siriuslabs.image.ui.widget.AutocompleteValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Container class representing the upload page accessed from the main menu.
@@ -34,16 +40,27 @@ public class UploadContainer extends AbstractAnnotationContainer {
 
 	private WFileUpload fileUpload;
 	private WPushButton uploadButton;
+
 	private WLabel nameLabel;
 	private WLineEdit nameEdit;
+
 	private WLabel typeLabel;
 	private WComboBox typeComboBox;
+
+	private WLabel ownerLabel;
+	private WLineEdit ownerEdit;
+	private WSuggestionPopup ownerPopup;
+
 	private WLabel descriptionLabel;
 	private WTextArea descriptionTextArea;
+
 	private WContainerWidget buttonContainer;
 	private WPushButton cancelButton;
 	private WPushButton saveButton;
+
 	private WText messageText;
+
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private List<Concept> image_types;
 
@@ -54,6 +71,7 @@ public class UploadContainer extends AbstractAnnotationContainer {
 		WContainerWidget uploadContainer = initializeUploadContainer();
 		initializeNameField();
 		initializeTypeField();
+		initializeOwnerField();
 		initializeDescriptionField();
 		initializeMessageField();
 		initializeButtonContainer();
@@ -124,6 +142,28 @@ public class UploadContainer extends AbstractAnnotationContainer {
 		typeComboBox.setValidator(validator);
 	}
 
+	private void initializeOwnerField() {
+		ownerLabel = new WLabel("Owner:");
+		ownerLabel.setMargin(new WLength(20), EnumSet.of(Side.Right));
+		ownerEdit = new WLineEdit();
+		ownerLabel.setBuddy(ownerEdit);
+
+		ownerEdit.setValidator(new AutocompleteValidator(true));
+
+		WSuggestionPopup.Options options = new WSuggestionPopup.Options();
+		options.highlightBeginTag = "<span class=\"highlight\">";
+		options.highlightEndTag = "</span>";
+		options.listSeparator = ',';
+		options.whitespace = " \\n";
+		options.wordSeparators = "-., \"@\\n;";
+		options.appendReplacedText = ", ";
+
+		ownerPopup = new WSuggestionPopup(options);
+		ownerPopup.forEdit(ownerEdit, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
+
+		initializeOwnerSuggestions();
+	}
+
 	private void initializeDescriptionField() {
 		descriptionLabel = new WLabel("Description:");
 		descriptionLabel.setMargin(new WLength(20), EnumSet.of(Side.Right));
@@ -165,11 +205,14 @@ public class UploadContainer extends AbstractAnnotationContainer {
 		layout.addWidget(typeLabel, 2, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
 		layout.addWidget(typeComboBox, 2, 1, 1, 2, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
 
-		layout.addWidget(descriptionLabel, 3, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignTextTop));
-		layout.addWidget(descriptionTextArea, 3, 1, 1, 2, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignTextTop));
+		layout.addWidget(ownerLabel, 3, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
+		layout.addWidget(ownerEdit, 3, 1, 1, 2, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
 
-		layout.addWidget(messageText, 4, 1, 1, 1, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
-		layout.addWidget(buttonContainer, 4, 2, 1, 1, EnumSet.of(AlignmentFlag.AlignRight, AlignmentFlag.AlignBottom));
+		layout.addWidget(descriptionLabel, 4, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignTextTop));
+		layout.addWidget(descriptionTextArea, 4, 1, 1, 2, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignTextTop));
+
+		layout.addWidget(messageText, 5, 1, 1, 1, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
+		layout.addWidget(buttonContainer, 5, 2, 1, 1, EnumSet.of(AlignmentFlag.AlignRight, AlignmentFlag.AlignBottom));
 
 		setLayout(layout);
 	}
@@ -183,10 +226,23 @@ public class UploadContainer extends AbstractAnnotationContainer {
 		}
 	}
 
+	private void initializeOwnerSuggestions() {
+		ownerPopup.clearSuggestions();
+
+		Set<String> contributors = getImageAnnotationAPI().getAvailableContributors(getSessionID());
+		contributors.remove(Image.DEFAULT_CONTRIBUTOR);
+
+		for(String s : contributors) {
+			ownerPopup.addSuggestion(s);
+		}
+	}
+
 	private void initializeWithDefaultValues() {
 		if(typeComboBox.getCount() > 0) {
 			typeComboBox.setCurrentIndex(0);
 		}
+
+		initializeOwnerSuggestions();
 	}
 
 	private void performFileUploadChangedAction() {
@@ -237,6 +293,18 @@ public class UploadContainer extends AbstractAnnotationContainer {
 			showErrorMessage(message);
 			return;
 		}
+		if(WValidator.State.Invalid == ownerEdit.validate()) {
+			final String message = "Only one owner is allowed";
+			LOGGER.info("validation failed: " + message);
+			showErrorMessage(message);
+			return;
+		}
+		if(WValidator.State.Valid != ownerEdit.validate()) {
+			final String message = "Owner must not be empty.";
+			LOGGER.info("validation failed: " + message);
+			showErrorMessage(message);
+			return;
+		}
 		LOGGER.info("validation successful --> storing image");
 
 		String tempServerPath = fileUpload.getSpoolFileName();
@@ -251,12 +319,21 @@ public class UploadContainer extends AbstractAnnotationContainer {
 		gimg.setDescription(descriptionTextArea.getValueText());
 		gimg.setLocation(originalFilename);
 		gimg.setLabel(nameEdit.getValueText());
-		gimg.setClassType(typeComboBox.getValueText());		
+		gimg.setClassType(typeComboBox.getValueText());
+		gimg.setDateSubmission(dateFormat.format(new Date()));
+		gimg.setContributor(removeAutoCompleteComma(ownerEdit.getText().trim()));
+
 		getImageAnnotationAPI().saveGeologicalImage(sessionID, gimg);
-		
+
 		LOGGER.info("save successful --> resetting UI");
 		resetUI();
 		showInfoMessage("Save successful.");
+	}
+
+	private String removeAutoCompleteComma(String label) {
+		label = label.replace(',', ' ');
+		label = label.trim();
+		return label;
 	}
 
 	private void showErrorMessage(String message) {
@@ -281,6 +358,7 @@ public class UploadContainer extends AbstractAnnotationContainer {
 	private void resetInputFields() {
 		nameEdit.setText("");
 		typeComboBox.setCurrentIndex(-1);
+		ownerEdit.setText("");
 		descriptionTextArea.setText("");
 	}
 

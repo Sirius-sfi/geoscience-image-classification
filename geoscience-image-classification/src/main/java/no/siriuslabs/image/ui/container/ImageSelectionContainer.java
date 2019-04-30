@@ -16,6 +16,7 @@ import eu.webtoolkit.jwt.WWidget;
 import no.siriuslabs.image.AbstractAnnotationApplication;
 import no.siriuslabs.image.api.ImageAnnotationAPI;
 import no.siriuslabs.image.model.GeologicalImage;
+import no.siriuslabs.image.model.Image;
 import no.siriuslabs.image.services.ImageFileService;
 import no.siriuslabs.image.ui.widget.PreviewSelectionWidget;
 import org.slf4j.Logger;
@@ -28,6 +29,8 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Container class representing the image selection page.
@@ -37,7 +40,9 @@ public class ImageSelectionContainer extends AbstractAnnotationContainer impleme
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImageSelectionContainer.class);
 
 	public static final String START_ANNOTATING_PROPERTY_NAME = "imageSelectionContainer.startAnnotating";
+
 	private static final String GEOLOGICAL_IMAGE_TYPE_TEXT = "Geological image";
+	private static final int NUMBER_OF_RECENT_IMAGES = 5;
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
@@ -74,13 +79,41 @@ public class ImageSelectionContainer extends AbstractAnnotationContainer impleme
 		recentImagesTab = new WContainerWidget();
 		recentImagesTab.setLayout(recentImagesLayout);
 
-//		String sessionID = getSessionID();
-//		ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
-//
-//		// TODO replace with selection of recent images
-//		List<GeologicalImage> images = imageAnnotationAPI.getImagesOfGivenType(sessionID, GEOLOGICAL_IMAGE_TYPE_TEXT);
-//
-//		initializePreviewImageWidgets(images, recentImagesLayout);
+		List<GeologicalImage> recentImages = readAndFilterRecentImages();
+
+		initializePreviewImageWidgets(recentImages, recentImagesLayout);
+	}
+
+	private List<GeologicalImage> readAndFilterRecentImages() {
+		List<GeologicalImage> images = getImageAnnotationAPI().getImagesOfGivenType(getSessionID(), GEOLOGICAL_IMAGE_TYPE_TEXT);
+
+		List<GeologicalImage> imageCandidates = new ArrayList<>(images.size());
+		for(GeologicalImage image : images) {
+			if(hasValidSubmissionDate(image)) {
+				imageCandidates.add(image);
+			}
+		}
+
+		imageCandidates.sort((GeologicalImage o1, GeologicalImage o2) -> {
+			String dateO1 = o1.getDateSubmission();
+			String dateO2 = o2.getDateSubmission();
+			// we sort descending here, hence the * -1
+			return dateO1.compareTo(dateO2) * -1;
+		});
+
+		List<GeologicalImage> recentImages = new ArrayList<>(NUMBER_OF_RECENT_IMAGES);
+		if(imageCandidates.size() > NUMBER_OF_RECENT_IMAGES) {
+			recentImages = IntStream.range(0, NUMBER_OF_RECENT_IMAGES).mapToObj(imageCandidates::get).collect(Collectors.toCollection(() -> new ArrayList<>(NUMBER_OF_RECENT_IMAGES)));
+		}
+		else {
+			recentImages.addAll(imageCandidates);
+		}
+
+		return recentImages;
+	}
+
+	private boolean hasValidSubmissionDate(GeologicalImage image) {
+		return image.getDateSubmission() != null && !image.getDateSubmission().trim().isEmpty() && !Image.DEFAULT_SUBMISSION.equals(image.getDateSubmission());
 	}
 
 	private void initializeAllImagesTab() {
