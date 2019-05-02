@@ -131,7 +131,7 @@ public class TripleWidget extends AbstractAnnotationWidget {
 
 	private void saveButtonClickedAction() {
 		List<WValidator.State> results = validate();
-		if(!results.isEmpty()) {
+		if(!results.isEmpty() && results.contains(WValidator.State.Invalid)) {
 			LOGGER.info("Triggering " + VALIDATE_PROPERTY_NAME);
 			propertyChangeSupport.firePropertyChange(VALIDATE_PROPERTY_NAME, false, true);
 			return;
