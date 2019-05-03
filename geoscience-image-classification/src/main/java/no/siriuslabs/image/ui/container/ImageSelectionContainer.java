@@ -7,6 +7,7 @@ import eu.webtoolkit.jwt.WContainerWidget;
 import eu.webtoolkit.jwt.WGroupBox;
 import eu.webtoolkit.jwt.WHBoxLayout;
 import eu.webtoolkit.jwt.WLabel;
+import eu.webtoolkit.jwt.WLayout;
 import eu.webtoolkit.jwt.WLength;
 import eu.webtoolkit.jwt.WMouseEvent;
 import eu.webtoolkit.jwt.WPushButton;
@@ -44,12 +45,16 @@ public class ImageSelectionContainer extends AbstractAnnotationContainer impleme
 	private static final String GEOLOGICAL_IMAGE_TYPE_TEXT = "Geological image";
 	private static final int NUMBER_OF_RECENT_IMAGES = 5;
 
+	private static final String RECENTLY_UPLOADED_LABEL = "Recently Uploaded";
+	private static final String ALL_IMAGES_LABEL = "All Images";
+
 	private final PropertyChangeSupport propertyChangeSupport;
 
 	private WTabWidget tabWidget;
 	private WContainerWidget filterPanel;
 	private WComboBox typeFilterCombobox;
 	private WContainerWidget recentImagesTab;
+	private WVBoxLayout recentImagesLayout;
 	private WContainerWidget allImagesTab;
 	private WVBoxLayout allImagesLayout;
 
@@ -75,16 +80,16 @@ public class ImageSelectionContainer extends AbstractAnnotationContainer impleme
 	}
 
 	private void initializeRecentImagesTab() {
-		WVBoxLayout recentImagesLayout = new WVBoxLayout();
+		recentImagesLayout = new WVBoxLayout();
 		recentImagesTab = new WContainerWidget();
 		recentImagesTab.setLayout(recentImagesLayout);
 
-		List<GeologicalImage> recentImages = readAndFilterRecentImages();
-
-		initializePreviewImageWidgets(recentImages, recentImagesLayout);
+		loadAndShowRecentImages();
 	}
 
-	private List<GeologicalImage> readAndFilterRecentImages() {
+	private void loadAndShowRecentImages() {
+		removePreviewWidgets(recentImagesTab, recentImagesLayout);
+
 		List<GeologicalImage> images = getImageAnnotationAPI().getImagesOfGivenType(getSessionID(), GEOLOGICAL_IMAGE_TYPE_TEXT);
 
 		List<GeologicalImage> imageCandidates = new ArrayList<>(images.size());
@@ -101,6 +106,8 @@ public class ImageSelectionContainer extends AbstractAnnotationContainer impleme
 			return dateO1.compareTo(dateO2) * -1;
 		});
 
+		LOGGER.info("loading recent images - picking up to " + NUMBER_OF_RECENT_IMAGES + " out of {} candidates of {} images", imageCandidates.size(), images.size());
+
 		List<GeologicalImage> recentImages = new ArrayList<>(NUMBER_OF_RECENT_IMAGES);
 		if(imageCandidates.size() > NUMBER_OF_RECENT_IMAGES) {
 			recentImages = IntStream.range(0, NUMBER_OF_RECENT_IMAGES).mapToObj(imageCandidates::get).collect(Collectors.toCollection(() -> new ArrayList<>(NUMBER_OF_RECENT_IMAGES)));
@@ -109,7 +116,7 @@ public class ImageSelectionContainer extends AbstractAnnotationContainer impleme
 			recentImages.addAll(imageCandidates);
 		}
 
-		return recentImages;
+		initializePreviewImageWidgets(recentImages, recentImagesLayout);
 	}
 
 	private boolean hasValidSubmissionDate(GeologicalImage image) {
@@ -133,8 +140,8 @@ public class ImageSelectionContainer extends AbstractAnnotationContainer impleme
 		tabWidget = new WTabWidget();
 		tabWidget.setOverflow(Overflow.OverflowAuto);
 
-		tabWidget.addTab(recentImagesTab, "Recently Uploaded", WTabWidget.LoadPolicy.LazyLoading);
-		tabWidget.addTab(allImagesTab, "All Images", WTabWidget.LoadPolicy.LazyLoading);
+		tabWidget.addTab(recentImagesTab, RECENTLY_UPLOADED_LABEL, WTabWidget.LoadPolicy.LazyLoading);
+		tabWidget.addTab(allImagesTab, ALL_IMAGES_LABEL, WTabWidget.LoadPolicy.LazyLoading);
 	}
 
 	private void initializeMainLayout() {
@@ -203,27 +210,32 @@ public class ImageSelectionContainer extends AbstractAnnotationContainer impleme
 	}
 
 	private void searchButtonClickedAction() {
-		// find and remove displayed preview images
-		List<WWidget> groupBoxesToRemove = new ArrayList<>();
-		for(WWidget widget : allImagesTab.getChildren()) {
-			if(widget instanceof WGroupBox) {
-				groupBoxesToRemove.add(widget);
-			}
-		}
-
-		for(WWidget widget : groupBoxesToRemove) {
-			allImagesLayout.removeWidget(widget);
-		}
-
+		removePreviewWidgets(allImagesTab, allImagesLayout);
 
 		// load images of selected type
 		String sessionID = getSessionID();
 		ImageAnnotationAPI imageAnnotationAPI = getImageAnnotationAPI();
 
 		String selectedType = typeFilterCombobox.getValueText();
+		LOGGER.info("loading all images of type {}", selectedType);
 		List<GeologicalImage> images = imageAnnotationAPI.getImagesOfGivenType(sessionID, selectedType);
 
 		initializePreviewImageWidgets(images, allImagesLayout);
+	}
+
+	private void removePreviewWidgets(WContainerWidget tab, WLayout layout) {
+		LOGGER.info("removing existing previews");
+		// find and remove displayed preview images
+		List<WWidget> groupBoxesToRemove = new ArrayList<>();
+		for(WWidget widget : tab.getChildren()) {
+			if(widget instanceof WGroupBox) {
+				groupBoxesToRemove.add(widget);
+			}
+		}
+
+		for(WWidget widget : groupBoxesToRemove) {
+			layout.removeWidget(widget);
+		}
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -239,6 +251,16 @@ public class ImageSelectionContainer extends AbstractAnnotationContainer impleme
 		if(PreviewSelectionWidget.IMAGE_SELECTED_PROPERTY_NAME.equals(evt.getPropertyName()) && evt.getNewValue() != null) {
 			LOGGER.info(PreviewSelectionWidget.IMAGE_SELECTED_PROPERTY_NAME + " triggered");
 			propertyChangeSupport.firePropertyChange(START_ANNOTATING_PROPERTY_NAME, null, evt.getNewValue());
+		}
+		else if(PreviewSelectionWidget.IMAGE_DELETED_PROPERTY_NAME.equals(evt.getPropertyName())) {
+			if(tabWidget.getCurrentItem().getText().toString().equals(RECENTLY_UPLOADED_LABEL)) {
+				LOGGER.info(RECENTLY_UPLOADED_LABEL + " active - reloading");
+				loadAndShowRecentImages();
+			}
+			else {
+				LOGGER.info(ALL_IMAGES_LABEL + " active - reloading");
+				searchButtonClickedAction();
+			}
 		}
 	}
 }

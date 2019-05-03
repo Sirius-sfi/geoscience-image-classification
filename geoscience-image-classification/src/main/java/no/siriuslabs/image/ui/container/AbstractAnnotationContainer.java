@@ -42,7 +42,7 @@ public abstract class AbstractAnnotationContainer extends WContainerWidget {
 	/**
 	 * Returns the sessions's file service instance.
 	 */
-	protected FileService getFileService() {
+	public FileService getFileService() {
 		return (FileService) application.getServletContext().getAttribute(FrontendServlet.FILE_SERVICE_KEY);
 	}
 

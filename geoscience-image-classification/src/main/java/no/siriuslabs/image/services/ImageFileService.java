@@ -114,4 +114,15 @@ public class ImageFileService extends FileService {
 	public String getRelativeImagePathForFile(String filename) {
 		return getImageDirectoryName() + '/' + filename;
 	}
+
+	/**
+	 * Deletes the given file in the deployment directory and the data directory.
+	 */
+	public void deleteImage(String path) {
+		// delete in deployment dir
+		deleteFile(getServerBasePath() + path);
+
+		// delete in data dir
+		deleteFile(getBasePath() + path);
+	}
 }
