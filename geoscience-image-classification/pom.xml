@@ -37,13 +37,22 @@
 
     <!--  -->
     
-    <!-- Backend -->
+    <!-- Backend Dependency with RDFox 2017 >
     <dependency>
        <groupId>ontology-services-toolkit</groupId>
        <artifactId>ontology-services-toolkit</artifactId>
        <version>1.0.0-SNAPSHOT</version>
        <scope>compile</scope>
+    </dependency-->
+    
+    <!-- Backedn Dependency RDFox 2019 OST -->
+    <dependency>
+       <groupId>ontology-services-toolkit</groupId>
+       <artifactId>ontology-services-toolkit</artifactId>
+       <version>1.0.0-OST</version>
+       <scope>compile</scope>
     </dependency>
+    
   <!-- https://mvnrepository.com/artifact/commons-io/commons-io --> 
   <dependency>
     <groupId>commons-io</groupId>

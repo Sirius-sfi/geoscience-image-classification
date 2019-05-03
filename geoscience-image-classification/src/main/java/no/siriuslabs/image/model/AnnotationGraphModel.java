@@ -127,7 +127,7 @@ public class AnnotationGraphModel {
 	 * @param file
 	 * @throws IOException
 	 */
-	public void saveTmpModelWithUpdates(String tmp_file) throws IOException{
+	public void saveTmpModelWithOnlyUpdates(String tmp_file) throws IOException{
 	
 		FileOutputStream output_stream = new FileOutputStream(new File(tmp_file));
 		Rio.write(model_updates, output_stream, RDFFormat.TURTLE); //System.out

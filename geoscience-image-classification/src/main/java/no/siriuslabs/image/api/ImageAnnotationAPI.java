@@ -40,9 +40,6 @@ import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
 import uio.ifi.ontology.toolkit.projection.model.triples.TypeDefinitionTriple;
 import uio.ifi.ontology.toolkit.projection.utils.URIUtils;
 import uio.ifi.ontology.toolkit.projection.view.OntologyProjectionAPI;
-import uk.ac.ox.cs.JRDFox.store.DataStore.UpdateType;
-
-
 
 
 public class ImageAnnotationAPI extends OntologyProjectionAPI {
@@ -223,19 +220,25 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		WPointF[] points_vector = new WPointF[point_uris.size()];
 		//List<WPointF> points = new ArrayList<WPointF>();
 		
+		//System.out.println("Getting points for shape: " + shape_uri);
+		
 		for (String point_uri : point_uris) {
+			
+			//System.out.println("Getting point details: " + point_uri);
 			
 			WPointF point = new WPointF();
 			
 			//coordinate x
 			Set<String> values = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(point_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASX));
 			for (String value: values) {//only one expected
+				//System.out.println("\tHASX "+value);
 				point.setX(Double.valueOf(value));
 			}
 			
 			//coordinate y
 			values = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(point_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASY));
 			for (String value: values) {//only one expected
+				//System.out.println("\tHASY "+value);
 				point.setY(Double.valueOf(value));
 			}
 			
@@ -243,8 +246,10 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			
 			//Typically only one
 			int order_point=0;
-			for (String value : values)
-				order_point = Integer.valueOf(value);
+			for (String value : values) {
+				//System.out.println("\tORDER"+value);
+				order_point = Math.round(Float.valueOf(value));//In case it contains decimals (e.g. 0.0000000). We detected this behaviour in RRDFox
+			}
 			
 			//order
 			//System.out.println(order_point +  "  " + point.getX() + "  " + point.getY());
@@ -269,12 +274,14 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		
 		//1. Get shapes (subject) visually represented in image
+		
 		Set<String> shape_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_SELECTION_OF), image_uri);
 		
 		//Utility.println(shape_uris.size() + " shapes for " +image_uri);
 		
 		
 		for (String uri_shape : shape_uris) {
+			
 			
 			AbstractShape shape;
 			
@@ -324,7 +331,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	/**
-	 * Retrieves ALL annotations associated to an image: annotated bjects and types, relationships among objects
+	 * Retrieves ALL annotations associated to an image: annotated objects and types, relationships among objects
 	 * and facets associated to objects
 	 * @return
 	 */
@@ -337,10 +344,15 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		//Shapes belong to image but a different property was used
 		Set<String> object_uris = sessionManager.getSession(session_id).getSubjectsForObjectPredicate(GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED), image_uri);
 		
+		
 		//System.out.println("Objects in image: " + object_uris);
 		
 				
 		for (String object_uri : object_uris) {
+			
+			
+			//System.out.println("\t" + object_uri);
+			
 		
 			
 			//Get Semantic type
@@ -720,7 +732,8 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		removeTriplesForAnnotations(data_model, triples);
 		
 		//Update model and rdfox model
-		saveDataModel(data_model, session_id, UpdateType.ScheduleForDeletion);
+		//saveDataModel(data_model, session_id, UpdateType.ScheduleForDeletion);
+		saveDataModelAndSyncDeletion(data_model, session_id);
 		
 		
 	}
@@ -1039,7 +1052,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASY), String.valueOf(point.getY()), URIUtils.XSD_DOUBLE);
 			
 			//For circles and polygons with 5 or more points the order of points matters
-			data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASPOINTORDER), String.valueOf(i), URIUtils.XSD_INTEGER);
+			data_model.addLiteralTriple(point_uri, GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HASPOINTORDER), String.valueOf(i), URIUtils.XSD_STRING);
 			
 			//System.out.println(i + " " + point.getX() + "  " + point.getY());
 			i++;
@@ -1109,7 +1122,8 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		removeRelatedTriplesForElement(session_id, data_model, element_uri, recursion_level); 
 		
 		//Save updated models: physically and on RDFox
-		saveDataModel(data_model, session_id, UpdateType.ScheduleForDeletion);
+		//saveDataModel(data_model, session_id, UpdateType.ScheduleForDeletion);
+		saveDataModelAndSyncDeletion(data_model, session_id);
 				
 		
 		
@@ -1233,7 +1247,8 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 * @param session_id
 	 */
 	private void saveDataModel(AnnotationGraphModel data_model, String session_id) {
-		saveDataModel(data_model, session_id, UpdateType.ScheduleForAddition);
+		//saveDataModel(data_model, session_id, UpdateType.ScheduleForAddition);
+		saveDataModelAndSyncAddition(data_model, session_id);
 	}
 
 		
@@ -1245,7 +1260,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 * @param session_id
 	 * @param importType To add or to remove triple isn RDFox
 	 */
-	private void saveDataModel(AnnotationGraphModel data_model, String session_id, UpdateType updateType) {
+	private void saveDataModelAndSyncDeletion(AnnotationGraphModel data_model, String session_id) {
 		
 		
 		try {
@@ -1255,9 +1270,11 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			
 			//Save tmp file with new added/removed annotations and perform incremental reasoning in RDFox
 			String tmp_file = Utility.tmp_directory + "tmp_file_annotations.ttl";
-			data_model.saveTmpModelWithUpdates(tmp_file);
+			data_model.saveTmpModelWithOnlyUpdates(tmp_file);
+			
 			//Sync RDFox reasoner
-			sessionManager.getSession(session_id).performMaterializationAdditionalData(tmp_file, true, updateType);//incremental reasoning
+			sessionManager.getSession(session_id).performMaterializationAdditionalData(
+					tmp_file, true, sessionManager.getSession(session_id).getDeletionUpdateType());//incremental reasoning
 			
 			//dispose/clear models
 			data_model.dispose();
@@ -1268,6 +1285,41 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		}
 		
 	}
+	
+	
+	
+	/**
+	 * Saves models and clears structures
+	 * @param data_model
+	 * @param session_id
+	 * @param importType To add or to remove triple isn RDFox
+	 */
+	private void saveDataModelAndSyncAddition(AnnotationGraphModel data_model, String session_id) {
+		
+		
+		try {
+			
+			String data_file_path = sessionManager.getSession(session_id).getDataFilePath();
+			data_model.saveModel(data_file_path);
+			
+			//Save tmp file with new added/removed annotations and perform incremental reasoning in RDFox
+			String tmp_file = Utility.tmp_directory + "tmp_file_annotations.ttl";
+			data_model.saveTmpModelWithOnlyUpdates(tmp_file);
+			//Sync RDFox reasoner
+			sessionManager.getSession(session_id).performMaterializationAdditionalData(
+					tmp_file, true, sessionManager.getSession(session_id).getAdditionUpdateType());//incremental reasoning
+			
+			//dispose/clear models
+			data_model.dispose();
+			
+			
+		} catch (Exception e) {
+			LOGGER.error("Error storing the annotation model. Error: "+e.getMessage());
+		}
+		
+	}
+	
+	
 	
 	
 	

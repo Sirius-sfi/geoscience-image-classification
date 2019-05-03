@@ -11,6 +11,7 @@
      xmlns:untitled-ontology-38="http://www.semanticweb.org/ejimenez-ruiz/ontologies/2018/10/untitled-ontology-38#"
      xmlns:gico="http://no.sirius.ontology/gico#">
     <owl:Ontology rdf:about="http://no.sirius.ontology/ann">
+        <terms:creator>Irina Pene</terms:creator>
         <terms:creator>Oliver Stahl</terms:creator>
         <terms:creator>Ernesto Jimenez Ruiz</terms:creator>
     </owl:Ontology>
@@ -25,6 +26,14 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
+    
+
+
+    <!-- http://no.sirius.ontology/ann#hasOrder -->
+
+    <owl:AnnotationProperty rdf:about="http://no.sirius.ontology/ann#hasOrder">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:AnnotationProperty>
     
 
 
@@ -132,15 +141,6 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
-    
-
-
-    <!-- http://no.sirius.ontology/ann#hasOrder -->
-
-    <owl:DatatypeProperty rdf:about="http://no.sirius.ontology/ann#hasOrder">
-        <rdfs:domain rdf:resource="http://no.sirius.ontology/ann#Point"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-    </owl:DatatypeProperty>
     
 
 
@@ -349,12 +349,6 @@
     <!-- http://no.sirius.ontology/ann#Point -->
 
     <owl:Class rdf:about="http://no.sirius.ontology/ann#Point">
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#hasOrder"/>
-                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://no.sirius.ontology/ann#hasX"/>
