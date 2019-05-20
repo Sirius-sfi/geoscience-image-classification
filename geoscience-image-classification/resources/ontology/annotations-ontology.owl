@@ -34,7 +34,23 @@
     <owl:AnnotationProperty rdf:about="http://no.sirius.ontology/ann#hasOrder">
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
     </owl:AnnotationProperty>
+
+
+
+    <!-- http://no.sirius.ontology/ann#hasTextDescription -->
+
+    <owl:AnnotationProperty rdf:about="http://no.sirius.ontology/ann#hasTextDescription">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:AnnotationProperty>
+
+
+    <!-- http://no.sirius.ontology/ann#direct_type -->
+
+    <owl:AnnotationProperty rdf:about="http://no.sirius.ontology/annotations#direct_type">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:AnnotationProperty>
     
+
 
 
     <!-- http://no.sirius.ontology/annotations#hidden -->
