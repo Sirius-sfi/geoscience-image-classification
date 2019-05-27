@@ -16,6 +16,11 @@ public abstract class Image extends Instance{
 	private String contributor;
 	private String dateSubmission;
 	
+	/**
+	 * Source (URL document of the image
+	 */
+	private String source;
+	
 	private String relativeImagePath = null;
 	private String absoluteImagePath = null;
 	
@@ -163,6 +168,16 @@ public abstract class Image extends Instance{
 
 	public void setDateSubmission(String dateSubmission) {
 		this.dateSubmission = dateSubmission;
+	}
+
+
+	public String getSource() {
+		return source;
+	}
+
+
+	public void setSource(String source) {
+		this.source = source;
 	}
 
 

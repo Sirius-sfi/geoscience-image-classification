@@ -181,6 +181,14 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			}
 			
 			
+			
+			//Source/provenance
+			Set<String> sources = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance.getIri(), GIC_URIUtils.HAS_PROVENANCE);
+			for(String source: sources) {
+				geoImage.setSource(source);
+			}
+			
+			
 						
 			images.add(geoImage);
 			
@@ -829,6 +837,12 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 				gimg.getDateSubmission());
 		
 		
+		if (gimg.getSource()!=null && !gimg.getSource().isEmpty()) {
+			data_model.addLiteralTriple(
+					gimg.getIri(), 
+					GIC_URIUtils.HAS_PROVENANCE, 
+					gimg.getSource());	
+		}
 		
 		
 		//Save new triples
