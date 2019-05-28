@@ -1,5 +1,6 @@
 package no.siriuslabs.image.api;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -183,7 +184,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			
 			
 			//Source/provenance
-			Set<String> sources = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance.getIri(), GIC_URIUtils.HAS_PROVENANCE);
+			Set<String> sources = sessionManager.getSession(session_id).getObjectsForSubjectPredicate(instance.getIri(), GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HAS_PROVENANCE));
 			for(String source: sources) {
 				geoImage.setSource(source);
 			}
@@ -840,7 +841,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		if (gimg.getSource()!=null && !gimg.getSource().isEmpty()) {
 			data_model.addLiteralTriple(
 					gimg.getIri(), 
-					GIC_URIUtils.HAS_PROVENANCE, 
+					GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.HAS_PROVENANCE), 
 					gimg.getSource());	
 		}
 		
@@ -879,15 +880,18 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	
-	public Set<Triple> saveNewShapeAndObject(String session_id, String image_uri, AbstractShape shape, String type_object_uri, String name_object){
-		return saveNewShapeAndObject(session_id, image_uri, shape, getNewSelectionShapeURI(), type_object_uri, name_object);
+	
+	
+	
+	public Set<Triple> saveNewShapeAndObject(String session_id, String image_uri, AbstractShape shape, String type_object_uri, String name_object_or_uri){
+		return saveNewShapeAndObject(session_id, image_uri, shape, getNewSelectionShapeURI(), type_object_uri, name_object_or_uri);
 	}
 	
 	
 	
 	
 	
-	public Set<Triple> saveNewShapeAndObject(String session_id, String image_uri, AbstractShape shape, String uri_shape, String type_object_uri, String name_object){
+	public Set<Triple> saveNewShapeAndObject(String session_id, String image_uri, AbstractShape shape, String uri_shape, String type_object_uri, String name_object_or_uri){
 		
 		
 		//Load model
@@ -896,9 +900,11 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		String data_file_path = sessionManager.getSession(session_id).getDataFilePath();
 		data_model.loadModelFromFile(data_file_path);
 		
-		//Add new triple to model
+		//Add new triples to model
+		//About the sahpe
 		String shape_type = addNewShapeTriples(data_model, image_uri, shape, uri_shape);
-		String uri_object = addNewObjectTriples(data_model, uri_shape, type_object_uri, name_object);
+		//About the object being visually represented in shape
+		String uri_object = addNewObjectTriples(data_model, uri_shape, type_object_uri, name_object_or_uri);
 	
 		
 		//Save/store model
@@ -935,7 +941,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 				new DataPropertyTriple(
 						instance,
 						dp,
-						new LiteralValue(name_object)
+						new LiteralValue(name_object_or_uri)
 						));
 		
 		
@@ -968,23 +974,36 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	
-	protected String addNewObjectTriples(AnnotationGraphModel data_model, String shape_uri, String type_object_uri, String name_object) {
+	protected String addNewObjectTriples(AnnotationGraphModel data_model, String shape_uri, String type_object_uri, String name_object_or_uri) {
 
-		String uri_object = getNewURIForObject(URIUtils.getEntityLabelFromURI(type_object_uri), name_object);
 		
-		//Instance instance = new Instance(uri_object);
-		//instance.setLabel(name_object);
-		//instance.setClassType(type_object_uri);
-		//Concept type = new Concept(type_object_uri);
-		//new TypeDefinitionTriple(instance, type);
+		String uri_object;
 		
 		
-		//Type object
-		data_model.addTypeTriple(uri_object, type_object_uri);
+		//Already given a URI for the object
+		if (URIUtils.isValidURI(name_object_or_uri)) {
+			uri_object = name_object_or_uri;
+		}
+		//If given a name, then create URI and suitable triples: type and label
+		else {
 		
-		//Label_name
-		data_model.addLabelTriple(uri_object, name_object);
+			uri_object = getNewURIForObject(URIUtils.getEntityLabelFromURI(type_object_uri), name_object_or_uri);
+			
+			//Instance instance = new Instance(uri_object);
+			//instance.setLabel(name_object);
+			//instance.setClassType(type_object_uri);
+			//Concept type = new Concept(type_object_uri);
+			//new TypeDefinitionTriple(instance, type);
+			
+			
+			//Type object
+			data_model.addTypeTriple(uri_object, type_object_uri);
+			
+			//Label_name
+			data_model.addLabelTriple(uri_object, name_object_or_uri);
 		
+		}
+			
 		//Visually represented
 		data_model.addObjectTriple(uri_object, 
 				GIC_URIUtils.getURIForAnnotationOntologyEntity(GIC_URIUtils.IS_VISUALLY_REPRESENTED),
