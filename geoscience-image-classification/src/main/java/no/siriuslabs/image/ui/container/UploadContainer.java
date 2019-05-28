@@ -52,6 +52,9 @@ public class UploadContainer extends AbstractAnnotationContainer {
 	private WLineEdit ownerEdit;
 	private WSuggestionPopup ownerPopup;
 
+	private WLabel sourceLabel;
+	private WLineEdit sourceEdit;
+
 	private WLabel descriptionLabel;
 	private WTextArea descriptionTextArea;
 
@@ -73,6 +76,7 @@ public class UploadContainer extends AbstractAnnotationContainer {
 		initializeNameField();
 		initializeTypeField();
 		initializeOwnerField();
+		initializeSourceField();
 		initializeDescriptionField();
 		initializeMessageField();
 		initializeButtonContainer();
@@ -157,6 +161,13 @@ public class UploadContainer extends AbstractAnnotationContainer {
 		initializeOwnerSuggestions();
 	}
 
+	private void initializeSourceField() {
+		sourceLabel = new WLabel("Image Source:");
+		sourceLabel.setMargin(new WLength(20), EnumSet.of(Side.Right));
+		sourceEdit = new WLineEdit();
+		sourceLabel.setBuddy(sourceEdit);
+	}
+
 	private void initializeDescriptionField() {
 		descriptionLabel = new WLabel("Description:");
 		descriptionLabel.setMargin(new WLength(20), EnumSet.of(Side.Right));
@@ -201,11 +212,14 @@ public class UploadContainer extends AbstractAnnotationContainer {
 		layout.addWidget(ownerLabel, 3, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
 		layout.addWidget(ownerEdit, 3, 1, 1, 2, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
 
-		layout.addWidget(descriptionLabel, 4, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignTextTop));
-		layout.addWidget(descriptionTextArea, 4, 1, 1, 2, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignTextTop));
+		layout.addWidget(sourceLabel, 4, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
+		layout.addWidget(sourceEdit, 4, 1, 1, 2, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
 
-		layout.addWidget(messageText, 5, 1, 1, 1, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
-		layout.addWidget(buttonContainer, 5, 2, 1, 1, EnumSet.of(AlignmentFlag.AlignRight, AlignmentFlag.AlignBottom));
+		layout.addWidget(descriptionLabel, 5, 0, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignTextTop));
+		layout.addWidget(descriptionTextArea, 5, 1, 1, 2, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignTextTop));
+
+		layout.addWidget(messageText, 6, 1, 1, 1, EnumSet.of(AlignmentFlag.AlignLeft, AlignmentFlag.AlignMiddle));
+		layout.addWidget(buttonContainer, 6, 2, 1, 1, EnumSet.of(AlignmentFlag.AlignRight, AlignmentFlag.AlignBottom));
 
 		setLayout(layout);
 	}
@@ -315,6 +329,7 @@ public class UploadContainer extends AbstractAnnotationContainer {
 		gimg.setClassType(typeComboBox.getValueText());
 		gimg.setDateSubmission(dateFormat.format(new Date()));
 		gimg.setContributor(AutocompleteHelper.removeAutoCompleteComma(ownerEdit.getText().trim()));
+		gimg.setSource(sourceEdit.getText().trim());
 
 		getImageAnnotationAPI().saveGeologicalImage(sessionID, gimg);
 
@@ -346,6 +361,7 @@ public class UploadContainer extends AbstractAnnotationContainer {
 		nameEdit.setText("");
 		typeComboBox.setCurrentIndex(-1);
 		ownerEdit.setText("");
+		sourceEdit.setText("");
 		descriptionTextArea.setText("");
 	}
 
