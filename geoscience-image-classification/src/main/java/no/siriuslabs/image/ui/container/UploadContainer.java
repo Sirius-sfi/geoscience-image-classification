@@ -246,9 +246,10 @@ public class UploadContainer extends AbstractAnnotationContainer {
 	}
 
 	private void initializeWithDefaultValues() {
-		if(typeComboBox.getCount() > 0) {
-			typeComboBox.setCurrentIndex(0);
-		}
+		// removed for now because we cannot change the type later
+//		if(typeComboBox.getCount() > 0) {
+//			typeComboBox.setCurrentIndex(0);
+//		}
 
 		initializeOwnerSuggestions();
 	}
