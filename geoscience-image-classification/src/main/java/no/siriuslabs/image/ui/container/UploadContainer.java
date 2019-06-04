@@ -96,7 +96,8 @@ public class UploadContainer extends AbstractAnnotationContainer {
 
 		fileUpload = new WFileUpload();
 		fileUpload.setFileTextSize(50);
-		fileUpload.setFilters("image/*");
+		fileUpload.setFilters(".gif, .jpg, .jpeg, .png");
+//		fileUpload.setFilters("image/*");
 		fileUpload.setProgressBar(new WProgressBar());
 		fileUpload.setMargin(new WLength(20), EnumSet.of(Side.Right));
 
