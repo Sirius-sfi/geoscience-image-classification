@@ -227,6 +227,8 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		//We initialize with the proper size
 		WPointF[] points_vector = new WPointF[point_uris.size()];
+		//System.out.println(shape_uri + " " +point_uris.size());
+		
 		//List<WPointF> points = new ArrayList<WPointF>();
 		
 		//System.out.println("Getting points for shape: " + shape_uri);
@@ -258,6 +260,13 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			for (String value : values) {
 				//System.out.println("\tORDER"+value);
 				order_point = Math.round(Float.valueOf(value));//In case it contains decimals (e.g. 0.0000000). We detected this behaviour in RRDFox
+				//System.out.println(order_point + " " + value);
+				
+				//TODO there is an issue with the values of haspointorder. SOme time a float is returned instead of integer. And some other the values is higher than expected
+				if (order_point>point_uris.size()-1) { //safety check
+					order_point = point_uris.size()-1;
+				}
+				
 			}
 			
 			//order
