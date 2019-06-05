@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
 import uio.ifi.ontology.toolkit.projection.model.entities.Entity;
+import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
 import uio.ifi.ontology.toolkit.projection.model.entities.ObjectProperty;
 import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
 
@@ -286,8 +287,14 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 		Concept selectedType = dialog.getTypeValue();
 		String shapeID = imageAnnotationAPI.getNewSelectionShapeURI();
 
-		Set<Triple> result = imageAnnotationAPI.saveNewShapeAndObject(
-				sessionID, image.getIri(), shapeWidget.getUnsavedShape(), shapeID, selectedType.getIri(), dialog.getNameValue());
+		// save differs between free text name with type selection and selection of existing object as name
+		if(dialog.getSelectedNameInstance() == null) {
+			imageAnnotationAPI.saveNewShapeAndObject(sessionID, image.getIri(), shapeWidget.getUnsavedShape(), shapeID, selectedType.getIri(), dialog.getNameTextValue());
+		}
+		else {
+			final Instance selectedNameInstance = dialog.getSelectedNameInstance();
+			imageAnnotationAPI.saveNewShapeAndObject(sessionID, image.getIri(), shapeWidget.getUnsavedShape(), shapeID, selectedNameInstance.getClassType(), selectedNameInstance.getIri());
+		}
 
 		shapeWidget.handleShapeSaved();
 

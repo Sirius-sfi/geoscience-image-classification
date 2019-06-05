@@ -20,6 +20,8 @@ import no.siriuslabs.image.ui.container.AnnotationContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uio.ifi.ontology.toolkit.projection.model.entities.Concept;
+import uio.ifi.ontology.toolkit.projection.model.entities.Instance;
+import uio.ifi.ontology.toolkit.projection.model.triples.Triple;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -41,9 +43,15 @@ public class CreateShapeDialog extends WDialog {
 	private WSuggestionPopup typePopup;
 	private WLabel nameLabel;
 	private WLineEdit nameLineEdit;
+	private WSuggestionPopup namePopup;
 	private WPushButton saveButton;
 
 	private List<Concept> availableTypes;
+	private List<Instance> availableObjects = new ArrayList<>();
+
+	private List<String> subjectNames;
+
+	private Instance selectedNameInstance = null;
 
 	/**
 	 * Constructor taking the parent container.
@@ -52,6 +60,8 @@ public class CreateShapeDialog extends WDialog {
 		LOGGER.info("{} constructor - start", getClass().getSimpleName());
 
 		parentContainer = parent;
+
+		initializeSubjectNameList(parent);
 
 		setWindowTitle("Save shape");
 		rejectWhenEscapePressed();
@@ -67,9 +77,18 @@ public class CreateShapeDialog extends WDialog {
 
 		setupValidation();
 
-		initializeAutoComplete();
+		initializeTypeAutoComplete();
 
 		LOGGER.info("{} constructor - end", getClass().getSimpleName());
+	}
+
+	private void initializeSubjectNameList(AnnotationContainer parent) {
+		List<Triple> annotations = parent.loadAnnotations();
+		subjectNames = new ArrayList<>(annotations.size());
+
+		for(Triple triple : annotations) {
+			subjectNames.add(triple.getSubject().getVisualRepresentation());
+		}
 	}
 
 	private void initializeMessageLine() {
@@ -94,7 +113,9 @@ public class CreateShapeDialog extends WDialog {
 		nameLabel = new WLabel("How should this feature be named?");
 
 		nameLineEdit = new WLineEdit();
-		nameLineEdit.setValidator(new WValidator(true));
+		namePopup = new WSuggestionPopup(AutocompleteHelper.createOptions());
+		namePopup.forEdit(nameLineEdit, EnumSet.of(WSuggestionPopup.PopupTrigger.Editing, WSuggestionPopup.PopupTrigger.DropDownIcon));
+		nameLineEdit.setValidator(new AutocompleteValidator(true));
 		nameLineEdit.setMaximumSize(new WLength(300), WLength.Auto);
 
 		nameLabel.setBuddy(nameLineEdit);
@@ -113,15 +134,47 @@ public class CreateShapeDialog extends WDialog {
 	}
 
 	private boolean areFieldsValid() {
+		messageLine.setText("");
+
 		final WValidator.State typeState = typeLineEdit.validate();
 		if(WValidator.State.Invalid == typeState) {
 			messageLine.setText("<h4>Only one 'type' element is allowed</h4>");
-		}
-		else {
-			messageLine.setText("");
+			return false;
 		}
 
-		return typeState == WValidator.State.Valid && nameLineEdit.validate() == WValidator.State.Valid;
+		// check if the name field holds on of the auto-complete options - if so, validation will be different
+		Instance nameInstance = null;
+		for(Instance instance : availableObjects) {
+			if(instance.getVisualRepresentation().equalsIgnoreCase(AutocompleteHelper.removeAutoCompleteComma(nameLineEdit.getValueText().trim()))) {
+				nameInstance = instance;
+				break;
+			}
+		}
+
+		if(nameInstance == null) {
+			if(subjectNames.contains(nameLineEdit.getValueText().trim())) {
+				messageLine.setText("<h4>This image already has an annotation with this name</h4>");
+				return false;
+			}
+
+			final WValidator.State nameState = nameLineEdit.validate();
+			if(WValidator.State.Invalid == nameState) {
+				messageLine.setText("<h4>Only one 'name' element is allowed</h4>");
+				return false;
+			}
+
+			return typeState == WValidator.State.Valid && nameState == WValidator.State.Valid;
+		}
+		else {
+			if(subjectNames.contains(nameInstance.getVisualRepresentation())) {
+				messageLine.setText("<h4>This image already has an annotation with this name</h4>");
+				return false;
+			}
+
+			selectedNameInstance = nameInstance;
+
+			return nameLineEdit.validate() == WValidator.State.Valid;
+		}
 	}
 
 	private void initializeLayout() {
@@ -135,11 +188,15 @@ public class CreateShapeDialog extends WDialog {
 	}
 
 	private void setupValidation() {
-		typeLineEdit.changed().addListener(this, () -> saveButton.setEnabled(areFieldsValid()));
-		nameLineEdit.keyWentUp().addListener(this, () -> saveButton.setEnabled(areFieldsValid()));
+		typeLineEdit.changed().addListener(this, () -> {
+			initializeNameAutoComplete();
+
+			saveButton.setEnabled(areFieldsValid());
+		});
+		nameLineEdit.changed().addListener(this, () -> saveButton.setEnabled(areFieldsValid()));
 	}
 
-	private void initializeAutoComplete() {
+	private void initializeTypeAutoComplete() {
 		String sessionID = parentContainer.getSessionID();
 		final ImageAnnotationAPI imageAnnotationAPI = parentContainer.getImageAnnotationAPI();
 
@@ -151,11 +208,28 @@ public class CreateShapeDialog extends WDialog {
 		}
 	}
 
+	private void initializeNameAutoComplete() {
+		Concept type = getTypeValue();
+
+		if(type == null) {
+			return;
+		}
+
+		String sessionID = parentContainer.getSessionID();
+		final ImageAnnotationAPI imageAnnotationAPI = parentContainer.getImageAnnotationAPI();
+
+		availableObjects = new ArrayList<>(imageAnnotationAPI.getIndividualsByType(sessionID, type.getIri()));
+		availableObjects.sort(new EntityComparator());
+
+		for(Instance instance : availableObjects) {
+			namePopup.addSuggestion(instance.getVisualRepresentation());
+		}
+	}
+
 	/**
 	 * Returns the value from the type field.
 	 */
 	public Concept getTypeValue() {
-		// TODO get rid of the ',' and do not allow multiple entries
 		String typeLabel = typeLineEdit.getValueText().trim();
 		typeLabel = typeLabel.replace(',', ' ');
 		typeLabel = typeLabel.trim();
@@ -173,8 +247,14 @@ public class CreateShapeDialog extends WDialog {
 	/**
 	 * Returns the value from the name field.
 	 */
-	public String getNameValue() {
+	public String getNameTextValue() {
 		return nameLineEdit.getValueText().trim();
 	}
 
+	/**
+	 * Returns the selected auto-complete instance for the name field (if any).
+	 */
+	public Instance getSelectedNameInstance() {
+		return selectedNameInstance;
+	}
 }
