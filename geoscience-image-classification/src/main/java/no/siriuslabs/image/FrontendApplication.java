@@ -11,6 +11,7 @@ import no.siriuslabs.image.ui.container.AbstractAnnotationContainer;
 import no.siriuslabs.image.ui.container.AnnotationContainer;
 import no.siriuslabs.image.ui.container.HomeContainer;
 import no.siriuslabs.image.ui.container.ImageSelectionContainer;
+import no.siriuslabs.image.ui.container.QueryContainer;
 import no.siriuslabs.image.ui.container.UploadContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,10 +26,11 @@ public class FrontendApplication extends AbstractAnnotationApplication implement
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FrontendApplication.class);
 
-	private static final String APPLICATION_TITLE = "Geoscience Image Classification";
+	public static final String APPLICATION_TITLE = "Geoscience Image Classification";
 	private static final String HOME_LABEL = "Home";
 	private static final String UPLOAD_LABEL = "Upload Image";
 	private static final String ANNOTATE_LABEL = "Annotate Image";
+	private static final String QUERY_LABEL = "Query Data";
 
 	private WContainerWidget centerContainer;
 	private WBorderLayout layout;
@@ -65,6 +67,7 @@ public class FrontendApplication extends AbstractAnnotationApplication implement
 		menu.addItem(HOME_LABEL);
 		menu.addItem(UPLOAD_LABEL);
 		menu.addItem(ANNOTATE_LABEL);
+		menu.addItem(QUERY_LABEL);
 
 		menu.itemSelected().addListener(this, () -> performMenuSelectionChangedAction(menu));
 	}
@@ -101,6 +104,9 @@ public class FrontendApplication extends AbstractAnnotationApplication implement
 		}
 		else if(ANNOTATE_LABEL.equals(currentSelection)) {
 			displayContainer(createSelectContainer());
+		}
+		else if(QUERY_LABEL.equalsIgnoreCase(currentSelection)) {
+			displayContainer(createQueryContainer());
 		}
 	}
 
@@ -140,6 +146,11 @@ public class FrontendApplication extends AbstractAnnotationApplication implement
 	private AnnotationContainer createAannotationContainer(GeologicalImage image) {
 		LOGGER.info("Creating new AnnotationContainer for image {}", image.getLabel());
 		return new AnnotationContainer(this, centerContainer, image);
+	}
+
+	private QueryContainer createQueryContainer() {
+		LOGGER.info("Creating new QueryContainer");
+		return new QueryContainer(this, centerContainer);
 	}
 
 	@Override
