@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -231,11 +232,11 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		//List<WPointF> points = new ArrayList<WPointF>();
 		
-		//System.out.println("Getting points for shape: " + shape_uri);
+		System.out.println("Getting points for shape: " + shape_uri);
 		
 		for (String point_uri : point_uris) {
 			
-			//System.out.println("Getting point details: " + point_uri);
+			System.out.println("Getting point details: " + point_uri);
 			
 			WPointF point = new WPointF();
 			
@@ -263,9 +264,9 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 				//System.out.println(order_point + " " + value);
 				
 				//TODO there is an issue with the values of haspointorder. SOme time a float is returned instead of integer. And some other the values is higher than expected
-				if (order_point>point_uris.size()-1) { //safety check
-					order_point = point_uris.size()-1;
-				}
+				//if (order_point>point_uris.size()-1) { //safety check
+				//	order_point = point_uris.size()-1;
+				//}
 				
 			}
 			
@@ -1367,8 +1368,17 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	private String getNewResourceURI(String base_name) {
 		Random randomNum = new Random();
-		int random = 1 + randomNum.nextInt(1000);
-		return  GIC_URIUtils.getURIForResource(base_name + "-"+ random + Calendar.getInstance().getTimeInMillis());
+		int random = 1 + randomNum.nextInt(10000); // + randomNum.nextInt(1000);
+		String new_uri = GIC_URIUtils.getURIForResource(base_name + "-"+ random + Calendar.getInstance().getTimeInMillis());
+		
+		try {
+			TimeUnit.MILLISECONDS.sleep(1); //to avoid same calendar instance + same random 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		}
+		
+		return  new_uri;
 	}
 	
 	public List<String> getPredicatesToHideInVisualization() {
