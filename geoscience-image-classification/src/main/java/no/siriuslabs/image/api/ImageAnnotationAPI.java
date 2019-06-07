@@ -263,10 +263,10 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 				order_point = Math.round(Float.valueOf(value));//In case it contains decimals (e.g. 0.0000000). We detected this behaviour in RRDFox
 				//System.out.println(order_point + " " + value);
 				
-				//TODO there is an issue with the values of haspointorder. SOme time a float is returned instead of integer. And some other the values is higher than expected
-				//if (order_point>point_uris.size()-1) { //safety check
-				//	order_point = point_uris.size()-1;
-				//}
+				//Safety check but issue has been solved about duplicated (same URI) pints with different order. 
+				if (order_point>point_uris.size()-1) { //safety check
+					order_point = point_uris.size()-1;
+				}
 				
 			}
 			
@@ -274,12 +274,22 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			//System.out.println(order_point +  "  " + point.getX() + "  " + point.getY());
 			points_vector[order_point] = point;
 			
-			
 		}
 		
 		
+		//Safety check to avoid null points. Issue solved
+		List<WPointF> list_points = Arrays.asList(points_vector);
+		Set<Integer> toRemove = new HashSet<Integer>();
 		
-		return Arrays.asList(points_vector);
+		for (int i=0; i<list_points.size(); i++) {
+			if (list_points.get(i)==null)
+				toRemove.add(i);
+		}
+		for (int i : toRemove)
+			list_points.remove(i);
+		
+		 
+		return list_points;
 		
 	}
 	
