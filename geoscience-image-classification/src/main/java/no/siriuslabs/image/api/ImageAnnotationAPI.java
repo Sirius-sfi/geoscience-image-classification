@@ -220,7 +220,7 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	
 	
 	
-	public List<WPointF> getPointsForShape(String session_id, String shape_uri){
+	public List<WPointF> getPointsForShape(String session_id, String shape_uri, String shape_type){
 		
 		
 		//1. Get Points (object) for a shape
@@ -232,11 +232,11 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		
 		//List<WPointF> points = new ArrayList<WPointF>();
 		
-		System.out.println("Getting points for shape: " + shape_uri);
+		//System.out.println("Getting points for shape: " + shape_uri);
 		
 		for (String point_uri : point_uris) {
 			
-			System.out.println("Getting point details: " + point_uri);
+			//System.out.println("Getting point details: " + point_uri);
 			
 			WPointF point = new WPointF();
 			
@@ -276,9 +276,9 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			
 		}
 		
-		
-		//Safety check to avoid null points. Issue solved
-		List<WPointF> list_points = Arrays.asList(points_vector);
+		//TODO 
+		//Safety check to avoid null points. Issue solved but we keep adhoc codes to read broken shapes 
+		List<WPointF> list_points = new ArrayList<WPointF>(Arrays.asList(points_vector));
 		Set<Integer> toRemove = new HashSet<Integer>();
 		
 		for (int i=0; i<list_points.size(); i++) {
@@ -287,6 +287,42 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 		}
 		for (int i : toRemove)
 			list_points.remove(i);
+		
+		//System.out.println(shape_type + " " + list_points.size());
+		
+		//We add dummy missing points in case of triangles and rectangles
+		boolean missing_points = true;
+		while (missing_points) {
+			switch (shape_type) {
+				case GIC_URIUtils.RECTANGLE:
+					if (list_points.size()<4) {
+						WPointF p = new WPointF();
+						p.setX(list_points.get(0).getX()+list_points.size()*10.0);
+						p.setY(list_points.get(0).getY()+list_points.size()*10.0);
+						list_points.add(p);
+					}
+					else
+						missing_points=false;
+					break;
+				case GIC_URIUtils.TRIANGLE:
+					if (list_points.size()<3) {
+						WPointF p = new WPointF();
+						p.setX(list_points.get(0).getX()+list_points.size()*10.0);
+						p.setY(list_points.get(0).getY()+list_points.size()*10.0);
+						list_points.add(p);
+					}
+					else
+						missing_points=false;
+					break;
+				default:
+					missing_points=false;
+			}
+		}	
+		//End adhoc fix
+		//-----------------------------------------------------
+		
+		
+		//System.out.println(shape_type + " " + list_points.size());
 		
 		 
 		return list_points;
@@ -323,19 +359,19 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 			//Get points
 			switch (URIUtils.getEntityLabelFromURI(type)) {
 				case GIC_URIUtils.CIRCLE:
-					shape = new Circle(getPointsForShape(session_id, uri_shape));
+					shape = new Circle(getPointsForShape(session_id, uri_shape, GIC_URIUtils.CIRCLE));
 					break;
 				case GIC_URIUtils.RECTANGLE:
-					shape = new Rectangle(getPointsForShape(session_id, uri_shape));
+					shape = new Rectangle(getPointsForShape(session_id, uri_shape, GIC_URIUtils.RECTANGLE));
 					break;				
 				case GIC_URIUtils.TRIANGLE:
-					shape = new Triangle(getPointsForShape(session_id, uri_shape));
+					shape = new Triangle(getPointsForShape(session_id, uri_shape, GIC_URIUtils.TRIANGLE));
 					break;
 				case GIC_URIUtils.POLYGON:
-					shape = new Polygon(getPointsForShape(session_id, uri_shape));
+					shape = new Polygon(getPointsForShape(session_id, uri_shape, GIC_URIUtils.POLYGON));
 					break;
 				default: 
-					shape = new Circle(getPointsForShape(session_id, uri_shape));
+					shape = new Circle(getPointsForShape(session_id, uri_shape, GIC_URIUtils.CIRCLE));
 					LOGGER.warn("Shape without a type: "+ uri_shape);
                 	break;
 			}
