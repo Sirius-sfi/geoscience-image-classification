@@ -252,6 +252,7 @@ public class AnnotationContainer extends AbstractAnnotationContainer implements 
 	}
 
 	private void newButtonClickedAction() {
+		annotationTableWidget.resetTableSelection();
 		shapeWidget.setWidgetMode(ShapeWidget.AnnotationWidgetMode.SET_POINTS);
 	}
 

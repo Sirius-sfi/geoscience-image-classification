@@ -441,4 +441,8 @@ public class AnnotationTableWidget extends AbstractAnnotationWidget implements P
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 		propertyChangeSupport.removePropertyChangeListener(listener);
 	}
+
+	public void resetTableSelection() {
+		annotationsTable.getTree().select(annotationsTable.getTreeRoot());
+	}
 }
