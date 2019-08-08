@@ -9,6 +9,7 @@ import eu.webtoolkit.jwt.WWidget;
 import no.siriuslabs.image.model.GeologicalImage;
 import no.siriuslabs.image.ui.container.AbstractAnnotationContainer;
 import no.siriuslabs.image.ui.container.AnnotationContainer;
+import no.siriuslabs.image.ui.container.FeedbackContainer;
 import no.siriuslabs.image.ui.container.HomeContainer;
 import no.siriuslabs.image.ui.container.ImageSelectionContainer;
 import no.siriuslabs.image.ui.container.QueryContainer;
@@ -31,6 +32,7 @@ public class FrontendApplication extends AbstractAnnotationApplication implement
 	private static final String UPLOAD_LABEL = "Upload Image";
 	private static final String ANNOTATE_LABEL = "Annotate Image";
 	private static final String QUERY_LABEL = "Query Data";
+	private static final String FEEDBACK_LABEL = "Feedback";
 
 	private WContainerWidget centerContainer;
 	private WBorderLayout layout;
@@ -68,6 +70,7 @@ public class FrontendApplication extends AbstractAnnotationApplication implement
 		menu.addItem(UPLOAD_LABEL);
 		menu.addItem(ANNOTATE_LABEL);
 		menu.addItem(QUERY_LABEL);
+		menu.addItem(FEEDBACK_LABEL);
 
 		menu.itemSelected().addListener(this, () -> performMenuSelectionChangedAction(menu));
 	}
@@ -107,6 +110,9 @@ public class FrontendApplication extends AbstractAnnotationApplication implement
 		}
 		else if(QUERY_LABEL.equalsIgnoreCase(currentSelection)) {
 			displayContainer(createQueryContainer());
+		}
+		else if(FEEDBACK_LABEL.equalsIgnoreCase(currentSelection)) {
+			displayContainer(createFeedbackContainer());
 		}
 	}
 
@@ -151,6 +157,11 @@ public class FrontendApplication extends AbstractAnnotationApplication implement
 	private QueryContainer createQueryContainer() {
 		LOGGER.info("Creating new QueryContainer");
 		return new QueryContainer(this, centerContainer);
+	}
+
+	private FeedbackContainer createFeedbackContainer() {
+		LOGGER.info("Creating new FeedbackContainer");
+		return new FeedbackContainer(this, centerContainer);
 	}
 
 	@Override
