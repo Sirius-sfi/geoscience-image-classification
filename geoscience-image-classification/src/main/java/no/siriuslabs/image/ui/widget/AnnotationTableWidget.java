@@ -174,7 +174,7 @@ public class AnnotationTableWidget extends AbstractAnnotationWidget implements P
 		// enable edit and delete buttons only if data is present and node is an annotation-level node
 		if(annotationsTable.getTree().getSelectedNodes().size() == 1 && isTripleTreeTableNode(annotationsTable.getTree().getSelectedNodes().iterator().next())) {
 			addAnnotationButton.enable();
-			deleteAnnotationButton.enable();
+//			deleteAnnotationButton.enable();
 			final TripleTreeTableNode selectedNode = (TripleTreeTableNode) annotationsTable.getTree().getSelectedNodes().iterator().next();
 			if(selectedNode.isShapeNode()) {
 				editAnnotationButton.disable();

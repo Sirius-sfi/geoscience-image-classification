@@ -98,6 +98,7 @@ public class PreviewSelectionWidget extends AbstractAnnotationWidget {
 
 		WPushButton deleteButton = new WPushButton("Delete Image");
 		deleteButton.clicked().addListener(this, () -> performDeleteImageAction());
+		deleteButton.disable();
 
 		layout.addWidget(deleteButton);
 		buttonContainer.setLayout(layout);
