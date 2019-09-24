@@ -220,6 +220,17 @@ public class ImageSelectionContainer extends AbstractAnnotationContainer impleme
 		LOGGER.info("loading all images of type {}", selectedType);
 		List<GeologicalImage> images = imageAnnotationAPI.getImagesOfGivenType(sessionID, selectedType);
 
+		// sort by image name while keeping the grouping by image type
+		images.sort((GeologicalImage o1, GeologicalImage o2) -> {
+			if(o1.getTypeLabel().equals(o2.getTypeLabel())) {
+				String title1 = o1.getVisualRepresentation();
+				String title2 = o2.getVisualRepresentation();
+				return title1.compareToIgnoreCase(title2);
+			}
+
+			return 0;
+		});
+
 		initializePreviewImageWidgets(images, allImagesLayout);
 	}
 
