@@ -359,6 +359,7 @@ public class AnnotationTableWidget extends AbstractAnnotationWidget implements P
 			for(WValidator.State state : validationResults) {
 				if(state == WValidator.State.Invalid) {
 					message = "Only one element is allowed";
+					break;
 				}
 			}
 
@@ -369,6 +370,11 @@ public class AnnotationTableWidget extends AbstractAnnotationWidget implements P
 				LOGGER.info(message);
 				((AnnotationContainer)getParentContainer()).showErrorMessage(message);
 			}
+		}
+		else if(TripleWidget.OBJECT_PROPERTY_VALUE_PROPERTY_NAME.equals(evt.getPropertyName())) {
+			String message = "Object value must be selected from the list";
+			LOGGER.info(message);
+			((AnnotationContainer)getParentContainer()).showErrorMessage(message);
 		}
 		else if(TripleWidget.SAVED_PROPERTY_NAME.equals(evt.getPropertyName())) {
 			if(isTripleValid()) {

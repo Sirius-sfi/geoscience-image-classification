@@ -45,6 +45,7 @@ public class TripleWidget extends AbstractAnnotationWidget {
 	public static final String SAVED_PROPERTY_NAME = "tripleWidget.saved";
 	public static final String VALIDATE_PROPERTY_NAME = "tripleWidget.validationResult";
 	public static final String CANCELLED_PROPERTY_NAME = "tripleWidget.cancelled";
+	public static final String OBJECT_PROPERTY_VALUE_PROPERTY_NAME = "tripleWidget.objectPropertyValueNotFound";
 
 	private final PropertyChangeSupport propertyChangeSupport;
 
@@ -132,6 +133,7 @@ public class TripleWidget extends AbstractAnnotationWidget {
 	private void saveButtonClickedAction() {
 		List<WValidator.State> results = validate();
 		if(!results.isEmpty() && results.contains(WValidator.State.Invalid)) {
+			// catch no value or selection and more than one selection
 			LOGGER.info("Triggering " + VALIDATE_PROPERTY_NAME);
 			propertyChangeSupport.firePropertyChange(VALIDATE_PROPERTY_NAME, false, true);
 			return;
@@ -144,21 +146,18 @@ public class TripleWidget extends AbstractAnnotationWidget {
 		Instance objectInstance = null;
 		LiteralValue objectValue = null;
 		if(predicate.isObjectProperty()) {
-			for(Instance instance : availableObjects) {
-				String objectLabel = objectField.getValueText().trim();
-				objectLabel = AutocompleteHelper.removeAutoCompleteComma(objectLabel);
-				if(instance.getVisualRepresentation().equals(objectLabel)) {
-					objectInstance = instance;
-					break;
-				}
-			}
+			objectInstance = findObjectInstance();
 		}
-		else {			
-			String objectLabel = objectField.getValueText().trim();
-			objectLabel = AutocompleteHelper.removeAutoCompleteComma(objectLabel);
-			objectValue = new LiteralValue(objectLabel);
+		else {
+			objectValue = findObjectValue();
 		}
 
+		if(predicate.isObjectProperty() && objectInstance == null) {
+			// catch value entered where a selection from the list is expected
+			LOGGER.info("Triggering " + OBJECT_PROPERTY_VALUE_PROPERTY_NAME);
+			propertyChangeSupport.firePropertyChange(OBJECT_PROPERTY_VALUE_PROPERTY_NAME, false, true);
+			return;
+		}
 
 		if(Mode.ADD == mode) {
 			if(predicate.isObjectProperty()) {
@@ -204,6 +203,23 @@ public class TripleWidget extends AbstractAnnotationWidget {
 		}
 		LOGGER.warn("No predicate instance found for field-value {}", predicateLabel);
 		return null; // this should never happen for predicates
+	}
+
+	private Instance findObjectInstance() {
+		for(Instance instance : availableObjects) {
+			String objectLabel = objectField.getValueText().trim();
+			objectLabel = AutocompleteHelper.removeAutoCompleteComma(objectLabel);
+			if(instance.getVisualRepresentation().equals(objectLabel)) {
+				return instance;
+			}
+		}
+		return null;
+	}
+
+	private LiteralValue findObjectValue() {
+		String objectLabel = objectField.getValueText().trim();
+		objectLabel = AutocompleteHelper.removeAutoCompleteComma(objectLabel);
+		return new LiteralValue(objectLabel);
 	}
 
 	private void cancelButtonClickedAction() {
