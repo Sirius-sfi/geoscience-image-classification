@@ -1229,10 +1229,13 @@ public class ImageAnnotationAPI extends OntologyProjectionAPI {
 	 */
 	protected void removeRelatedTriplesForElement(String session_id, AnnotationGraphModel data_model, String element_uri, int recursion_level) {
 		
+		
 		visited_uris.add(element_uri);
 		
-				
-		if (recursion_level==0)
+		
+		//TODO Do not remove an object if present in other images....
+		//For now we do not allow to remove objects in images only the triples associating the object to the shape. Hard to differentiate instances coming from the ontology
+		if (recursion_level==1)
 			return;
 				
 		
